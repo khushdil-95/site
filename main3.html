@@ -1,34 +1,43 @@
-<!DOCTYPE html>
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
 <html>
 <head>
-<meta charset="utf-8">
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
 <title>Шахматы с ИИ (новичковый стиль)</title>
-<style>
+<style type="text/css">
  body {
-   background: linear-gradient(#ddd6f3, #faaca8);
-   font-family: Arial;
-   margin:0;
-   padding:20px;
-   text-align:center;
+   background: #ddd6f3;
+   font-family: Arial, sans-serif;
+   margin: 0;
+   padding: 10px;
+   text-align: center;
+   overflow: hidden;
  }
- h1 {margin:10px;}
- #board {margin:10px auto; border:3px solid #333; width:480px; max-width:95vw;}
- table {border-collapse:collapse; width:100%; table-layout:fixed;}
+ h1 {margin: 10px 0; color: #333;}
+ #board {margin: 10px auto; border: 3px solid #333; width: 480px;}
+ table {border-collapse: collapse; width: 100%;}
  td {
-   width:12.5%; height:12.5vw;
-   max-height:60px; max-width:60px;
-   text-align:center; vertical-align:middle;
-   font-size:7vw; max-font-size:40px;
-   cursor:pointer;
+   width: 60px; 
+   height: 60px;
+   text-align: center; 
+   vertical-align: middle;
+   font-size: 40px;
+   cursor: pointer;
+   border: 1px solid #888;
  }
- .light{background:#f5e1c4}
- .dark{background:#b97a57}
- .selected{outline:3px solid yellow}
- .hint{background:radial-gradient(circle, rgba(255,255,0,0.5) 40%, transparent 41%)}
- #info{margin:10px auto;}
- button{padding:6px 10px; margin:4px}
- footer{font-size:12px; margin-top:12px; color:#333}
- .board-wrap{border:1px solid #333; padding:6px; background:#fff; display:inline-block}
+ .light{background: #f5e1c4}
+ .dark{background: #b97a57}
+ .selected{outline: 3px solid yellow}
+ .hint{background: #ffff88}
+ #info{margin: 10px auto;}
+ button{padding: 6px 10px; margin: 4px; font-size: 14px;}
+ footer{font-size: 12px; margin-top: 12px; color: #333}
+ .board-wrap{
+   border: 2px solid #666; 
+   padding: 8px; 
+   background: #e0d0b0; 
+   display: inline-block;
+   box-shadow: 3px 3px 5px #888;
+ }
 </style>
 </head>
 <body>
@@ -38,11 +47,11 @@
 </div>
 <div id="info">
   <div id="turn">Ход: белые</div>
-  <button id="reset">Сбросить</button>
+  <button id="reset">Сбросить игру</button>
 </div>
 <footer>Шахматы с ИИ среднего уровня (код в стиле новичка).</footer>
 
-<script>
+<script type="text/javascript">
 var piecesStart = [
  ["r","n","b","q","k","b","n","r"],
  ["p","p","p","p","p","p","p","p"],
@@ -60,7 +69,7 @@ var glyph = {
 
 var board, selected, whiteTurn, possibleMoves;
 var castling={whiteK:true, whiteQ:true, blackK:true, blackQ:true};
-var enPassant=null; // клетка для "взятия на проходе"
+var enPassant=null;
 
 function init(){
  board = JSON.parse(JSON.stringify(piecesStart));
@@ -73,7 +82,7 @@ function init(){
 
 function renderBoard(){
  var wrap=document.getElementById("board");
- var html="<table>";
+ var html="<table cellpadding='0' cellspacing='0'>";
  for(var r=0;r<8;r++){
    html+="<tr>";
    for(var c=0;c<8;c++){
@@ -97,8 +106,8 @@ function renderBoard(){
 
 function onCellClick(e){
  if(!whiteTurn) return;
- var td=e.currentTarget;
- var r=parseInt(td.dataset.r), c=parseInt(td.dataset.c);
+ var td=e.currentTarget||e.srcElement;
+ var r=parseInt(td.getAttribute("data-r")), c=parseInt(td.getAttribute("data-c"));
  var piece=board[r][c];
  if(!selected){
    if(piece && isWhite(piece)){
@@ -127,24 +136,21 @@ function onCellClick(e){
 
 function movePiece(sr,sc,dr,dc){
  var piece=board[sr][sc];
- // Взятие на проходе
  if(piece=="P" && enPassant && dr==enPassant.r && dc==enPassant.c){
    board[dr][dc]=piece; board[sr][sc]="";
-   board[dr+1][dc]=""; // убираем пешку чёрных
+   board[dr+1][dc]="";
  }
  else if(piece=="p" && enPassant && dr==enPassant.r && dc==enPassant.c){
    board[dr][dc]=piece; board[sr][sc]="";
-   board[dr-1][dc]=""; // убираем пешку белых
+   board[dr-1][dc]="";
  }
  else {
    board[dr][dc]=piece;
    board[sr][sc]="";
  }
- // Превращение пешки
  if(piece=="P" && dr==0) board[dr][dc]="Q";
  if(piece=="p" && dr==7) board[dr][dc]="q";
 
- // Рокировка
  if(piece=="K" && sc==4 && (dc==6||dc==2)){
    if(dc==6){board[7][5]="R"; board[7][7]="";}
    if(dc==2){board[7][3]="R"; board[7][0]="";}
@@ -156,7 +162,6 @@ function movePiece(sr,sc,dr,dc){
    castling.blackK=false; castling.blackQ=false;
  }
 
- // Сброс en passant и установка новой
  enPassant=null;
  if(piece=="P" && sr==6 && dr==4) enPassant={r:5,c:sc};
  if(piece=="p" && sr==1 && dr==3) enPassant={r:2,c:sc};
@@ -167,19 +172,16 @@ function movePiece(sr,sc,dr,dc){
 function isWhite(p){return p==p.toUpperCase() && p!="";}
 function isBlack(p){return p==p.toLowerCase() && p!="";}
 
-// --- правила ходов ---
 function calcMoves(r,c,isWhiteSide){
  var piece=board[r][c];
  var moves=[];
  if(!piece) return moves;
 
- // пешка
  if(piece=="P"){
    if(r>0 && !board[r-1][c]) moves.push({r:r-1,c:c});
    if(r==6 && !board[5][c] && !board[4][c]) moves.push({r:4,c:c});
    if(r>0 && c>0 && isBlack(board[r-1][c-1])) moves.push({r:r-1,c:c-1});
    if(r>0 && c<7 && isBlack(board[r-1][c+1])) moves.push({r:r-1,c:c+1});
-   // en passant
    if(enPassant && r==3 && Math.abs(c-enPassant.c)==1) moves.push({r:enPassant.r,c:enPassant.c});
  }
  if(piece=="p"){
@@ -190,18 +192,12 @@ function calcMoves(r,c,isWhiteSide){
    if(enPassant && r==4 && Math.abs(c-enPassant.c)==1) moves.push({r:enPassant.r,c:enPassant.c});
  }
 
- // ладья
  if(piece.toLowerCase()=="r") addLineMoves(r,c,moves,[[-1,0],[1,0],[0,-1],[0,1]],piece);
- // слон
  if(piece.toLowerCase()=="b") addLineMoves(r,c,moves,[[-1,-1],[-1,1],[1,-1],[1,1]],piece);
- // ферзь
  if(piece.toLowerCase()=="q") addLineMoves(r,c,moves,[[-1,0],[1,0],[0,-1],[0,1],[-1,-1],[-1,1],[1,-1],[1,1]],piece);
- // конь
  if(piece.toLowerCase()=="n") addStepMoves(r,c,moves,[[2,1],[2,-1],[-2,1],[-2,-1],[1,2],[1,-2],[-1,2],[-1,-2]],piece);
- // король
  if(piece.toLowerCase()=="k"){
    addStepMoves(r,c,moves,[[-1,0],[1,0],[0,-1],[0,1],[-1,-1],[-1,1],[1,-1],[1,1]],piece);
-   // рокировка
    if(piece=="K" && r==7 && c==4){
      if(castling.whiteK && !board[7][5] && !board[7][6]) moves.push({r:7,c:6});
      if(castling.whiteQ && !board[7][1] && !board[7][2] && !board[7][3]) moves.push({r:7,c:2});
@@ -241,7 +237,6 @@ function addStepMoves(r,c,moves,steps,piece){
  }
 }
 
-// ИИ среднего уровня
 var pieceValue={p:1,n:3,b:3,r:5,q:9,k:100};
 function aiMove(){
  var allMoves=[];
