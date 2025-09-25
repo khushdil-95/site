@@ -169,7 +169,8 @@ function onCellClick(e){
    whiteTurn=false;
    document.getElementById("turn").innerText="Ход: чёрные (ИИ)";
    renderBoard();
-   setTimeout(aiMove,300);
+   // Убрал setTimeout и вызываем ИИ сразу
+   aiMove();
  } else {
    if(piece && isWhite(piece)){
      selected={r:r,c:c};
@@ -341,6 +342,7 @@ function addStepMoves(r,c,moves,steps,piece){
 
 var pieceValue={p:1,n:3,b:3,r:5,q:9,k:100};
 function aiMove(){
+ // Быстрый ИИ без задержки
  var allMoves=[];
  for(var r=0;r<8;r++){
    for(var c=0;c<8;c++){
@@ -350,15 +352,19 @@ function aiMove(){
          var m=moves[i];
          var target=board[m.r][m.c]||"";
          var val=isWhite(target)?pieceValue[target.toLowerCase()]||0:0;
-         val+=Math.random()*0.5;
+         // Упрощенная оценка для скорости
+         val+=Math.random()*0.3;
          allMoves.push({sr:r,sc:c,dr:m.r,dc:m.c,score:val});
        }
      }
    }
  }
  if(allMoves.length>0){
+   // Быстрая сортировка - берем один из лучших ходов
    allMoves.sort(function(a,b){return b.score-a.score;});
-   var best=allMoves[0];
+   // Берем случайный ход из топ-3 для разнообразия
+   var topMoves = allMoves.slice(0, Math.min(3, allMoves.length));
+   var best = topMoves[Math.floor(Math.random() * topMoves.length)];
    movePiece(best.sr,best.sc,best.dr,best.dc);
  }
  whiteTurn=true;
