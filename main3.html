@@ -2,41 +2,71 @@
 <html>
 <head>
 <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
-<title>Шахматы с ИИ (новичковый стиль)</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>Шахматы с ИИ</title>
 <style type="text/css">
  body {
    background: #ddd6f3;
    font-family: Arial, sans-serif;
    margin: 0;
-   padding: 10px;
+   padding: 5px;
    text-align: center;
    overflow: hidden;
+   width: 100%;
+   height: 100vh;
  }
- h1 {margin: 10px 0; color: #333;}
- #board {margin: 10px auto; border: 3px solid #333; width: 480px;}
- table {border-collapse: collapse; width: 100%;}
+ h1 {
+   margin: 5px 0; 
+   font-size: 18px;
+   color: #333;
+ }
+ #board {
+   margin: 5px auto; 
+   border: 2px solid #333; 
+   max-width: 95vw;
+   max-height: 95vw;
+ }
+ table {
+   border-collapse: collapse; 
+   width: 100%;
+   height: 100%;
+ }
  td {
-   width: 60px; 
-   height: 60px;
+   width: 12.5%; 
+   height: 12.5vw;
+   max-width: 50px;
+   max-height: 50px;
    text-align: center; 
    vertical-align: middle;
-   font-size: 40px;
+   font-size: 6vw;
+   max-font-size: 30px;
    cursor: pointer;
    border: 1px solid #888;
  }
  .light{background: #f5e1c4}
  .dark{background: #b97a57}
- .selected{outline: 3px solid yellow}
+ .selected{outline: 2px solid yellow}
  .hint{background: #ffff88}
- #info{margin: 10px auto;}
- button{padding: 6px 10px; margin: 4px; font-size: 14px;}
- footer{font-size: 12px; margin-top: 12px; color: #333}
+ #info{
+   margin: 8px auto;
+   font-size: 14px;
+ }
+ button{
+   padding: 5px 8px; 
+   margin: 3px; 
+   font-size: 12px;
+ }
+ footer{
+   font-size: 10px; 
+   margin-top: 8px; 
+   color: #333;
+ }
  .board-wrap{
-   border: 2px solid #666; 
-   padding: 8px; 
+   border: 1px solid #666; 
+   padding: 5px; 
    background: #e0d0b0; 
    display: inline-block;
-   box-shadow: 3px 3px 5px #888;
+   max-width: 100%;
  }
 </style>
 </head>
@@ -47,9 +77,9 @@
 </div>
 <div id="info">
   <div id="turn">Ход: белые</div>
-  <button id="reset">Сбросить игру</button>
+  <button id="reset">Новая игра</button>
 </div>
-<footer>Шахматы с ИИ среднего уровня (код в стиле новичка).</footer>
+<footer>Шахматы с ИИ среднего уровня</footer>
 
 <script type="text/javascript">
 var piecesStart = [
@@ -109,64 +139,115 @@ function onCellClick(e){
  var td=e.currentTarget||e.srcElement;
  var r=parseInt(td.getAttribute("data-r")), c=parseInt(td.getAttribute("data-c"));
  var piece=board[r][c];
+ 
  if(!selected){
    if(piece && isWhite(piece)){
      selected={r:r,c:c};
      possibleMoves=calcMoves(r,c,true);
+     renderBoard();
    }
+   return;
+ }
+ 
+ if(selected.r==r && selected.c==c){
+   selected=null; 
+   possibleMoves=[];
+   renderBoard();
+   return;
+ }
+ 
+ if(possibleMoves.some(function(m){return m.r==r&&m.c==c})){
+   movePiece(selected.r,selected.c,r,c);
+   whiteTurn=false;
+   document.getElementById("turn").innerText="Ход: чёрные (ИИ)";
+   renderBoard();
+   setTimeout(aiMove,300); // Уменьшил задержку
  } else {
-   if(selected.r==r && selected.c==c){
-     selected=null; possibleMoves=[];
-   } else if(possibleMoves.some(function(m){return m.r==r&&m.c==c})){
-     movePiece(selected.r,selected.c,r,c);
-     whiteTurn=false;
-     document.getElementById("turn").innerText="Ход: чёрные (ИИ)";
-     setTimeout(aiMove,600);
+   if(piece && isWhite(piece)){
+     selected={r:r,c:c};
+     possibleMoves=calcMoves(r,c,true);
+     renderBoard();
    } else {
-     if(piece && isWhite(piece)){
-       selected={r:r,c:c};
-       possibleMoves=calcMoves(r,c,true);
-     } else {
-       selected=null; possibleMoves=[];
-     }
+     selected=null; 
+     possibleMoves=[];
+     renderBoard();
    }
  }
- renderBoard();
 }
 
 function movePiece(sr,sc,dr,dc){
  var piece=board[sr][sc];
+ 
+ // Взятие на проходе
  if(piece=="P" && enPassant && dr==enPassant.r && dc==enPassant.c){
-   board[dr][dc]=piece; board[sr][sc]="";
-   board[dr+1][dc]="";
+   board[dr][dc]=piece; 
+   board[sr][sc]="";
+   board[dr+1][dc]=""; // Убираем пешку противника
  }
  else if(piece=="p" && enPassant && dr==enPassant.r && dc==enPassant.c){
-   board[dr][dc]=piece; board[sr][sc]="";
-   board[dr-1][dc]="";
+   board[dr][dc]=piece; 
+   board[sr][sc]="";
+   board[dr-1][dc]=""; // Убираем пешку противника
  }
  else {
+   // Обычный ход
    board[dr][dc]=piece;
    board[sr][sc]="";
  }
+ 
+ // Превращение пешки
  if(piece=="P" && dr==0) board[dr][dc]="Q";
  if(piece=="p" && dr==7) board[dr][dc]="q";
 
- if(piece=="K" && sc==4 && (dc==6||dc==2)){
-   if(dc==6){board[7][5]="R"; board[7][7]="";}
-   if(dc==2){board[7][3]="R"; board[7][0]="";}
-   castling.whiteK=false; castling.whiteQ=false;
+ // Рокировка
+ if(piece=="K" && sc==4){
+   if(dc==6 && castling.whiteK){ // Короткая рокировка
+     board[7][5]="R"; 
+     board[7][7]="";
+     castling.whiteK=false; 
+     castling.whiteQ=false;
+   }
+   if(dc==2 && castling.whiteQ){ // Длинная рокировка
+     board[7][3]="R"; 
+     board[7][0]="";
+     castling.whiteK=false; 
+     castling.whiteQ=false;
+   }
  }
- if(piece=="k" && sc==4 && (dc==6||dc==2)){
-   if(dc==6){board[0][5]="r"; board[0][7]="";}
-   if(dc==2){board[0][3]="r"; board[0][0]="";}
-   castling.blackK=false; castling.blackQ=false;
+ if(piece=="k" && sc==4){
+   if(dc==6 && castling.blackK){
+     board[0][5]="r"; 
+     board[0][7]="";
+     castling.blackK=false; 
+     castling.blackQ=false;
+   }
+   if(dc==2 && castling.blackQ){
+     board[0][3]="r"; 
+     board[0][0]="";
+     castling.blackK=false; 
+     castling.blackQ=false;
+   }
  }
 
+ // Обновление прав рокировки при движении ладей и короля
+ if(piece=="K"){castling.whiteK=false; castling.whiteQ=false;}
+ if(piece=="k"){castling.blackK=false; castling.blackQ=false;}
+ if(piece=="R" && sr==7){
+   if(sc==0) castling.whiteQ=false;
+   if(sc==7) castling.whiteK=false;
+ }
+ if(piece=="r" && sr==0){
+   if(sc==0) castling.blackQ=false;
+   if(sc==7) castling.blackK=false;
+ }
+
+ // Установка en passant
  enPassant=null;
  if(piece=="P" && sr==6 && dr==4) enPassant={r:5,c:sc};
  if(piece=="p" && sr==1 && dr==3) enPassant={r:2,c:sc};
 
- selected=null; possibleMoves=[];
+ selected=null; 
+ possibleMoves=[];
 }
 
 function isWhite(p){return p==p.toUpperCase() && p!="";}
@@ -177,36 +258,63 @@ function calcMoves(r,c,isWhiteSide){
  var moves=[];
  if(!piece) return moves;
 
+ // Пешка
  if(piece=="P"){
+   // Ход вперед
    if(r>0 && !board[r-1][c]) moves.push({r:r-1,c:c});
+   // Двойной ход с начальной позиции
    if(r==6 && !board[5][c] && !board[4][c]) moves.push({r:4,c:c});
+   // Взятие по диагонали
    if(r>0 && c>0 && isBlack(board[r-1][c-1])) moves.push({r:r-1,c:c-1});
    if(r>0 && c<7 && isBlack(board[r-1][c+1])) moves.push({r:r-1,c:c+1});
-   if(enPassant && r==3 && Math.abs(c-enPassant.c)==1) moves.push({r:enPassant.r,c:enPassant.c});
+   // Взятие на проходе
+   if(enPassant && r==3 && enPassant.r==2 && Math.abs(c-enPassant.c)==1) 
+     moves.push({r:enPassant.r,c:enPassant.c});
  }
  if(piece=="p"){
    if(r<7 && !board[r+1][c]) moves.push({r:r+1,c:c});
    if(r==1 && !board[2][c] && !board[3][c]) moves.push({r:3,c:c});
    if(r<7 && c>0 && isWhite(board[r+1][c-1])) moves.push({r:r+1,c:c-1});
    if(r<7 && c<7 && isWhite(board[r+1][c+1])) moves.push({r:r+1,c:c+1});
-   if(enPassant && r==4 && Math.abs(c-enPassant.c)==1) moves.push({r:enPassant.r,c:enPassant.c});
+   if(enPassant && r==4 && enPassant.r==5 && Math.abs(c-enPassant.c)==1) 
+     moves.push({r:enPassant.r,c:enPassant.c});
  }
 
- if(piece.toLowerCase()=="r") addLineMoves(r,c,moves,[[-1,0],[1,0],[0,-1],[0,1]],piece);
- if(piece.toLowerCase()=="b") addLineMoves(r,c,moves,[[-1,-1],[-1,1],[1,-1],[1,1]],piece);
- if(piece.toLowerCase()=="q") addLineMoves(r,c,moves,[[-1,0],[1,0],[0,-1],[0,1],[-1,-1],[-1,1],[1,-1],[1,1]],piece);
- if(piece.toLowerCase()=="n") addStepMoves(r,c,moves,[[2,1],[2,-1],[-2,1],[-2,-1],[1,2],[1,-2],[-1,2],[-1,-2]],piece);
+ // Ладья
+ if(piece.toLowerCase()=="r") 
+   addLineMoves(r,c,moves,[[-1,0],[1,0],[0,-1],[0,1]],piece);
+ 
+ // Слон
+ if(piece.toLowerCase()=="b") 
+   addLineMoves(r,c,moves,[[-1,-1],[-1,1],[1,-1],[1,1]],piece);
+ 
+ // Ферзь
+ if(piece.toLowerCase()=="q") 
+   addLineMoves(r,c,moves,[[-1,0],[1,0],[0,-1],[0,1],[-1,-1],[-1,1],[1,-1],[1,1]],piece);
+ 
+ // Конь
+ if(piece.toLowerCase()=="n") 
+   addStepMoves(r,c,moves,[[2,1],[2,-1],[-2,1],[-2,-1],[1,2],[1,-2],[-1,2],[-1,-2]],piece);
+ 
+ // Король
  if(piece.toLowerCase()=="k"){
    addStepMoves(r,c,moves,[[-1,0],[1,0],[0,-1],[0,1],[-1,-1],[-1,1],[1,-1],[1,1]],piece);
+   
+   // Рокировка
    if(piece=="K" && r==7 && c==4){
-     if(castling.whiteK && !board[7][5] && !board[7][6]) moves.push({r:7,c:6});
-     if(castling.whiteQ && !board[7][1] && !board[7][2] && !board[7][3]) moves.push({r:7,c:2});
+     if(castling.whiteK && !board[7][5] && !board[7][6] && !isUnderAttack(7,4,false) && !isUnderAttack(7,5,false) && !isUnderAttack(7,6,false))
+       moves.push({r:7,c:6});
+     if(castling.whiteQ && !board[7][1] && !board[7][2] && !board[7][3] && !isUnderAttack(7,4,false) && !isUnderAttack(7,3,false) && !isUnderAttack(7,2,false))
+       moves.push({r:7,c:2});
    }
    if(piece=="k" && r==0 && c==4){
-     if(castling.blackK && !board[0][5] && !board[0][6]) moves.push({r:0,c:6});
-     if(castling.blackQ && !board[0][1] && !board[0][2] && !board[0][3]) moves.push({r:0,c:2});
+     if(castling.blackK && !board[0][5] && !board[0][6] && !isUnderAttack(0,4,true) && !isUnderAttack(0,5,true) && !isUnderAttack(0,6,true))
+       moves.push({r:0,c:6});
+     if(castling.blackQ && !board[0][1] && !board[0][2] && !board[0][3] && !isUnderAttack(0,4,true) && !isUnderAttack(0,3,true) && !isUnderAttack(0,2,true))
+       moves.push({r:0,c:2});
    }
  }
+ 
  return moves;
 }
 
@@ -214,27 +322,46 @@ function addLineMoves(r,c,moves,dirs,piece){
  for(var i=0;i<dirs.length;i++){
    var d=dirs[i], nr=r+d[0], nc=c+d[1];
    while(nr>=0&&nr<8&&nc>=0&&nc<8){
-     if(!board[nr][nc]) moves.push({r:nr,c:nc});
-     else {
-       if(isWhite(piece)&&isBlack(board[nr][nc])) moves.push({r:nr,c:nc});
-       if(isBlack(piece)&&isWhite(board[nr][nc])) moves.push({r:nr,c:nc});
+     if(!board[nr][nc]){
+       moves.push({r:nr,c:nc});
+     } else {
+       if((isWhite(piece)&&isBlack(board[nr][nc])) || (isBlack(piece)&&isWhite(board[nr][nc]))){
+         moves.push({r:nr,c:nc});
+       }
        break;
      }
      nr+=d[0]; nc+=d[1];
    }
  }
 }
+
 function addStepMoves(r,c,moves,steps,piece){
  for(var i=0;i<steps.length;i++){
    var s=steps[i], nr=r+s[0], nc=c+s[1];
    if(nr>=0&&nr<8&&nc>=0&&nc<8){
-     if(!board[nr][nc]) moves.push({r:nr,c:nc});
-     else {
-       if(isWhite(piece)&&isBlack(board[nr][nc])) moves.push({r:nr,c:nc});
-       if(isBlack(piece)&&isWhite(board[nr][nc])) moves.push({r:nr,c:nc});
+     if(!board[nr][nc] || 
+        (isWhite(piece)&&isBlack(board[nr][nc])) || 
+        (isBlack(piece)&&isWhite(board[nr][nc]))){
+       moves.push({r:nr,c:nc});
      }
    }
  }
+}
+
+// Проверка находится ли клетка под атакой
+function isUnderAttack(r,c,byWhite){
+ for(var i=0;i<8;i++){
+   for(var j=0;j<8;j++){
+     var piece=board[i][j];
+     if(piece && ((byWhite && isWhite(piece)) || (!byWhite && isBlack(piece)))){
+       var moves=calcMoves(i,j,byWhite);
+       for(var k=0;k<moves.length;k++){
+         if(moves[k].r==r && moves[k].c==c) return true;
+       }
+     }
+   }
+ }
+ return false;
 }
 
 var pieceValue={p:1,n:3,b:3,r:5,q:9,k:100};
@@ -248,6 +375,8 @@ function aiMove(){
          var m=moves[i];
          var target=board[m.r][m.c]||"";
          var val=isWhite(target)?pieceValue[target.toLowerCase()]||0:0;
+         // Добавляем небольшой рандом для разнообразия
+         val+=Math.random()*0.5;
          allMoves.push({sr:r,sc:c,dr:m.r,dc:m.c,score:val});
        }
      }
