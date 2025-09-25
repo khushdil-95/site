@@ -1,0 +1,234 @@
+<!doctype html>
+HTML+JS шахматы с простым ИИ и подсветкой возможных ходов. Всё выглядит "как у новичка": простые проверки, минимум оптимизации. -->
+<html lang="ru">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Шахматы (новичок с ИИ)</title>
+  <style>
+    body{font-family: Arial, Helvetica, sans-serif; background:#efe6d6; color:#222; padding:20px}
+    h1{text-align:center}
+    #board{margin:10px auto; border:3px solid #333; width: 480px}
+    table{border-collapse:collapse; width:100%}
+    td{width:12.5%; height:60px; text-align:center; vertical-align:middle; font-size:32px; cursor:pointer}
+    .light{background:#f5e1c4}
+    .dark{background:#b97a57}
+    .selected{outline:3px solid yellow}
+    .hint{background:radial-gradient(circle, rgba(255,255,0,0.5) 40%, transparent 41%)}
+    #info{max-width:480px;margin:10px auto;text-align:center}
+    button{padding:6px 10px;margin:4px}
+    footer{font-size:12px;text-align:center;margin-top:12px;color:#555}
+    .board-wrap{border:1px dashed #666;padding:6px;background:#fff}
+  </style>
+</head>
+<body>
+  <h1>Шахматы — простой ИИ (как код новичка)</h1>
+  <div class="board-wrap">
+    <div id="board"></div>
+  </div>
+  <div id="info">
+    <div id="turn">Ход: белые</div>
+    <button id="reset">Сбросить</button>
+  </div>
+  <footer>Код примитивный: простейший ИИ и подсветка возможных ходов.</footer>
+
+<<<<<<< HEAD
+  <script>
+    const piecesStart = [
+      ["r","n","b","q","k","b","n","r"],
+      ["p","p","p","p","p","p","p","p"],
+      ["","","","","","","",""],
+      ["","","","","","","",""],
+      ["","","","","","","",""],
+      ["","","","","","","",""],
+      ["P","P","P","P","P","P","P","P"],
+      ["R","N","B","Q","K","B","N","R"]
+    ];
+
+    const glyph = {
+      'r':'♜','n':'♞','b':'♝','q':'♛','k':'♚','p':'♟',
+      'R':'♖','N':'♘','B':'♗','Q':'♕','K':'♔','P':'♙','':''
+    };
+
+    let board = [];
+    let selected = null;
+    let whiteTurn = true;
+    let possibleMoves = [];
+
+    function init(){
+      board = JSON.parse(JSON.stringify(piecesStart));
+      selected = null;
+      whiteTurn = true;
+      renderBoard();
+      document.getElementById('turn').innerText = 'Ход: белые';
+    }
+
+    function renderBoard(){
+      const wrap = document.getElementById('board');
+      let html = '<table>';
+      for(let r=0;r<8;r++){
+        html += '<tr>';
+        for(let c=0;c<8;c++){
+          const color = (r+c)%2===0 ? 'light' : 'dark';
+          const piece = board[r][c] || '';
+          const display = glyph[piece] || '';
+          let extra = '';
+          if(selected && selected.r===r && selected.c===c){extra = ' selected';}
+          if(possibleMoves.some(m => m.r===r && m.c===c)) extra += ' hint';
+          html += `<td class="${color}${extra}" data-r="${r}" data-c="${c}">${display}</td>`;
+        }
+        html += '</tr>';
+      }
+      html += '</table>';
+      wrap.innerHTML = html;
+      wrap.querySelectorAll('td').forEach(td => td.addEventListener('click', onCellClick));
+    }
+
+    function onCellClick(e){
+      if(!whiteTurn) return; // только игрок ходит белыми
+      const td = e.currentTarget;
+      const r = parseInt(td.dataset.r,10);
+      const c = parseInt(td.dataset.c,10);
+      const piece = board[r][c];
+
+      if(!selected){
+        if(piece && isWhite(piece)){
+          selected = {r,c};
+          possibleMoves = calcMoves(r,c);
+        }
+      } else {
+        if(selected.r===r && selected.c===c){
+          selected = null;
+          possibleMoves = [];
+        } else if(possibleMoves.some(m => m.r===r && m.c===c)){
+          movePiece(selected.r,selected.c,r,c);
+          whiteTurn = false;
+          document.getElementById('turn').innerText = 'Ход: чёрные (ИИ)';
+          setTimeout(aiMove,500);
+        } else {
+          if(piece && isWhite(piece)){
+            selected = {r,c};
+            possibleMoves = calcMoves(r,c);
+          } else {
+            selected = null;
+            possibleMoves = [];
+          }
+        }
+      }
+      renderBoard();
+    }
+
+    function movePiece(sr,sc,dr,dc){
+      board[dr][dc] = board[sr][sc];
+      board[sr][sc] = '';
+      selected = null;
+      possibleMoves = [];
+    }
+
+    function isWhite(piece){return piece === piece.toUpperCase();}
+    function isBlack(piece){return piece === piece.toLowerCase();}
+
+    // Новичковая логика: пешка ходит вперёд, фигуры двигаются как могут — минимум проверок
+    function calcMoves(r,c){
+      const piece = board[r][c];
+      let moves = [];
+      if(piece==='P'){
+        if(r>0 && !board[r-1][c]) moves.push({r:r-1,c});
+        if(r===6 && !board[5][c]) moves.push({r:4,c});
+        if(r>0 && c>0 && isBlack(board[r-1][c-1])) moves.push({r:r-1,c:c-1});
+        if(r>0 && c<7 && isBlack(board[r-1][c+1])) moves.push({r:r-1,c:c+1});
+      }
+      if(piece==='R') addLineMoves(r,c,moves,[[-1,0],[1,0],[0,-1],[0,1]]);
+      if(piece==='B') addLineMoves(r,c,moves,[[-1,-1],[-1,1],[1,-1],[1,1]]);
+      if(piece==='Q') addLineMoves(r,c,moves,[[-1,0],[1,0],[0,-1],[0,1],[-1,-1],[-1,1],[1,-1],[1,1]]);
+      if(piece==='N') addStepMoves(r,c,moves,[[2,1],[2,-1],[-2,1],[-2,-1],[1,2],[1,-2],[-1,2],[-1,-2]]);
+      if(piece==='K') addStepMoves(r,c,moves,[[-1,0],[1,0],[0,-1],[0,1],[-1,-1],[-1,1],[1,-1],[1,1]]);
+      return moves;
+    }
+
+    function addLineMoves(r,c,moves,dirs){
+      for(const d of dirs){
+        let nr=r+d[0],nc=c+d[1];
+        while(nr>=0 && nr<8 && nc>=0 && nc<8){
+          if(!board[nr][nc]){moves.push({r:nr,c:nc});}
+          else {
+            if(isBlack(board[nr][nc])) moves.push({r:nr,c:nc});
+            break;
+          }
+          nr+=d[0]; nc+=d[1];
+        }
+      }
+    }
+
+    function addStepMoves(r,c,moves,steps){
+      for(const s of steps){
+        let nr=r+s[0],nc=c+s[1];
+        if(nr>=0&&nr<8&&nc>=0&&nc<8){
+          if(!board[nr][nc]||isBlack(board[nr][nc])) moves.push({r:nr,c:nc});
+        }
+      }
+    }
+
+    // Простейший ИИ: выбирает случайный допустимый ход для чёрных
+    function aiMove(){
+      let allMoves=[];
+      for(let r=0;r<8;r++){
+        for(let c=0;c<8;c++){
+          if(isBlack(board[r][c])){
+            let moves=calcMovesBlack(r,c);
+            moves.forEach(m=>allMoves.push({sr:r,sc:c,dr:m.r,dc:m.c}));
+          }
+        }
+      }
+      if(allMoves.length>0){
+        const mv=allMoves[Math.floor(Math.random()*allMoves.length)];
+        movePiece(mv.sr,mv.sc,mv.dr,mv.dc);
+      }
+      whiteTurn = true;
+      document.getElementById('turn').innerText = 'Ход: белые';
+      renderBoard();
+    }
+
+    // Копия calcMoves для чёрных (новичок бы скопировал код)
+    function calcMovesBlack(r,c){
+      const piece = board[r][c];
+      let moves = [];
+      if(piece==='p'){
+        if(r<7 && !board[r+1][c]) moves.push({r:r+1,c});
+        if(r===1 && !board[2][c]) moves.push({r:3,c});
+        if(r<7 && c>0 && isWhite(board[r+1][c-1])) moves.push({r:r+1,c:c-1});
+        if(r<7 && c<7 && isWhite(board[r+1][c+1])) moves.push({r:r+1,c:c+1});
+      }
+      if(piece==='r') addLineMovesBlack(r,c,moves,[[-1,0],[1,0],[0,-1],[0,1]]);
+      if(piece==='b') addLineMovesBlack(r,c,moves,[[-1,-1],[-1,1],[1,-1],[1,1]]);
+      if(piece==='q') addLineMovesBlack(r,c,moves,[[-1,0],[1,0],[0,-1],[0,1],[-1,-1],[-1,1],[1,-1],[1,1]]);
+      if(piece==='n') addStepMovesBlack(r,c,moves,[[2,1],[2,-1],[-2,1],[-2,-1],[1,2],[1,-2],[-1,2],[-1,-2]]);
+      if(piece==='k') addStepMovesBlack(r,c,moves,[[-1,0],[1,0],[0,-1],[0,1],[-1,-1],[-1,1],[1,-1],[1,1]]);
+      return moves;
+    }
+
+    function addLineMovesBlack(r,c,moves,dirs){
+      for(const d of dirs){
+        let nr=r+d[0],nc=c+d[1];
+        while(nr>=0 && nr<8 && nc>=0 && nc<8){
+          if(!board[nr][nc]){moves.push({r:nr,c:nc});}
+          else {
+            if(isWhite(board[nr][nc])) moves.push({r:nr,c:nc});
+            break;
+          }
+          nr+=d[0]; nc+=d[1];
+        }
+      }
+    }
+    function addStepMovesBlack(r,c,moves,steps){
+      for(const s of steps){
+        let nr=r+s[0],nc=c+s[1];
+        if(nr>=0&&nr<8&&nc>=0&&nc<8){
+          if(!board[nr][nc]||isWhite(board[nr][nc])) moves.push({r:nr,c:nc});
+        }
+      }
+    }
+
+    document.getElementById('reset').addEventListener('click',init);
+    init();
+  </script>
