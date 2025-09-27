@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 <html>
 <head>
 <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
@@ -426,6 +427,380 @@ function aiMove() {
   whiteTurn = true;
   updateTurnDisplay();
   renderBoard();
+=======
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>Шахматы с ИИ</title>
+<style type="text/css">
+ body {
+   background: #ddd6f3;
+   font-family: Arial, sans-serif;
+   margin: 0;
+   padding: 5px;
+   text-align: center;
+   overflow: hidden;
+   width: 100%;
+   height: 100vh;
+ }
+ h1 {
+   margin: 2px 0; 
+   font-size: 16px;
+   color: #333;
+ }
+ #board {
+   margin: 2px auto; 
+   border: 2px solid #333;
+   width: 96vw;
+   height: 96vw;
+   max-width: 360px;
+   max-height: 360px;
+   box-sizing: border-box;
+ }
+ table {
+   border-collapse: collapse; 
+   width: 100%;
+   height: 100%;
+   table-layout: fixed;
+ }
+ td {
+   width: 12.5%; 
+   height: 12.5%;
+   text-align: center; 
+   vertical-align: middle;
+   font-size: 4.5vw;
+   cursor: pointer;
+   border: 1px solid #666;
+   box-sizing: border-box;
+   padding: 0;
+ }
+ @media (min-width: 400px) {
+   td {
+     font-size: 18px;
+   }
+ }
+ .light{background: #f5e1c4}
+ .dark{background: #b97a57}
+ .selected{outline: 2px solid yellow}
+ .hint{background: #ffff88}
+ #info{
+   margin: 5px auto;
+   font-size: 12px;
+ }
+ button{
+   padding: 4px 8px; 
+   margin: 3px; 
+   font-size: 11px;
+ }
+ footer{
+   font-size: 9px; 
+   margin-top: 5px; 
+   color: #333;
+ }
+ .board-wrap{
+   border: 1px solid #666; 
+   padding: 3px; 
+   background: #e0d0b0; 
+   display: inline-block;
+   box-sizing: border-box;
+ }
+</style>
+</head>
+<body>
+<h1>Шахматы с ИИ</h1>
+<div class="board-wrap">
+  <div id="board"></div>
+</div>
+<div id="info">
+  <div id="turn">Ход: белые</div>
+  <button id="reset">Новая игра</button>
+</div>
+<footer>Шахматы с ИИ среднего уровня</footer>
+
+<script type="text/javascript">
+var piecesStart = [
+ ["r","n","b","q","k","b","n","r"],
+ ["p","p","p","p","p","p","p","p"],
+ ["","","","","","","",""],
+ ["","","","","","","",""],
+ ["","","","","","","",""],
+ ["","","","","","","",""],
+ ["P","P","P","P","P","P","P","P"],
+ ["R","N","B","Q","K","B","N","R"]
+];
+var glyph = {
+ 'r':'♜','n':'♞','b':'♝','q':'♛','k':'♚','p':'♟',
+ 'R':'♖','N':'♘','B':'♗','Q':'♕','K':'♔','P':'♙','':''
+};
+
+var board, selected, whiteTurn, possibleMoves;
+var castling={whiteK:true, whiteQ:true, blackK:true, blackQ:true};
+var enPassant=null;
+
+function init(){
+ board = JSON.parse(JSON.stringify(piecesStart));
+ selected=null; whiteTurn=true; possibleMoves=[];
+ castling={whiteK:true, whiteQ:true, blackK:true, blackQ:true};
+ enPassant=null;
+ renderBoard();
+ document.getElementById("turn").innerText="Ход: белые";
+}
+
+function renderBoard(){
+ var wrap=document.getElementById("board");
+ var html="<table cellpadding='0' cellspacing='0'>";
+ for(var r=0;r<8;r++){
+   html+="<tr>";
+   for(var c=0;c<8;c++){
+     var color=((r+c)%2==0)?'light':'dark';
+     var piece=board[r][c]||"";
+     var disp=glyph[piece]||"";
+     var extra="";
+     if(selected && selected.r==r && selected.c==c) extra=" selected";
+     if(possibleMoves.some(function(m){return m.r==r&&m.c==c})) extra+=" hint";
+     html+='<td class="'+color+extra+'" data-r="'+r+'" data-c="'+c+'">'+disp+'</td>';
+   }
+   html+="</tr>";
+ }
+ html+="</table>";
+ wrap.innerHTML=html;
+ var tds=wrap.getElementsByTagName("td");
+ for(var i=0;i<tds.length;i++){
+   tds[i].onclick=onCellClick;
+ }
+}
+
+function onCellClick(e){
+ if(!whiteTurn) return;
+ var td=e.currentTarget||e.srcElement;
+ var r=parseInt(td.getAttribute("data-r")), c=parseInt(td.getAttribute("data-c"));
+ var piece=board[r][c];
+ 
+ if(!selected){
+   if(piece && isWhite(piece)){
+     selected={r:r,c:c};
+     possibleMoves=calcMoves(r,c,true);
+     renderBoard();
+   }
+   return;
+ }
+ 
+ if(selected.r==r && selected.c==c){
+   selected=null; 
+   possibleMoves=[];
+   renderBoard();
+   return;
+ }
+ 
+ if(possibleMoves.some(function(m){return m.r==r&&m.c==c})){
+   movePiece(selected.r,selected.c,r,c);
+   whiteTurn=false;
+   document.getElementById("turn").innerText="Ход: чёрные (ИИ)";
+   renderBoard();
+   // Убрал setTimeout и вызываем ИИ сразу
+   aiMove();
+ } else {
+   if(piece && isWhite(piece)){
+     selected={r:r,c:c};
+     possibleMoves=calcMoves(r,c,true);
+     renderBoard();
+   } else {
+     selected=null; 
+     possibleMoves=[];
+     renderBoard();
+   }
+ }
+}
+
+function movePiece(sr,sc,dr,dc){
+ var piece=board[sr][sc];
+ 
+ if(piece=="P" && enPassant && dr==enPassant.r && dc==enPassant.c){
+   board[dr][dc]=piece; 
+   board[sr][sc]="";
+   board[dr+1][dc]="";
+ }
+ else if(piece=="p" && enPassant && dr==enPassant.r && dc==enPassant.c){
+   board[dr][dc]=piece; 
+   board[sr][sc]="";
+   board[dr-1][dc]="";
+ }
+ else {
+   board[dr][dc]=piece;
+   board[sr][sc]="";
+ }
+ 
+ if(piece=="P" && dr==0) board[dr][dc]="Q";
+ if(piece=="p" && dr==7) board[dr][dc]="q";
+
+ if(piece=="K" && sc==4){
+   if(dc==6 && castling.whiteK){
+     board[7][5]="R"; 
+     board[7][7]="";
+     castling.whiteK=false; 
+     castling.whiteQ=false;
+   }
+   if(dc==2 && castling.whiteQ){
+     board[7][3]="R"; 
+     board[7][0]="";
+     castling.whiteK=false; 
+     castling.whiteQ=false;
+   }
+ }
+ if(piece=="k" && sc==4){
+   if(dc==6 && castling.blackK){
+     board[0][5]="r"; 
+     board[0][7]="";
+     castling.blackK=false; 
+     castling.blackQ=false;
+   }
+   if(dc==2 && castling.blackQ){
+     board[0][3]="r"; 
+     board[0][0]="";
+     castling.blackK=false; 
+     castling.blackQ=false;
+   }
+ }
+
+ if(piece=="K"){castling.whiteK=false; castling.whiteQ=false;}
+ if(piece=="k"){castling.blackK=false; castling.blackQ=false;}
+ if(piece=="R" && sr==7){
+   if(sc==0) castling.whiteQ=false;
+   if(sc==7) castling.whiteK=false;
+ }
+ if(piece=="r" && sr==0){
+   if(sc==0) castling.blackQ=false;
+   if(sc==7) castling.blackK=false;
+ }
+
+ enPassant=null;
+ if(piece=="P" && sr==6 && dr==4) enPassant={r:5,c:sc};
+ if(piece=="p" && sr==1 && dr==3) enPassant={r:2,c:sc};
+
+ selected=null; 
+ possibleMoves=[];
+}
+
+function isWhite(p){return p==p.toUpperCase() && p!="";}
+function isBlack(p){return p==p.toLowerCase() && p!="";}
+
+function calcMoves(r,c,isWhiteSide){
+ var piece=board[r][c];
+ var moves=[];
+ if(!piece) return moves;
+
+ if(piece=="P"){
+   if(r>0 && !board[r-1][c]) moves.push({r:r-1,c:c});
+   if(r==6 && !board[5][c] && !board[4][c]) moves.push({r:4,c:c});
+   if(r>0 && c>0 && isBlack(board[r-1][c-1])) moves.push({r:r-1,c:c-1});
+   if(r>0 && c<7 && isBlack(board[r-1][c+1])) moves.push({r:r-1,c:c+1});
+   if(enPassant && r==3 && enPassant.r==2 && Math.abs(c-enPassant.c)==1) 
+     moves.push({r:enPassant.r,c:enPassant.c});
+ }
+ if(piece=="p"){
+   if(r<7 && !board[r+1][c]) moves.push({r:r+1,c:c});
+   if(r==1 && !board[2][c] && !board[3][c]) moves.push({r:3,c:c});
+   if(r<7 && c>0 && isWhite(board[r+1][c-1])) moves.push({r:r+1,c:c-1});
+   if(r<7 && c<7 && isWhite(board[r+1][c+1])) moves.push({r:r+1,c:c+1});
+   if(enPassant && r==4 && enPassant.r==5 && Math.abs(c-enPassant.c)==1) 
+     moves.push({r:enPassant.r,c:enPassant.c});
+ }
+
+ if(piece.toLowerCase()=="r") 
+   addLineMoves(r,c,moves,[[-1,0],[1,0],[0,-1],[0,1]],piece);
+ 
+ if(piece.toLowerCase()=="b") 
+   addLineMoves(r,c,moves,[[-1,-1],[-1,1],[1,-1],[1,1]],piece);
+ 
+ if(piece.toLowerCase()=="q") 
+   addLineMoves(r,c,moves,[[-1,0],[1,0],[0,-1],[0,1],[-1,-1],[-1,1],[1,-1],[1,1]],piece);
+ 
+ if(piece.toLowerCase()=="n") 
+   addStepMoves(r,c,moves,[[2,1],[2,-1],[-2,1],[-2,-1],[1,2],[1,-2],[-1,2],[-1,-2]],piece);
+ 
+ if(piece.toLowerCase()=="k"){
+   addStepMoves(r,c,moves,[[-1,0],[1,0],[0,-1],[0,1],[-1,-1],[-1,1],[1,-1],[1,1]],piece);
+   
+   if(piece=="K" && r==7 && c==4){
+     if(castling.whiteK && !board[7][5] && !board[7][6])
+       moves.push({r:7,c:6});
+     if(castling.whiteQ && !board[7][1] && !board[7][2] && !board[7][3])
+       moves.push({r:7,c:2});
+   }
+   if(piece=="k" && r==0 && c==4){
+     if(castling.blackK && !board[0][5] && !board[0][6])
+       moves.push({r:0,c:6});
+     if(castling.blackQ && !board[0][1] && !board[0][2] && !board[0][3])
+       moves.push({r:0,c:2});
+   }
+ }
+ 
+ return moves;
+}
+
+function addLineMoves(r,c,moves,dirs,piece){
+ for(var i=0;i<dirs.length;i++){
+   var d=dirs[i], nr=r+d[0], nc=c+d[1];
+   while(nr>=0&&nr<8&&nc>=0&&nc<8){
+     if(!board[nr][nc]){
+       moves.push({r:nr,c:nc});
+     } else {
+       if((isWhite(piece)&&isBlack(board[nr][nc])) || (isBlack(piece)&&isWhite(board[nr][nc]))){
+         moves.push({r:nr,c:nc});
+       }
+       break;
+     }
+     nr+=d[0]; nc+=d[1];
+   }
+ }
+}
+
+function addStepMoves(r,c,moves,steps,piece){
+ for(var i=0;i<steps.length;i++){
+   var s=steps[i], nr=r+s[0], nc=c+s[1];
+   if(nr>=0&&nr<8&&nc>=0&&nc<8){
+     if(!board[nr][nc] || 
+        (isWhite(piece)&&isBlack(board[nr][nc])) || 
+        (isBlack(piece)&&isWhite(board[nr][nc]))){
+       moves.push({r:nr,c:nc});
+     }
+   }
+ }
+}
+
+var pieceValue={p:1,n:3,b:3,r:5,q:9,k:100};
+function aiMove(){
+ // Быстрый ИИ без задержки
+ var allMoves=[];
+ for(var r=0;r<8;r++){
+   for(var c=0;c<8;c++){
+     if(isBlack(board[r][c])){
+       var moves=calcMoves(r,c,false);
+       for(var i=0;i<moves.length;i++){
+         var m=moves[i];
+         var target=board[m.r][m.c]||"";
+         var val=isWhite(target)?pieceValue[target.toLowerCase()]||0:0;
+         // Упрощенная оценка для скорости
+         val+=Math.random()*0.3;
+         allMoves.push({sr:r,sc:c,dr:m.r,dc:m.c,score:val});
+       }
+     }
+   }
+ }
+ if(allMoves.length>0){
+   // Быстрая сортировка - берем один из лучших ходов
+   allMoves.sort(function(a,b){return b.score-a.score;});
+   // Берем случайный ход из топ-3 для разнообразия
+   var topMoves = allMoves.slice(0, Math.min(3, allMoves.length));
+   var best = topMoves[Math.floor(Math.random() * topMoves.length)];
+   movePiece(best.sr,best.sc,best.dr,best.dc);
+ }
+ whiteTurn=true;
+ document.getElementById("turn").innerText="Ход: белые";
+ renderBoard();
+>>>>>>> afe450daea540d2154677ecb552c9331dc7cb9b7
 }
 
 function updateTurnDisplay() {
