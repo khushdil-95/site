@@ -339,7 +339,7 @@
                             cell.classList.add('valid-move');
                         }
                         
-                        // Особый индикатор для ходов дамки
+                        // Особый индикатор для ходов дамки (только если шашка действительно дамка)
                         if (selectedPiece && board[selectedPiece.row][selectedPiece.col]?.king) {
                             cell.classList.add('king-move');
                         }
@@ -446,7 +446,7 @@
                     board: JSON.parse(JSON.stringify(board)),
                     currentPlayer: currentPlayer,
                     mustCapture: mustCapture,
-                    selectedPiece: {...selectedPiece},
+                    selectedPiece: selectedPiece ? {...selectedPiece} : null,
                     validMoves: [...validMoves]
                 });
                 if (moveHistory.length > 10) moveHistory.shift();
@@ -455,8 +455,8 @@
                 makeMove(selectedPiece.row, selectedPiece.col, move);
                 
                 // Проверяем, есть ли продолжение взятия (множественное взятие)
-                const piece = board[row][col];
-                const furtherCaptures = piece.king ? 
+                const pieceAfterMove = board[row][col];
+                const furtherCaptures = pieceAfterMove.king ? 
                     getKingCaptureMoves(row, col, PLAYER, []) : 
                     getSimpleCaptureMoves(row, col, PLAYER, []);
                 
@@ -514,8 +514,8 @@
             return moves;
         }
         
-        // Взятия для обычной шашки
-        function getSimpleCaptureMoves(row, col, player, path) {
+        // Взятия для обычной шашки - ИСПРАВЛЕННАЯ ВЕРСИЯ
+        function getSimpleCaptureMoves(row, col, player, capturedPieces) {
             const moves = [];
             const directions = [
                 {row: -1, col: -1}, {row: -1, col: 1}, 
@@ -533,8 +533,8 @@
                     isValidPosition(landRow, landCol) &&
                     board[jumpRow][jumpCol] !== EMPTY &&
                     board[jumpRow][jumpCol].player !== player &&
-                    board[landRow][landCol] === EMPTY &&
-                    !path.some(p => p.row === landRow && p.col === landCol)) {
+                    !capturedPieces.some(p => p.row === jumpRow && p.col === jumpCol) && // Уже не били эту шашку
+                    board[landRow][landCol] === EMPTY) {
                     
                     // Для обычных шашек проверяем направление (только вперед)
                     const piece = board[row][col];
@@ -543,7 +543,8 @@
                         if (piece.player === AI && dir.row < 0) continue; // AI может бить только вперед (вниз)
                     }
                     
-                    const newPath = [...path, {row: landRow, col: landCol}];
+                    // Добавляем текущее взятие
+                    const newCapturedPieces = [...capturedPieces, {row: jumpRow, col: jumpCol}];
                     moves.push({
                         fromRow: row, 
                         fromCol: col, 
@@ -551,17 +552,17 @@
                         toCol: landCol, 
                         capture: true,
                         captureRow: jumpRow,
-                        captureCol: jumpCol
+                        captureCol: jumpCol,
+                        capturedPieces: newCapturedPieces
                     });
                     
-                    // Рекурсивно ищем дальнейшие взятия
-                    const furtherMoves = getSimpleCaptureMoves(landRow, landCol, player, newPath);
+                    // Рекурсивно ищем дальнейшие взятия с учетом уже побитых шашек
+                    const furtherMoves = getSimpleCaptureMoves(landRow, landCol, player, newCapturedPieces);
                     moves.push(...furtherMoves.map(m => ({
                         ...m,
                         fromRow: row,
                         fromCol: col,
-                        captureRow: jumpRow,
-                        captureCol: jumpCol
+                        capturedPieces: newCapturedPieces
                     })));
                 }
             }
@@ -615,8 +616,8 @@
             return moves;
         }
         
-        // Взятия для дамки
-        function getKingCaptureMoves(row, col, player, path) {
+        // Взятия для дамки - ИСПРАВЛЕННАЯ ВЕРСИЯ
+        function getKingCaptureMoves(row, col, player, capturedPieces) {
             const moves = [];
             const directions = [
                 {row: -1, col: -1}, {row: -1, col: 1}, 
@@ -624,58 +625,64 @@
             ];
             
             for (const dir of directions) {
-                let foundOpponent = false;
-                let captureRow, captureCol;
-                
+                // Для каждого направления проверяем все возможные взятия
                 for (let distance = 1; distance < 8; distance++) {
                     const checkRow = row + dir.row * distance;
                     const checkCol = col + dir.col * distance;
                     
                     if (!isValidPosition(checkRow, checkCol)) break;
                     
-                    if (!foundOpponent) {
-                        // Ищем шашку противника
-                        if (board[checkRow][checkCol] !== EMPTY) {
-                            if (board[checkRow][checkCol].player !== player) {
-                                // Нашли шашку противника
-                                foundOpponent = true;
-                                captureRow = checkRow;
-                                captureCol = checkCol;
-                            } else {
-                                // Своя шашка - дальше идти нельзя
-                                break;
-                            }
-                        }
-                    } else {
-                        // После найденной шашки противника ищем свободное поле для посадки
-                        if (board[checkRow][checkCol] === EMPTY) {
-                            if (!path.some(p => p.row === checkRow && p.col === checkCol)) {
-                                const newPath = [...path, {row: checkRow, col: checkCol}];
+                    // Если нашли шашку противника, которую еще не били
+                    if (board[checkRow][checkCol] !== EMPTY && 
+                        board[checkRow][checkCol].player !== player &&
+                        !capturedPieces.some(p => p.row === checkRow && p.col === checkCol)) {
+                        
+                        // Проверяем поле за шашкой противника
+                        const landDistance = distance + 1;
+                        let foundLanding = false;
+                        
+                        for (let d = landDistance; d < 8; d++) {
+                            const landRow = row + dir.row * d;
+                            const landCol = col + dir.col * d;
+                            
+                            if (!isValidPosition(landRow, landCol)) break;
+                            
+                            if (board[landRow][landCol] === EMPTY) {
+                                // Нашли свободное поле для посадки
+                                const newCapturedPieces = [...capturedPieces, {row: checkRow, col: checkCol}];
                                 moves.push({
                                     fromRow: row, 
                                     fromCol: col, 
-                                    toRow: checkRow, 
-                                    toCol: checkCol, 
+                                    toRow: landRow, 
+                                    toCol: landCol, 
                                     capture: true,
-                                    captureRow: captureRow,
-                                    captureCol: captureCol,
-                                    distance: distance
+                                    captureRow: checkRow,
+                                    captureCol: checkCol,
+                                    distance: d,
+                                    capturedPieces: newCapturedPieces
                                 });
                                 
-                                // Рекурсивно ищем дальнейшие взятия
-                                const furtherMoves = getKingCaptureMoves(checkRow, checkCol, player, newPath);
+                                // Рекурсивно ищем дальнейшие взятия с учетом уже побитых шашек
+                                const furtherMoves = getKingCaptureMoves(landRow, landCol, player, newCapturedPieces);
                                 moves.push(...furtherMoves.map(m => ({
                                     ...m,
                                     fromRow: row,
                                     fromCol: col,
-                                    captureRow: captureRow,
-                                    captureCol: captureCol
+                                    capturedPieces: newCapturedPieces
                                 })));
+                                
+                                foundLanding = true;
+                            } else {
+                                // На пути есть другая фигура - дальше идти нельзя
+                                break;
                             }
-                        } else {
-                            // На пути есть другая фигура - дальше идти нельзя
-                            break;
                         }
+                        
+                        // Прерываем поиск в этом направлении после нахождения первой шашки противника
+                        break;
+                    } else if (board[checkRow][checkCol] !== EMPTY) {
+                        // Своя шашка или уже побитая шашка противника - дальше идти нельзя
+                        break;
                     }
                 }
             }
@@ -688,7 +695,7 @@
             return row >= 0 && row < 8 && col >= 0 && col < 8;
         }
         
-        // Выполнение хода
+        // Выполнение хода - ИСПРАВЛЕННАЯ ВЕРСИЯ
         function makeMove(fromRow, fromCol, move) {
             const piece = board[fromRow][fromCol];
             
@@ -696,8 +703,13 @@
             board[move.toRow][move.toCol] = piece;
             board[fromRow][fromCol] = EMPTY;
             
-            // Если был захват, убираем шашку противника
-            if (move.capture) {
+            // Если был захват, убираем все побитые шашки
+            if (move.capture && move.capturedPieces) {
+                for (const captured of move.capturedPieces) {
+                    board[captured.row][captured.col] = EMPTY;
+                }
+            } else if (move.capture) {
+                // Для обратной совместимости - убираем одну шашку
                 board[move.captureRow][move.captureCol] = EMPTY;
             }
             
@@ -757,10 +769,10 @@
             makeMove(bestMove.fromRow, bestMove.fromCol, bestMove);
             
             // Проверяем, есть ли продолжение взятия
-            const piece = board[bestMove.toRow][bestMove.toCol];
-            const furtherCaptures = piece.king ? 
-                getKingCaptureMoves(bestMove.toRow, bestMove.toCol, AI, []) : 
-                getSimpleCaptureMoves(bestMove.toRow, bestMove.toCol, AI, []);
+            const pieceAfterMove = board[bestMove.toRow][bestMove.toCol];
+            const furtherCaptures = pieceAfterMove.king ? 
+                getKingCaptureMoves(bestMove.toRow, bestMove.toCol, AI, bestMove.capturedPieces || []) : 
+                getSimpleCaptureMoves(bestMove.toRow, bestMove.toCol, AI, bestMove.capturedPieces || []);
             
             if (bestMove.capture && furtherCaptures.length > 0) {
                 // Продолжаем взятие
@@ -787,8 +799,11 @@
                 }, {move: captureMoves[0], score: -Infinity}).move;
             }
             
-            // Для обычных ходов выбираем случайный
-            return moves[Math.floor(Math.random() * moves.length)];
+            // Для обычных ходов выбираем случайный, но с приоритетом продвижения вперед
+            return moves.reduce((best, move) => {
+                const score = evaluateMove(move);
+                return score > best.score ? {move, score} : best;
+            }, {move: moves[0], score: -Infinity}).move;
         }
         
         // Оценка хода
@@ -796,21 +811,34 @@
             let score = 0;
             
             if (move.capture) {
-                score += 10; // Базовые очки за взятие
+                score += 15; // Базовые очки за взятие
                 
                 // Дополнительные очки за превращение в дамку
                 const piece = board[move.fromRow][move.fromCol];
                 if (!piece.king) {
-                    if ((piece.player === AI && move.toRow === 0) || 
-                        (piece.player === PLAYER && move.toRow === 7)) {
-                        score += 5;
+                    if (piece.player === AI && move.toRow === 0) {
+                        score += 10; // AI превращается в дамку
+                    } else if (piece.player === PLAYER && move.toRow === 7) {
+                        score += 10; // Игрок превращается в дамку (для оценки ходов противника)
                     }
+                }
+                
+                // Дополнительные очки за взятие дамки
+                if (board[move.captureRow] && board[move.captureRow][move.captureCol]?.king) {
+                    score += 5;
+                }
+            } else {
+                // Очки за продвижение вперед
+                const piece = board[move.fromRow][move.fromCol];
+                if (piece.player === AI) {
+                    score += move.toRow; // AI стремится вниз
+                } else {
+                    score += (7 - move.toRow); // Игрок стремится вверх
                 }
             }
             
             // Очки за центральные позиции
-            score += (3.5 - Math.abs(3.5 - move.toCol)) * 0.1;
-            score += (3.5 - Math.abs(3.5 - move.toRow)) * 0.1;
+            score += (3.5 - Math.abs(3.5 - move.toCol)) * 0.5;
             
             return score;
         }
