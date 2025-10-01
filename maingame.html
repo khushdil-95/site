@@ -200,6 +200,11 @@
             max-width: 500px;
         }
         
+        .game-over {
+            color: #d00;
+            font-size: 5vw;
+        }
+        
         /* Медиа-запросы для больших экранов */
         @media (min-width: 768px) {
             h1 {
@@ -228,6 +233,10 @@
             
             .rules-info {
                 font-size: 14px;
+            }
+            
+            .game-over {
+                font-size: 24px;
             }
         }
     </style>
@@ -266,6 +275,8 @@
         let validMoves = [];
         let moveHistory = [];
         let mustCapture = false;
+        let gameOver = false;
+        let movesWithoutCapture = 0;
         
         // Элементы DOM
         const boardElement = document.getElementById('board');
@@ -297,6 +308,8 @@
             validMoves = [];
             moveHistory = [];
             mustCapture = false;
+            gameOver = false;
+            movesWithoutCapture = 0;
             
             renderBoard();
             updateStatus();
@@ -352,6 +365,8 @@
         
         // Обновление статуса игры
         function updateStatus() {
+            if (gameOver) return;
+            
             if (currentPlayer === PLAYER) {
                 statusElement.textContent = mustCapture ? 
                     'Вы должны побить шашку противника!' : 'Ваш ход';
@@ -401,8 +416,8 @@
         
         // Обработка клика по ячейке
         function handleCellClick(row, col) {
-            // Если ход компьютера, игнорируем клик
-            if (currentPlayer === AI) return;
+            // Если игра окончена или ход компьютера, игнорируем клик
+            if (gameOver || currentPlayer === AI) return;
             
             const piece = board[row][col];
             const forcedCaptures = checkForcedCaptures(PLAYER);
@@ -447,18 +462,32 @@
                     currentPlayer: currentPlayer,
                     mustCapture: mustCapture,
                     selectedPiece: selectedPiece ? {...selectedPiece} : null,
-                    validMoves: [...validMoves]
+                    validMoves: [...validMoves],
+                    movesWithoutCapture: movesWithoutCapture
                 });
                 if (moveHistory.length > 10) moveHistory.shift();
                 
                 // Выполняем ход
                 makeMove(selectedPiece.row, selectedPiece.col, move);
                 
+                // Обновляем счетчик ходов без взятия
+                if (move.capture) {
+                    movesWithoutCapture = 0;
+                } else {
+                    movesWithoutCapture++;
+                }
+                
+                // Проверяем условие ничьи (50 ходов без взятия)
+                if (movesWithoutCapture >= 50) {
+                    endGame("Ничья! 50 ходов без взятия.");
+                    return;
+                }
+                
                 // Проверяем, есть ли продолжение взятия (множественное взятие)
                 const pieceAfterMove = board[row][col];
                 const furtherCaptures = pieceAfterMove.king ? 
-                    getKingCaptureMoves(row, col, PLAYER, []) : 
-                    getSimpleCaptureMoves(row, col, PLAYER, []);
+                    getKingCaptureMoves(row, col, PLAYER, move.capturedPieces || []) : 
+                    getSimpleCaptureMoves(row, col, PLAYER, move.capturedPieces || []);
                 
                 if (move.capture && furtherCaptures.length > 0) {
                     // Продолжаем взятие той же шашкой
@@ -472,16 +501,16 @@
                     validMoves = [];
                     mustCapture = false;
                     currentPlayer = AI;
+                    
+                    // Проверяем окончание игры
+                    if (!checkGameEnd()) {
+                        updateStatus();
+                        // Даем компьютеру подумать
+                        setTimeout(makeAIMove, 800);
+                    }
                 }
                 
                 renderBoard();
-                
-                // Если ход перешел к компьютеру
-                if (currentPlayer === AI) {
-                    updateStatus();
-                    // Даем компьютеру подумать
-                    setTimeout(makeAIMove, 800);
-                }
             }
         }
         
@@ -536,11 +565,13 @@
                     !capturedPieces.some(p => p.row === jumpRow && p.col === jumpCol) && // Уже не били эту шашку
                     board[landRow][landCol] === EMPTY) {
                     
-                    // Для обычных шашек проверяем направление (только вперед)
+                    // ИСПРАВЛЕНИЕ: Правильная проверка направления для обычных шашек
                     const piece = board[row][col];
                     if (!piece.king) {
-                        if (piece.player === PLAYER && dir.row > 0) continue; // Игрок может бить только вперед (вверх)
-                        if (piece.player === AI && dir.row < 0) continue; // AI может бить только вперед (вниз)
+                        // Игрок (сверху) ходит ВВЕРХ (отрицательные row)
+                        if (piece.player === PLAYER && dir.row > 0) continue;
+                        // AI (снизу) ходит ВНИЗ (положительные row)
+                        if (piece.player === AI && dir.row < 0) continue;
                     }
                     
                     // Добавляем текущее взятие
@@ -700,33 +731,33 @@
             const piece = board[fromRow][fromCol];
             
             // Перемещаем шашку
-            board[move.toRow][move.toCol] = piece;
+            board[move.toRow][move.toCol] = {...piece};
             board[fromRow][fromCol] = EMPTY;
             
             // Если был захват, убираем все побитые шашки
-            if (move.capture && move.capturedPieces) {
-                for (const captured of move.capturedPieces) {
-                    board[captured.row][captured.col] = EMPTY;
+            if (move.capture) {
+                if (move.capturedPieces) {
+                    for (const captured of move.capturedPieces) {
+                        board[captured.row][captured.col] = EMPTY;
+                    }
+                } else if (move.captureRow !== undefined && move.captureCol !== undefined) {
+                    board[move.captureRow][move.captureCol] = EMPTY;
                 }
-            } else if (move.capture) {
-                // Для обратной совместимости - убираем одну шашку
-                board[move.captureRow][move.captureCol] = EMPTY;
             }
             
             // Проверяем, стала ли шашка дамкой (только для обычных шашек)
             if (!piece.king) {
                 if ((piece.player === PLAYER && move.toRow === 0) || 
                     (piece.player === AI && move.toRow === 7)) {
-                    piece.king = true;
+                    board[move.toRow][move.toCol].king = true;
                 }
             }
-            
-            // Проверяем условие победы
-            checkGameEnd();
         }
         
         // Ход ИИ
         function makeAIMove() {
+            if (gameOver) return;
+            
             // Проверяем обязательные взятия для ИИ
             const forcedCaptures = checkForcedCaptures(AI);
             mustCapture = forcedCaptures.length > 0;
@@ -750,7 +781,7 @@
             }
             
             if (allMoves.length === 0) {
-                statusElement.textContent = 'Вы победили!';
+                endGame("Вы победили!");
                 return;
             }
             
@@ -758,15 +789,33 @@
             moveHistory.push({
                 board: JSON.parse(JSON.stringify(board)),
                 currentPlayer: currentPlayer,
-                mustCapture: mustCapture
+                mustCapture: mustCapture,
+                movesWithoutCapture: movesWithoutCapture
             });
             if (moveHistory.length > 10) moveHistory.shift();
             
             // Выбираем лучший ход
             const bestMove = findBestMove(allMoves);
+            if (!bestMove) {
+                endGame("Вы победили!");
+                return;
+            }
             
             // Выполняем ход
             makeMove(bestMove.fromRow, bestMove.fromCol, bestMove);
+            
+            // Обновляем счетчик ходов без взятия
+            if (bestMove.capture) {
+                movesWithoutCapture = 0;
+            } else {
+                movesWithoutCapture++;
+            }
+            
+            // Проверяем условие ничьи (50 ходов без взятия)
+            if (movesWithoutCapture >= 50) {
+                endGame("Ничья! 50 ходов без взятия.");
+                return;
+            }
             
             // Проверяем, есть ли продолжение взятия
             const pieceAfterMove = board[bestMove.toRow][bestMove.toCol];
@@ -782,13 +831,19 @@
                 // Передаем ход игроку
                 currentPlayer = PLAYER;
                 mustCapture = false;
-                updateStatus();
-                renderBoard();
+                
+                // Проверяем окончание игры
+                if (!checkGameEnd()) {
+                    updateStatus();
+                    renderBoard();
+                }
             }
         }
         
         // Упрощенный выбор лучшего хода для ИИ
         function findBestMove(moves) {
+            if (moves.length === 0) return null;
+            
             // Предпочитаем взятия
             const captureMoves = moves.filter(move => move.capture);
             if (captureMoves.length > 0) {
@@ -851,12 +906,22 @@
             const aiMoves = getAllMoves(AI).length > 0;
             
             if (playerPieces === 0 || !playerMoves) {
-                statusElement.textContent = 'Компьютер победил!';
-                currentPlayer = EMPTY;
+                endGame('Компьютер победил!');
+                return true;
             } else if (aiPieces === 0 || !aiMoves) {
-                statusElement.textContent = 'Вы победили!';
-                currentPlayer = EMPTY;
+                endGame('Вы победили!');
+                return true;
             }
+            
+            return false;
+        }
+        
+        // Завершение игры
+        function endGame(message) {
+            gameOver = true;
+            statusElement.textContent = message;
+            statusElement.className = 'status game-over';
+            rulesInfoElement.textContent = 'Нажмите "Новая игра" для начала новой партии';
         }
         
         // Получение всех ходов для игрока
@@ -894,13 +959,15 @@
         restartButton.addEventListener('click', initGame);
         
         undoButton.addEventListener('click', () => {
-            if (moveHistory.length > 0 && currentPlayer === PLAYER) {
+            if (moveHistory.length > 0 && currentPlayer === PLAYER && !gameOver) {
                 const previousState = moveHistory.pop();
                 board = previousState.board;
                 currentPlayer = previousState.currentPlayer;
                 mustCapture = previousState.mustCapture;
                 selectedPiece = previousState.selectedPiece || null;
                 validMoves = previousState.validMoves || [];
+                movesWithoutCapture = previousState.movesWithoutCapture || 0;
+                gameOver = false;
                 updateStatus();
                 renderBoard();
             }
