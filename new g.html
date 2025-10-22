@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Шестизначный счетчик</title>
+    <title>Автоматический счетчик</title>
     <style>
         body {
             font-family: Arial, sans-serif;
@@ -12,168 +12,259 @@
             align-items: center;
             min-height: 100vh;
             margin: 0;
-            background-color: #f0f0f0;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
         }
 
         .counter-container {
             text-align: center;
             background: white;
-            padding: 30px;
-            border-radius: 15px;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+            padding: 40px;
+            border-radius: 20px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+            max-width: 500px;
+            width: 90%;
+        }
+
+        h1 {
+            color: #333;
+            margin-bottom: 30px;
+            font-size: 2rem;
         }
 
         .counter-display {
-            font-size: 4rem;
+            font-size: 5rem;
             font-weight: bold;
             font-family: 'Courier New', monospace;
-            color: #333;
-            background: #f8f8f8;
-            padding: 20px;
-            border-radius: 10px;
+            color: #2c3e50;
+            background: linear-gradient(145deg, #f8f9fa, #e9ecef);
+            padding: 30px;
+            border-radius: 15px;
+            margin: 30px 0;
+            border: 3px solid #dee2e6;
+            letter-spacing: 8px;
+            box-shadow: inset 0 4px 8px rgba(0,0,0,0.1);
+        }
+
+        .status {
+            font-size: 1.2rem;
             margin: 20px 0;
-            border: 2px solid #ddd;
-            letter-spacing: 5px;
+            padding: 10px;
+            border-radius: 8px;
+            font-weight: bold;
+        }
+
+        .counting {
+            background-color: #d4edda;
+            color: #155724;
+            border: 2px solid #c3e6cb;
+        }
+
+        .stopped {
+            background-color: #f8d7da;
+            color: #721c24;
+            border: 2px solid #f5c6cb;
         }
 
         .controls {
             display: flex;
-            gap: 10px;
+            gap: 15px;
             justify-content: center;
-            flex-wrap: wrap;
+            margin-top: 30px;
         }
 
         button {
-            padding: 12px 24px;
-            font-size: 1rem;
+            padding: 15px 30px;
+            font-size: 1.1rem;
             border: none;
-            border-radius: 8px;
+            border-radius: 10px;
             cursor: pointer;
             transition: all 0.3s ease;
+            font-weight: bold;
+            min-width: 120px;
         }
 
-        .increment {
-            background-color: #4CAF50;
+        .start {
+            background: linear-gradient(145deg, #28a745, #20c997);
             color: white;
         }
 
-        .decrement {
-            background-color: #f44336;
+        .stop {
+            background: linear-gradient(145deg, #dc3545, #e83e8c);
             color: white;
         }
 
         .reset {
-            background-color: #ff9800;
-            color: white;
-        }
-
-        .set-value {
-            background-color: #2196F3;
+            background: linear-gradient(145deg, #6c757d, #495057);
             color: white;
         }
 
         button:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+            transform: translateY(-3px);
+            box-shadow: 0 6px 15px rgba(0,0,0,0.2);
         }
 
         button:active {
-            transform: translateY(0);
+            transform: translateY(-1px);
         }
 
-        .input-group {
-            margin: 15px 0;
+        button:disabled {
+            background: #6c757d;
+            cursor: not-allowed;
+            transform: none;
+            box-shadow: none;
         }
 
-        input[type="number"] {
-            padding: 10px;
-            font-size: 1rem;
-            border: 2px solid #ddd;
-            border-radius: 5px;
-            width: 150px;
-            text-align: center;
+        .stats {
+            margin-top: 20px;
+            padding: 15px;
+            background: #f8f9fa;
+            border-radius: 10px;
+            border: 2px solid #dee2e6;
+        }
+
+        .stats p {
+            margin: 5px 0;
+            color: #495057;
+            font-size: 0.9rem;
         }
     </style>
 </head>
 <body>
     <div class="counter-container">
-        <h1>Шестизначный счетчик</h1>
+        <h1>Автоматический счетчик</h1>
         
         <div class="counter-display" id="counter">000000</div>
         
-        <div class="controls">
-            <button class="increment" onclick="incrementCounter()">+1</button>
-            <button class="decrement" onclick="decrementCounter()">-1</button>
-            <button class="reset" onclick="resetCounter()">Сброс</button>
-        </div>
+        <div class="status" id="status">Нажмите "Старт" для начала счета</div>
         
-        <div class="input-group">
-            <input type="number" id="customValue" min="0" max="999999" placeholder="Введите число">
-            <button class="set-value" onclick="setCustomValue()">Установить</button>
+        <div class="controls">
+            <button class="start" onclick="startCounter()" id="startBtn">Старт</button>
+            <button class="stop" onclick="stopCounter()" id="stopBtn" disabled>Стоп</button>
+            <button class="reset" onclick="resetCounter()" id="resetBtn">Сброс</button>
+        </div>
+
+        <div class="stats">
+            <p>Скорость: <span id="speed">1</span> число/сек</p>
+            <p>Считает автоматически до нажатия "Стоп"</p>
         </div>
     </div>
 
     <script>
         let counter = 0;
+        let isCounting = false;
+        let counterInterval;
+        let speed = 1000; // 1 число в секунду
 
         // Функция для обновления отображения счетчика
         function updateDisplay() {
             const display = document.getElementById('counter');
-            // Форматируем число как шестизначную строку с ведущими нулями
             display.textContent = counter.toString().padStart(6, '0');
         }
 
-        // Функция увеличения счетчика
-        function incrementCounter() {
-            if (counter < 999999) {
-                counter++;
-                updateDisplay();
-            } else {
-                alert('Достигнут максимальный предел (999999)');
-            }
+        // Функция старта счетчика
+        function startCounter() {
+            if (isCounting) return;
+            
+            isCounting = true;
+            const status = document.getElementById('status');
+            const startBtn = document.getElementById('startBtn');
+            const stopBtn = document.getElementById('stopBtn');
+            const resetBtn = document.getElementById('resetBtn');
+            
+            status.textContent = 'Счетчик работает...';
+            status.className = 'status counting';
+            
+            startBtn.disabled = true;
+            stopBtn.disabled = false;
+            resetBtn.disabled = true;
+
+            // Запускаем интервал
+            counterInterval = setInterval(() => {
+                if (counter < 999999) {
+                    counter++;
+                    updateDisplay();
+                } else {
+                    stopCounter();
+                    status.textContent = 'Достигнут максимальный предел!';
+                    status.className = 'status stopped';
+                }
+            }, speed);
         }
 
-        // Функция уменьшения счетчика
-        function decrementCounter() {
-            if (counter > 0) {
-                counter--;
-                updateDisplay();
-            } else {
-                alert('Счетчик не может быть меньше 0');
-            }
+        // Функция остановки счетчика
+        function stopCounter() {
+            if (!isCounting) return;
+            
+            isCounting = false;
+            const status = document.getElementById('status');
+            const startBtn = document.getElementById('startBtn');
+            const stopBtn = document.getElementById('stopBtn');
+            const resetBtn = document.getElementById('resetBtn');
+            
+            status.textContent = `Счетчик остановлен на числе: ${counter.toString().padStart(6, '0')}`;
+            status.className = 'status stopped';
+            
+            startBtn.disabled = false;
+            stopBtn.disabled = true;
+            resetBtn.disabled = false;
+
+            clearInterval(counterInterval);
         }
 
         // Функция сброса счетчика
         function resetCounter() {
+            stopCounter();
             counter = 0;
             updateDisplay();
+            
+            const status = document.getElementById('status');
+            status.textContent = 'Счетчик сброшен. Нажмите "Старт" для начала счета';
+            status.className = 'status';
         }
 
-        // Функция установки произвольного значения
-        function setCustomValue() {
-            const input = document.getElementById('customValue');
-            const value = parseInt(input.value);
+        // Функция изменения скорости
+        function changeSpeed(newSpeed) {
+            speed = newSpeed;
+            document.getElementById('speed').textContent = (1000 / speed).toFixed(1);
             
-            if (!isNaN(value) && value >= 0 && value <= 999999) {
-                counter = value;
-                updateDisplay();
-                input.value = '';
-            } else {
-                alert('Пожалуйста, введите число от 0 до 999999');
+            // Если счетчик работает, перезапускаем с новой скоростью
+            if (isCounting) {
+                stopCounter();
+                startCounter();
             }
         }
 
         // Инициализация при загрузке страницы
-        document.addEventListener('DOMContentLoaded', updateDisplay);
+        document.addEventListener('DOMContentLoaded', function() {
+            updateDisplay();
+            
+            // Добавляем управление скоростью
+            const stats = document.querySelector('.stats');
+            const speedControl = document.createElement('div');
+            speedControl.innerHTML = `
+                <p>Скорость: 
+                    <button onclick="changeSpeed(2000)">0.5/сек</button>
+                    <button onclick="changeSpeed(1000)">1/сек</button>
+                    <button onclick="changeSpeed(500)">2/сек</button>
+                    <button onclick="changeSpeed(200)">5/сек</button>
+                </p>
+            `;
+            stats.appendChild(speedControl);
+        });
 
         // Обработка нажатия клавиш
         document.addEventListener('keydown', function(event) {
-            if (event.key === 'ArrowUp') {
-                incrementCounter();
-            } else if (event.key === 'ArrowDown') {
-                decrementCounter();
+            if (event.code === 'Space') {
+                event.preventDefault();
+                if (isCounting) {
+                    stopCounter();
+                } else {
+                    startCounter();
+                }
             } else if (event.key === 'r' || event.key === 'R') {
-                resetCounter();
+                if (!isCounting) {
+                    resetCounter();
+                }
             }
         });
     </script>
