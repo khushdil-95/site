@@ -3,849 +3,179 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Шашки с ИИ</title>
+    <title>Шестизначный счетчик</title>
     <style>
-        /* Стили остаются такими же, как в предыдущем коде */
         body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background: linear-gradient(135deg, #1a2a6c, #b21f1f, #fdbb2d);
-            margin: 0;
-            padding: 20px;
+            font-family: Arial, sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
             min-height: 100vh;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            color: #fff;
+            margin: 0;
+            background-color: #f0f0f0;
         }
-        
-        h1 {
+
+        .counter-container {
             text-align: center;
-            margin-bottom: 10px;
-            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
-            font-size: 2.5em;
+            background: white;
+            padding: 30px;
+            border-radius: 15px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
         }
-        
-        .subtitle {
-            text-align: center;
-            margin-bottom: 20px;
-            font-size: 1.2em;
-            opacity: 0.9;
-        }
-        
-        .game-container {
-            display: flex;
-            flex-wrap: wrap;
-            justify-content: center;
-            gap: 30px;
-            max-width: 1200px;
-            width: 100%;
-        }
-        
-        .board-container {
-            background: rgba(0, 0, 0, 0.7);
-            border-radius: 10px;
+
+        .counter-display {
+            font-size: 4rem;
+            font-weight: bold;
+            font-family: 'Courier New', monospace;
+            color: #333;
+            background: #f8f8f8;
             padding: 20px;
-            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
-        }
-        
-        .board {
-            display: grid;
-            grid-template-columns: repeat(8, 1fr);
-            grid-template-rows: repeat(8, 1fr);
-            width: 500px;
-            height: 500px;
-            border: 4px solid #8B4513;
-            box-shadow: 0 0 20px rgba(0, 0, 0, 0.7);
-        }
-        
-        .cell {
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            position: relative;
-        }
-        
-        .dark {
-            background-color: #8B4513;
-        }
-        
-        .light {
-            background-color: #F5DEB3;
-        }
-        
-        .piece {
-            width: 85%;
-            height: 85%;
-            border-radius: 50%;
-            position: relative;
-            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.5);
-            transition: transform 0.3s, box-shadow 0.3s;
-            cursor: pointer;
-        }
-        
-        .piece:hover {
-            transform: scale(1.05);
-            box-shadow: 0 6px 12px rgba(0, 0, 0, 0.7);
-        }
-        
-        .player {
-            background: radial-gradient(circle at 30% 30%, #ff3333, #990000);
-            border: 2px solid #ff6666;
-        }
-        
-        .ai {
-            background: radial-gradient(circle at 30% 30%, #3333ff, #000099);
-            border: 2px solid #6666ff;
-        }
-        
-        .king::after {
-            content: "♔";
-            position: absolute;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            font-size: 24px;
-            color: gold;
-            text-shadow: 1px 1px 2px black;
-        }
-        
-        .selected {
-            box-shadow: 0 0 0 3px gold, 0 0 15px gold;
-            transform: scale(1.1);
-        }
-        
-        .valid-move::before {
-            content: "";
-            position: absolute;
-            width: 30%;
-            height: 30%;
-            background-color: rgba(255, 215, 0, 0.7);
-            border-radius: 50%;
-            z-index: 1;
-        }
-        
-        .capture-move::before {
-            content: "";
-            position: absolute;
-            width: 40%;
-            height: 40%;
-            background-color: rgba(255, 0, 0, 0.7);
-            border-radius: 50%;
-            border: 2px solid gold;
-            z-index: 1;
-        }
-        
-        .info-panel {
-            background: rgba(0, 0, 0, 0.7);
             border-radius: 10px;
-            padding: 20px;
-            width: 300px;
-            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+            margin: 20px 0;
+            border: 2px solid #ddd;
+            letter-spacing: 5px;
         }
-        
-        .status {
-            font-size: 1.3em;
-            margin-bottom: 20px;
-            text-align: center;
-            padding: 10px;
-            border-radius: 5px;
-            background: rgba(255, 255, 255, 0.1);
-        }
-        
-        .blocked {
-            background: rgba(255, 0, 0, 0.3);
-            color: #ff9999;
-        }
-        
+
         .controls {
             display: flex;
-            flex-direction: column;
             gap: 10px;
-            margin-bottom: 20px;
+            justify-content: center;
+            flex-wrap: wrap;
         }
-        
+
         button {
-            padding: 12px;
+            padding: 12px 24px;
+            font-size: 1rem;
             border: none;
-            border-radius: 5px;
-            background: linear-gradient(to bottom, #4a4a4a, #2a2a2a);
-            color: white;
-            font-size: 1em;
+            border-radius: 8px;
             cursor: pointer;
-            transition: all 0.3s;
-            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.3);
+            transition: all 0.3s ease;
         }
-        
+
+        .increment {
+            background-color: #4CAF50;
+            color: white;
+        }
+
+        .decrement {
+            background-color: #f44336;
+            color: white;
+        }
+
+        .reset {
+            background-color: #ff9800;
+            color: white;
+        }
+
+        .set-value {
+            background-color: #2196F3;
+            color: white;
+        }
+
         button:hover {
-            background: linear-gradient(to bottom, #5a5a5a, #3a3a3a);
             transform: translateY(-2px);
-            box-shadow: 0 6px 8px rgba(0, 0, 0, 0.4);
+            box-shadow: 0 4px 8px rgba(0,0,0,0.2);
         }
-        
-        .stats {
-            margin-top: 20px;
-            font-size: 1.1em;
+
+        button:active {
+            transform: translateY(0);
         }
-        
-        .stats div {
-            margin-bottom: 10px;
-            padding: 8px;
-            background: rgba(255, 255, 255, 0.1);
-            border-radius: 5px;
+
+        .input-group {
+            margin: 15px 0;
         }
-        
-        .difficulty {
-            display: flex;
-            gap: 10px;
-            margin-bottom: 15px;
-        }
-        
-        .difficulty-btn {
-            flex: 1;
-            padding: 8px;
-        }
-        
-        .active-difficulty {
-            background: linear-gradient(to bottom, #6a6a6a, #4a4a4a);
-            box-shadow: 0 0 10px gold;
-        }
-        
-        .debug-info {
-            margin-top: 10px;
-            font-size: 0.9em;
-            color: #ccc;
-            background: rgba(0, 0, 0, 0.5);
+
+        input[type="number"] {
             padding: 10px;
+            font-size: 1rem;
+            border: 2px solid #ddd;
             border-radius: 5px;
-        }
-        
-        @media (max-width: 900px) {
-            .game-container {
-                flex-direction: column;
-                align-items: center;
-            }
-            
-            .board {
-                width: 90vw;
-                height: 90vw;
-                max-width: 400px;
-                max-height: 400px;
-            }
-            
-            .info-panel {
-                width: 90%;
-                max-width: 400px;
-            }
+            width: 150px;
+            text-align: center;
         }
     </style>
 </head>
 <body>
-    <h1>Шашки с ИИ</h1>
-    <div class="subtitle">Играйте против компьютера среднего уровня</div>
-    
-    <div class="game-container">
-        <div class="board-container">
-            <div class="board" id="board"></div>
+    <div class="counter-container">
+        <h1>Шестизначный счетчик</h1>
+        
+        <div class="counter-display" id="counter">000000</div>
+        
+        <div class="controls">
+            <button class="increment" onclick="incrementCounter()">+1</button>
+            <button class="decrement" onclick="decrementCounter()">-1</button>
+            <button class="reset" onclick="resetCounter()">Сброс</button>
         </div>
         
-        <div class="info-panel">
-            <div class="status" id="status">Ваш ход</div>
-            
-            <div class="difficulty">
-                <button class="difficulty-btn active-difficulty" data-level="medium">Средний</button>
-                <button class="difficulty-btn" data-level="hard">Сложный</button>
-            </div>
-            
-            <div class="controls">
-                <button id="newGame">Новая игра</button>
-                <button id="hint">Подсказка</button>
-                <button id="undo">Отменить ход</button>
-                <button id="debug">Показать ходы</button>
-            </div>
-            
-            <div class="stats">
-                <div>Ваши шашки: <span id="playerCount">12</span></div>
-                <div>Шашки ИИ: <span id="aiCount">12</span></div>
-                <div>Ход: <span id="moveCount">0</span></div>
-            </div>
-            
-            <div class="debug-info" id="debugInfo" style="display: none;">
-                Доступные ходы: <span id="availableMoves">0</span>
-            </div>
+        <div class="input-group">
+            <input type="number" id="customValue" min="0" max="999999" placeholder="Введите число">
+            <button class="set-value" onclick="setCustomValue()">Установить</button>
         </div>
     </div>
 
     <script>
-        // Игровое состояние
-        const gameState = {
-            board: [],
-            currentPlayer: 'player',
-            selectedPiece: null,
-            validMoves: [],
-            moveHistory: [],
-            playerPieces: 12,
-            aiPieces: 12,
-            moveCount: 0,
-            difficulty: 'medium',
-            mustCapture: false
-        };
+        let counter = 0;
 
-        // Инициализация игры
-        function initGame() {
-            createBoard();
-            setupPieces();
-            updateDisplay();
-            
-            document.getElementById('newGame').addEventListener('click', resetGame);
-            document.getElementById('hint').addEventListener('click', showHint);
-            document.getElementById('undo').addEventListener('click', undoMove);
-            document.getElementById('debug').addEventListener('click', toggleDebug);
-            
-            // Обработчики для кнопок сложности
-            document.querySelectorAll('.difficulty-btn').forEach(btn => {
-                btn.addEventListener('click', function() {
-                    document.querySelectorAll('.difficulty-btn').forEach(b => b.classList.remove('active-difficulty'));
-                    this.classList.add('active-difficulty');
-                    gameState.difficulty = this.getAttribute('data-level');
-                });
-            });
-        }
-
-        // Создание игровой доски
-        function createBoard() {
-            const board = document.getElementById('board');
-            board.innerHTML = '';
-            
-            for (let row = 0; row < 8; row++) {
-                gameState.board[row] = [];
-                
-                for (let col = 0; col < 8; col++) {
-                    const cell = document.createElement('div');
-                    cell.className = `cell ${(row + col) % 2 === 0 ? 'light' : 'dark'}`;
-                    cell.dataset.row = row;
-                    cell.dataset.col = col;
-                    
-                    // Размещаем шашки только на темных клетках в первых трех и последних трех рядах
-                    if ((row + col) % 2 === 1) {
-                        if (row < 3) {
-                            gameState.board[row][col] = {type: 'ai', king: false};
-                        } else if (row > 4) {
-                            gameState.board[row][col] = {type: 'player', king: false};
-                        } else {
-                            gameState.board[row][col] = null;
-                        }
-                    } else {
-                        gameState.board[row][col] = null;
-                    }
-                    
-                    cell.addEventListener('click', () => handleCellClick(row, col));
-                    board.appendChild(cell);
-                }
-            }
-        }
-
-        // Расстановка шашек на доске
-        function setupPieces() {
-            const cells = document.querySelectorAll('.cell');
-            
-            cells.forEach(cell => {
-                // Очищаем содержимое ячейки
-                cell.innerHTML = '';
-                cell.classList.remove('valid-move', 'capture-move');
-                
-                const row = parseInt(cell.dataset.row);
-                const col = parseInt(cell.dataset.col);
-                
-                const piece = gameState.board[row][col];
-                
-                if (piece) {
-                    const pieceElement = document.createElement('div');
-                    pieceElement.className = `piece ${piece.type} ${piece.king ? 'king' : ''}`;
-                    cell.appendChild(pieceElement);
-                }
-            });
-        }
-
-        // Обработка клика по ячейке
-        function handleCellClick(row, col) {
-            // Если ход ИИ, игнорируем клик
-            if (gameState.currentPlayer === 'ai') return;
-            
-            const piece = gameState.board[row][col];
-            
-            // Если выбрана своя шашка
-            if (piece && piece.type === 'player') {
-                // Проверяем, есть ли обязательные захваты
-                const allPlayerMoves = getAllValidMoves('player');
-                const captureMoves = allPlayerMoves.filter(move => move.capture);
-                
-                if (captureMoves.length > 0) {
-                    // Есть обязательные захваты - можно выбрать только шашки, которые могут бить
-                    const canThisPieceCapture = captureMoves.some(move => 
-                        move.fromRow === row && move.fromCol === col);
-                    
-                    if (canThisPieceCapture) {
-                        selectPiece(row, col);
-                    } else {
-                        document.getElementById('status').textContent = 'Вы должны побить шашку противника!';
-                        document.getElementById('status').classList.add('blocked');
-                        setTimeout(() => {
-                            document.getElementById('status').classList.remove('blocked');
-                            updateDisplay();
-                        }, 2000);
-                    }
-                } else {
-                    // Нет обязательных захватов - можно выбрать любую шашку
-                    selectPiece(row, col);
-                }
-            } 
-            // Если выбрана пустая ячейка и есть выбранная шашка
-            else if (!piece && gameState.selectedPiece) {
-                movePiece(row, col);
-            }
-        }
-
-        // Выбор шашки
-        function selectPiece(row, col) {
-            // Снимаем выделение с предыдущей шашки
-            clearSelection();
-            
-            // Выделяем новую шашку
-            gameState.selectedPiece = {row, col};
-            const cell = document.querySelector(`.cell[data-row="${row}"][data-col="${col}"]`);
-            if (cell.querySelector('.piece')) {
-                cell.querySelector('.piece').classList.add('selected');
-            }
-            
-            // Находим возможные ходы
-            gameState.validMoves = getValidMoves(row, col);
-            
-            // Показываем возможные ходы
-            gameState.validMoves.forEach(move => {
-                const moveCell = document.querySelector(`.cell[data-row="${move.row}"][data-col="${move.col}"]`);
-                if (move.capture) {
-                    moveCell.classList.add('capture-move');
-                } else {
-                    moveCell.classList.add('valid-move');
-                }
-            });
-            
-            // Обновляем отладочную информацию
-            updateDebugInfo();
-        }
-
-        // Очистка выделения
-        function clearSelection() {
-            if (gameState.selectedPiece) {
-                const {row, col} = gameState.selectedPiece;
-                const cell = document.querySelector(`.cell[data-row="${row}"][data-col="${col}"]`);
-                if (cell && cell.querySelector('.piece')) {
-                    cell.querySelector('.piece').classList.remove('selected');
-                }
-            }
-            
-            // Убираем подсветку возможных ходов
-            document.querySelectorAll('.valid-move, .capture-move').forEach(cell => {
-                cell.classList.remove('valid-move', 'capture-move');
-            });
-            
-            gameState.selectedPiece = null;
-            gameState.validMoves = [];
-        }
-
-        // Получение допустимых ходов для шашки (УЛУЧШЕННАЯ ВЕРСИЯ)
-        function getValidMoves(row, col) {
-            const piece = gameState.board[row][col];
-            if (!piece) return [];
-            
-            const moves = [];
-            const directions = getMoveDirections(piece);
-            
-            // Сначала проверяем обязательные захваты
-            const captureMoves = [];
-            
-            for (const dir of directions) {
-                const captureMove = checkCaptureInDirection(row, col, dir, piece);
-                if (captureMove) {
-                    captureMoves.push(captureMove);
-                    
-                    // Проверяем множественные захваты
-                    const furtherCaptures = checkFurtherCaptures(captureMove.row, captureMove.col, piece);
-                    if (furtherCaptures.length > 0) {
-                        captureMoves.push(...furtherCaptures);
-                    }
-                }
-            }
-            
-            // Если есть захваты, возвращаем только их
-            if (captureMoves.length > 0) {
-                return captureMoves;
-            }
-            
-            // Если захватов нет, проверяем обычные ходы
-            for (const dir of directions) {
-                const newRow = row + dir.r;
-                const newCol = col + dir.c;
-                
-                if (isValidPosition(newRow, newCol) && !gameState.board[newRow][newCol]) {
-                    moves.push({row: newRow, col: newCol, capture: false});
-                }
-            }
-            
-            return moves;
-        }
-
-        // Получение направлений движения для шашки
-        function getMoveDirections(piece) {
-            if (piece.king) {
-                return [{r: -1, c: -1}, {r: -1, c: 1}, {r: 1, c: -1}, {r: 1, c: 1}];
-            } else {
-                return piece.type === 'player' ? 
-                    [{r: -1, c: -1}, {r: -1, c: 1}] : 
-                    [{r: 1, c: -1}, {r: 1, c: 1}];
-            }
-        }
-
-        // Проверка захвата в заданном направлении
-        function checkCaptureInDirection(row, col, dir, piece) {
-            const midRow = row + dir.r;
-            const midCol = col + dir.c;
-            const newRow = row + 2 * dir.r;
-            const newCol = col + 2 * dir.c;
-            
-            if (!isValidPosition(newRow, newCol)) return null;
-            
-            const midPiece = gameState.board[midRow][midCol];
-            const newPosPiece = gameState.board[newRow][newCol];
-            
-            if (midPiece && midPiece.type !== piece.type && !newPosPiece) {
-                return {
-                    row: newRow, 
-                    col: newCol, 
-                    capture: true, 
-                    captured: {row: midRow, col: midCol}
-                };
-            }
-            
-            return null;
-        }
-
-        // Проверка дальнейших захватов после первого
-        function checkFurtherCaptures(row, col, piece) {
-            const moves = [];
-            const directions = getMoveDirections(piece);
-            
-            for (const dir of directions) {
-                const captureMove = checkCaptureInDirection(row, col, dir, piece);
-                if (captureMove) {
-                    moves.push(captureMove);
-                    
-                    // Рекурсивно проверяем еще дальше
-                    const evenFurther = checkFurtherCaptures(captureMove.row, captureMove.col, piece);
-                    moves.push(...evenFurther);
-                }
-            }
-            
-            return moves;
-        }
-
-        // Проверка допустимости позиции
-        function isValidPosition(row, col) {
-            return row >= 0 && row < 8 && col >= 0 && col < 8;
-        }
-
-        // Перемещение шашки
-        function movePiece(row, col) {
-            const move = gameState.validMoves.find(m => m.row === row && m.col === col);
-            if (!move) return;
-            
-            // Сохраняем состояние до хода для возможности отмены
-            gameState.moveHistory.push(JSON.parse(JSON.stringify({
-                board: gameState.board,
-                currentPlayer: gameState.currentPlayer,
-                playerPieces: gameState.playerPieces,
-                aiPieces: gameState.aiPieces
-            })));
-            
-            const {selectedPiece} = gameState;
-            const piece = gameState.board[selectedPiece.row][selectedPiece.col];
-            
-            // Перемещаем шашку
-            gameState.board[row][col] = piece;
-            gameState.board[selectedPiece.row][selectedPiece.col] = null;
-            
-            // Если был захват, убираем шашку противника
-            if (move.capture) {
-                gameState.board[move.captured.row][move.captured.col] = null;
-                
-                if (piece.type === 'player') {
-                    gameState.aiPieces--;
-                } else {
-                    gameState.playerPieces--;
-                }
-            }
-            
-            // Проверяем, стала ли шашка дамкой
-            if (!piece.king) {
-                if ((piece.type === 'player' && row === 0) || (piece.type === 'ai' && row === 7)) {
-                    piece.king = true;
-                }
-            }
-            
-            gameState.moveCount++;
-            clearSelection();
-            setupPieces();
-            
-            // Проверяем условие победы
-            if (checkWinCondition()) {
-                return;
-            }
-            
-            // Если был захват, проверяем возможность продолжения захвата
-            if (move.capture) {
-                const furtherCaptures = getValidMoves(row, col).filter(m => m.capture);
-                if (furtherCaptures.length > 0 && !piece.king) {
-                    // Игрок может продолжить захват (только для обычных шашек)
-                    selectPiece(row, col);
-                    document.getElementById('status').textContent = 'Продолжайте бить!';
-                    return;
-                }
-            }
-            
-            // Передаем ход другому игроку
-            gameState.currentPlayer = gameState.currentPlayer === 'player' ? 'ai' : 'player';
-            updateDisplay();
-            
-            // Если ход ИИ, запускаем его логику
-            if (gameState.currentPlayer === 'ai') {
-                setTimeout(makeAIMove, 800);
-            }
-        }
-
-        // Проверка условия победы
-        function checkWinCondition() {
-            if (gameState.playerPieces === 0) {
-                document.getElementById('status').textContent = 'ИИ победил!';
-                return true;
-            }
-            
-            if (gameState.aiPieces === 0) {
-                document.getElementById('status').textContent = 'Вы победили!';
-                return true;
-            }
-            
-            // Проверяем, есть ли у текущего игрока допустимые ходы
-            const currentPlayer = gameState.currentPlayer;
-            const hasValidMoves = hasAnyValidMoves(currentPlayer);
-            
-            if (!hasValidMoves) {
-                document.getElementById('status').textContent = 
-                    currentPlayer === 'player' ? 'ИИ победил! Нет ходов.' : 'Вы победили! У ИИ нет ходов.';
-                return true;
-            }
-            
-            return false;
-        }
-
-        // Проверка наличия допустимых ходов у игрока
-        function hasAnyValidMoves(player) {
-            for (let row = 0; row < 8; row++) {
-                for (let col = 0; col < 8; col++) {
-                    const piece = gameState.board[row][col];
-                    if (piece && piece.type === player) {
-                        const moves = getValidMoves(row, col);
-                        if (moves.length > 0) return true;
-                    }
-                }
-            }
-            return false;
-        }
-
-        // Получение всех допустимых ходов для игрока
-        function getAllValidMoves(player) {
-            const moves = [];
-            
-            for (let row = 0; row < 8; row++) {
-                for (let col = 0; col < 8; col++) {
-                    const piece = gameState.board[row][col];
-                    if (piece && piece.type === player) {
-                        const pieceMoves = getValidMoves(row, col);
-                        pieceMoves.forEach(move => {
-                            moves.push({
-                                fromRow: row,
-                                fromCol: col,
-                                toRow: move.row,
-                                toCol: move.col,
-                                capture: move.capture,
-                                captured: move.captured,
-                                piece: piece
-                            });
-                        });
-                    }
-                }
-            }
-            
-            return moves;
-        }
-
-        // Ход ИИ
-        function makeAIMove() {
-            const moves = getAllValidMoves('ai');
-            
-            if (moves.length === 0) {
-                // Нет допустимых ходов - игрок побеждает
-                document.getElementById('status').textContent = 'Вы победили! У ИИ нет ходов.';
-                return;
-            }
-            
-            // Выбираем ход в зависимости от уровня сложности
-            let selectedMove;
-            
-            if (gameState.difficulty === 'medium') {
-                // Средний уровень: предпочитает захваты
-                const captureMoves = moves.filter(m => m.capture);
-                if (captureMoves.length > 0) {
-                    selectedMove = captureMoves[Math.floor(Math.random() * captureMoves.length)];
-                } else {
-                    // Случайный ход
-                    selectedMove = moves[Math.floor(Math.random() * moves.length)];
-                }
-            } else {
-                // Сложный уровень: минимакс алгоритм
-                selectedMove = getBestMove(2);
-            }
-            
-            // Выполняем выбранный ход
-            gameState.selectedPiece = {row: selectedMove.fromRow, col: selectedMove.fromCol};
-            gameState.validMoves = [{row: selectedMove.toRow, col: selectedMove.toCol, capture: selectedMove.capture, captured: selectedMove.captured}];
-            movePiece(selectedMove.toRow, selectedMove.toCol);
-        }
-
-        // Минимакс алгоритм для сложного уровня
-        function getBestMove(depth) {
-            const moves = getAllValidMoves('ai');
-            let bestScore = -Infinity;
-            let bestMove = moves[0];
-            
-            for (const move of moves) {
-                const boardCopy = JSON.parse(JSON.stringify(gameState.board));
-                
-                // Выполняем ход
-                gameState.board[move.toRow][move.toCol] = move.piece;
-                gameState.board[move.fromRow][move.fromCol] = null;
-                
-                if (move.capture) {
-                    gameState.board[move.captured.row][move.captured.col] = null;
-                }
-                
-                const score = evaluateBoard();
-                
-                // Восстанавливаем состояние
-                gameState.board = boardCopy;
-                
-                if (score > bestScore) {
-                    bestScore = score;
-                    bestMove = move;
-                }
-            }
-            
-            return bestMove;
-        }
-
-        // Оценка текущей позиции для ИИ
-        function evaluateBoard() {
-            let score = 0;
-            
-            for (let row = 0; row < 8; row++) {
-                for (let col = 0; col < 8; col++) {
-                    const piece = gameState.board[row][col];
-                    if (piece) {
-                        const value = piece.king ? 3 : 1;
-                        const sign = piece.type === 'ai' ? 1 : -1;
-                        score += sign * value;
-                    }
-                }
-            }
-            
-            return score;
-        }
-
-        // Показать подсказку
-        function showHint() {
-            if (gameState.currentPlayer !== 'player') return;
-            
-            const moves = getAllValidMoves('player');
-            if (moves.length === 0) return;
-            
-            // Выбираем случайный ход для подсказки
-            const hintMove = moves[Math.floor(Math.random() * moves.length)];
-            
-            // Подсвечиваем шашку и возможный ход
-            clearSelection();
-            selectPiece(hintMove.fromRow, hintMove.fromCol);
-            
-            // Убираем подсказку через 3 секунды
-            setTimeout(clearSelection, 3000);
-        }
-
-        // Отмена хода
-        function undoMove() {
-            if (gameState.moveHistory.length === 0) return;
-            
-            // Восстанавливаем предыдущее состояние
-            const previousState = gameState.moveHistory.pop();
-            gameState.board = previousState.board;
-            gameState.currentPlayer = previousState.currentPlayer;
-            gameState.playerPieces = previousState.playerPieces;
-            gameState.aiPieces = previousState.aiPieces;
-            gameState.moveCount = Math.max(0, gameState.moveCount - 1);
-            
-            clearSelection();
-            setupPieces();
-            updateDisplay();
-        }
-
-        // Сброс игры
-        function resetGame() {
-            gameState.board = [];
-            gameState.currentPlayer = 'player';
-            gameState.selectedPiece = null;
-            gameState.validMoves = [];
-            gameState.moveHistory = [];
-            gameState.playerPieces = 12;
-            gameState.aiPieces = 12;
-            gameState.moveCount = 0;
-            
-            createBoard();
-            setupPieces();
-            updateDisplay();
-        }
-
-        // Обновление отображения информации
+        // Функция для обновления отображения счетчика
         function updateDisplay() {
-            document.getElementById('status').textContent = 
-                gameState.currentPlayer === 'player' ? 'Ваш ход' : 'Ход ИИ';
-            document.getElementById('playerCount').textContent = gameState.playerPieces;
-            document.getElementById('aiCount').textContent = gameState.aiPieces;
-            document.getElementById('moveCount').textContent = gameState.moveCount;
+            const display = document.getElementById('counter');
+            // Форматируем число как шестизначную строку с ведущими нулями
+            display.textContent = counter.toString().padStart(6, '0');
+        }
+
+        // Функция увеличения счетчика
+        function incrementCounter() {
+            if (counter < 999999) {
+                counter++;
+                updateDisplay();
+            } else {
+                alert('Достигнут максимальный предел (999999)');
+            }
+        }
+
+        // Функция уменьшения счетчика
+        function decrementCounter() {
+            if (counter > 0) {
+                counter--;
+                updateDisplay();
+            } else {
+                alert('Счетчик не может быть меньше 0');
+            }
+        }
+
+        // Функция сброса счетчика
+        function resetCounter() {
+            counter = 0;
+            updateDisplay();
+        }
+
+        // Функция установки произвольного значения
+        function setCustomValue() {
+            const input = document.getElementById('customValue');
+            const value = parseInt(input.value);
             
-            updateDebugInfo();
+            if (!isNaN(value) && value >= 0 && value <= 999999) {
+                counter = value;
+                updateDisplay();
+                input.value = '';
+            } else {
+                alert('Пожалуйста, введите число от 0 до 999999');
+            }
         }
 
-        // Обновление отладочной информации
-        function updateDebugInfo() {
-            const moves = getAllValidMoves(gameState.currentPlayer);
-            document.getElementById('availableMoves').textContent = moves.length;
-        }
+        // Инициализация при загрузке страницы
+        document.addEventListener('DOMContentLoaded', updateDisplay);
 
-        // Переключение отладочной информации
-        function toggleDebug() {
-            const debugInfo = document.getElementById('debugInfo');
-            debugInfo.style.display = debugInfo.style.display === 'none' ? 'block' : 'none';
-        }
-
-        // Запуск игры при загрузке страницы
-        window.addEventListener('DOMContentLoaded', initGame);
+        // Обработка нажатия клавиш
+        document.addEventListener('keydown', function(event) {
+            if (event.key === 'ArrowUp') {
+                incrementCounter();
+            } else if (event.key === 'ArrowDown') {
+                decrementCounter();
+            } else if (event.key === 'r' || event.key === 'R') {
+                resetCounter();
+            }
+        });
     </script>
 </body>
 </html>
