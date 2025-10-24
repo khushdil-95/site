@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Автоматический счетчик</title>
+    <title>Автоматический счетчик для авторизации с USB</title>
     <style>
         body {
             font-family: Arial, sans-serif;
@@ -21,7 +21,7 @@
             padding: 40px;
             border-radius: 20px;
             box-shadow: 0 10px 30px rgba(0,0,0,0.3);
-            max-width: 500px;
+            max-width: 700px;
             width: 90%;
         }
 
@@ -65,6 +65,18 @@
             border: 2px solid #f5c6cb;
         }
 
+        .usb-connected {
+            background-color: #d1ecf1;
+            color: #0c5460;
+            border: 2px solid #bee5eb;
+        }
+
+        .usb-disconnected {
+            background-color: #f8d7da;
+            color: #721c24;
+            border: 2px solid #f5c6cb;
+        }
+
         .controls {
             display: flex;
             gap: 15px;
@@ -98,6 +110,11 @@
             color: white;
         }
 
+        .usb-btn {
+            background: linear-gradient(145deg, #007bff, #0056b3);
+            color: white;
+        }
+
         button:hover {
             transform: translateY(-3px);
             box-shadow: 0 6px 15px rgba(0,0,0,0.2);
@@ -127,51 +144,201 @@
             color: #495057;
             font-size: 0.9rem;
         }
+
+        .login-info {
+            margin: 20px 0;
+            padding: 15px;
+            background: #e7f3ff;
+            border-radius: 10px;
+            border: 2px solid #b3d9ff;
+        }
+
+        .login-info p {
+            margin: 5px 0;
+            font-weight: bold;
+            color: #004085;
+        }
+
+        .usb-status {
+            margin: 20px 0;
+            padding: 15px;
+            border-radius: 10px;
+            font-weight: bold;
+        }
+
+        .progress-container {
+            margin: 20px 0;
+            background: #f1f1f1;
+            border-radius: 10px;
+            height: 20px;
+            overflow: hidden;
+        }
+
+        .progress-bar {
+            height: 100%;
+            background: linear-gradient(90deg, #28a745, #20c997);
+            width: 0%;
+            transition: width 0.3s ease;
+        }
+
+        .speed-controls {
+            display: flex;
+            justify-content: center;
+            gap: 10px;
+            margin-top: 10px;
+        }
+
+        .speed-controls button {
+            padding: 8px 15px;
+            font-size: 0.9rem;
+            min-width: 70px;
+        }
     </style>
 </head>
 <body>
     <div class="counter-container">
-        <h1>Автоматический счетчик</h1>
+        <h1>Автоматический счетчик для авторизации с USB</h1>
+        
+        <div class="usb-status" id="usb-status">
+            Статус USB: Не подключено
+        </div>
+        
+        <div class="login-info">
+            <p>Логин: 2024030175</p>
+            <p>Пароль: <span id="password-display">000000</span></p>
+        </div>
         
         <div class="counter-display" id="counter">000000</div>
         
-        <div class="status" id="status">Нажмите "Старт" для начала счета</div>
+        <div class="progress-container">
+            <div class="progress-bar" id="progress-bar"></div>
+        </div>
+        
+        <div class="status" id="status">Нажмите "Старт" для начала автоматической авторизации</div>
         
         <div class="controls">
-            <button class="start" onclick="startCounter()" id="startBtn">Старт</button>
-            <button class="stop" onclick="stopCounter()" id="stopBtn" disabled>Стоп</button>
+            <button class="start" onclick="startAutoAuth()" id="startBtn">Старт</button>
+            <button class="stop" onclick="stopAutoAuth()" id="stopBtn" disabled>Стоп</button>
             <button class="reset" onclick="resetCounter()" id="resetBtn">Сброс</button>
+            <button class="usb-btn" onclick="simulateUSBConnection()" id="usbBtn">Подключить USB</button>
         </div>
 
         <div class="stats">
-            <p>Скорость: <span id="speed">1</span> число/сек</p>
-            <p>Считает автоматически до нажатия "Стоп"</p>
+            <p>Скорость: <span id="speed">1</span> попытка/сек</p>
+            <div class="speed-controls">
+                <button onclick="changeSpeed(2000)">0.5/сек</button>
+                <button onclick="changeSpeed(1000)">1/сек</button>
+                <button onclick="changeSpeed(500)">2/сек</button>
+                <button onclick="changeSpeed(200)">5/сек</button>
+            </div>
+            <p>Текущий пароль: <span id="current-password">000000</span></p>
+            <p>Попыток: <span id="attempts">0</span></p>
+            <p>Статус: <span id="auth-status">Ожидание</span></p>
+            <p>Следующий пароль при сбросе: <span id="next-reset-password">000001</span></p>
         </div>
     </div>
 
     <script>
         let counter = 0;
-        let isCounting = false;
-        let counterInterval;
-        let speed = 1000; // 1 число в секунду
+        let isAutoAuth = false;
+        let authInterval;
+        let speed = 1000; // 1 попытка в секунду
+        let attempts = 0;
+        let login = "2024030175";
+        let isUSBConnected = false;
+        let nextResetPassword = 1; // Следующий пароль при сбросе
 
         // Функция для обновления отображения счетчика
         function updateDisplay() {
             const display = document.getElementById('counter');
-            display.textContent = counter.toString().padStart(6, '0');
+            const passwordDisplay = document.getElementById('password-display');
+            const currentPassword = document.getElementById('current-password');
+            const nextResetDisplay = document.getElementById('next-reset-password');
+            
+            const formattedCounter = counter.toString().padStart(6, '0');
+            const formattedNextReset = nextResetPassword.toString().padStart(6, '0');
+            
+            display.textContent = formattedCounter;
+            passwordDisplay.textContent = formattedCounter;
+            currentPassword.textContent = formattedCounter;
+            nextResetDisplay.textContent = formattedNextReset;
+            
+            // Обновление прогресс-бара
+            const progressBar = document.getElementById('progress-bar');
+            const progress = (counter / 999999) * 100;
+            progressBar.style.width = `${progress}%`;
         }
 
-        // Функция старта счетчика
-        function startCounter() {
-            if (isCounting) return;
+        // Функция для имитации ввода логина и пароля через USB
+        function simulateAuth() {
+            if (!isUSBConnected) {
+                document.getElementById('status').textContent = 'Ошибка: USB не подключен!';
+                document.getElementById('status').className = 'status stopped';
+                stopAutoAuth();
+                return;
+            }
             
-            isCounting = true;
+            // Имитация ввода логина
+            console.log(`Ввод логина через USB: ${login}`);
+            
+            // Имитация ввода пароля
+            const password = counter.toString().padStart(6, '0');
+            console.log(`Ввод пароля через USB: ${password}`);
+            
+            // Имитация нажатия Enter
+            console.log("Нажатие Enter для отправки формы");
+            
+            attempts++;
+            document.getElementById('attempts').textContent = attempts;
+            
+            // Имитация проверки авторизации
+            const authStatus = document.getElementById('auth-status');
+            
+            // В реальном приложении здесь будет проверка успешности авторизации
+            // Для демонстрации считаем, что авторизация успешна при пароле "123456"
+            if (password === "123456") {
+                authStatus.textContent = "УСПЕШНО!";
+                authStatus.style.color = "green";
+                stopAutoAuth();
+                document.getElementById('status').textContent = "Авторизация успешна! Пароль: 123456";
+                document.getElementById('status').className = 'status counting';
+                
+                // Сохраняем следующий пароль для сброса
+                nextResetPassword = counter + 1;
+                updateDisplay();
+            } else {
+                authStatus.textContent = "Ошибка";
+                authStatus.style.color = "red";
+                
+                // Увеличиваем счетчик для следующей попытки
+                if (counter < 999999) {
+                    counter++;
+                    updateDisplay();
+                } else {
+                    stopAutoAuth();
+                    document.getElementById('status').textContent = 'Достигнут максимальный предел!';
+                    document.getElementById('status').className = 'status stopped';
+                }
+            }
+        }
+
+        // Функция старта автоматической авторизации
+        function startAutoAuth() {
+            if (isAutoAuth) return;
+            
+            if (!isUSBConnected) {
+                document.getElementById('status').textContent = 'Ошибка: USB не подключен!';
+                document.getElementById('status').className = 'status stopped';
+                return;
+            }
+            
+            isAutoAuth = true;
             const status = document.getElementById('status');
             const startBtn = document.getElementById('startBtn');
             const stopBtn = document.getElementById('stopBtn');
             const resetBtn = document.getElementById('resetBtn');
             
-            status.textContent = 'Счетчик работает...';
+            status.textContent = 'Автоматическая авторизация запущена через USB...';
             status.className = 'status counting';
             
             startBtn.disabled = true;
@@ -179,47 +346,49 @@
             resetBtn.disabled = true;
 
             // Запускаем интервал
-            counterInterval = setInterval(() => {
-                if (counter < 999999) {
-                    counter++;
-                    updateDisplay();
-                } else {
-                    stopCounter();
-                    status.textContent = 'Достигнут максимальный предел!';
-                    status.className = 'status stopped';
-                }
-            }, speed);
+            authInterval = setInterval(simulateAuth, speed);
         }
 
-        // Функция остановки счетчика
-        function stopCounter() {
-            if (!isCounting) return;
+        // Функция остановки автоматической авторизации
+        function stopAutoAuth() {
+            if (!isAutoAuth) return;
             
-            isCounting = false;
+            isAutoAuth = false;
             const status = document.getElementById('status');
             const startBtn = document.getElementById('startBtn');
             const stopBtn = document.getElementById('stopBtn');
             const resetBtn = document.getElementById('resetBtn');
             
-            status.textContent = `Счетчик остановлен на числе: ${counter.toString().padStart(6, '0')}`;
-            status.className = 'status stopped';
+            if (status.textContent.indexOf("УСПЕШНО") === -1) {
+                status.textContent = `Авторизация остановлена. Текущий пароль: ${counter.toString().padStart(6, '0')}`;
+                status.className = 'status stopped';
+            }
             
             startBtn.disabled = false;
             stopBtn.disabled = true;
             resetBtn.disabled = false;
 
-            clearInterval(counterInterval);
+            clearInterval(authInterval);
         }
 
         // Функция сброса счетчика
         function resetCounter() {
-            stopCounter();
-            counter = 0;
+            stopAutoAuth();
+            
+            // Устанавливаем счетчик на следующий пароль, а не на 0
+            counter = nextResetPassword;
+            attempts = 0;
             updateDisplay();
             
             const status = document.getElementById('status');
-            status.textContent = 'Счетчик сброшен. Нажмите "Старт" для начала счета';
+            const authStatus = document.getElementById('auth-status');
+            
+            status.textContent = `Счетчик сброшен. Начинаем с пароля: ${counter.toString().padStart(6, '0')}`;
             status.className = 'status';
+            
+            authStatus.textContent = 'Ожидание';
+            authStatus.style.color = 'black';
+            document.getElementById('attempts').textContent = '0';
         }
 
         // Функция изменения скорости
@@ -227,10 +396,36 @@
             speed = newSpeed;
             document.getElementById('speed').textContent = (1000 / speed).toFixed(1);
             
-            // Если счетчик работает, перезапускаем с новой скоростью
-            if (isCounting) {
-                stopCounter();
-                startCounter();
+            // Если авторизация работает, перезапускаем с новой скоростью
+            if (isAutoAuth) {
+                stopAutoAuth();
+                startAutoAuth();
+            }
+        }
+
+        // Функция имитации подключения USB
+        function simulateUSBConnection() {
+            const usbStatus = document.getElementById('usb-status');
+            const usbBtn = document.getElementById('usbBtn');
+            
+            if (!isUSBConnected) {
+                isUSBConnected = true;
+                usbStatus.textContent = 'Статус USB: Подключено';
+                usbStatus.className = 'usb-status usb-connected';
+                usbBtn.textContent = 'Отключить USB';
+                
+                document.getElementById('status').textContent = 'USB подключен. Нажмите "Старт" для начала автоматической авторизации';
+            } else {
+                isUSBConnected = false;
+                usbStatus.textContent = 'Статус USB: Не подключено';
+                usbStatus.className = 'usb-status usb-disconnected';
+                usbBtn.textContent = 'Подключить USB';
+                
+                document.getElementById('status').textContent = 'USB отключен. Подключите USB для начала работы';
+                document.getElementById('status').className = 'status stopped';
+                
+                // Останавливаем авторизацию при отключении USB
+                stopAutoAuth();
             }
         }
 
@@ -238,33 +433,28 @@
         document.addEventListener('DOMContentLoaded', function() {
             updateDisplay();
             
-            // Добавляем управление скоростью
-            const stats = document.querySelector('.stats');
-            const speedControl = document.createElement('div');
-            speedControl.innerHTML = `
-                <p>Скорость: 
-                    <button onclick="changeSpeed(2000)">0.5/сек</button>
-                    <button onclick="changeSpeed(1000)">1/сек</button>
-                    <button onclick="changeSpeed(500)">2/сек</button>
-                    <button onclick="changeSpeed(200)">5/сек</button>
-                </p>
-            `;
-            stats.appendChild(speedControl);
+            // Имитируем автоматическое подключение USB для демонстрации
+            setTimeout(simulateUSBConnection, 1000);
         });
 
         // Обработка нажатия клавиш
         document.addEventListener('keydown', function(event) {
             if (event.code === 'Space') {
                 event.preventDefault();
-                if (isCounting) {
-                    stopCounter();
+                if (isAutoAuth) {
+                    stopAutoAuth();
                 } else {
-                    startCounter();
+                    startAutoAuth();
                 }
             } else if (event.key === 'r' || event.key === 'R') {
-                if (!isCounting) {
+                if (!isAutoAuth) {
                     resetCounter();
                 }
+            } else if (event.key === 'Enter') {
+                // Имитация нажатия Enter для тестирования
+                console.log("Нажатие Enter (имитация отправки формы)");
+            } else if (event.key === 'u' || event.key === 'U') {
+                simulateUSBConnection();
             }
         });
     </script>
