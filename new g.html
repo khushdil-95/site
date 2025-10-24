@@ -71,6 +71,16 @@
             color: #888;
         }
 
+        .language-selector {
+            background: none;
+            border: none;
+            font-size: 16px;
+            color: #007AFF;
+            font-weight: 600;
+            padding: 4px 8px;
+            border-radius: 12px;
+        }
+
         /* Карта */
         #map {
             flex: 1;
@@ -183,10 +193,15 @@
             display: flex;
             align-items: center;
             gap: 12px;
+            cursor: pointer;
         }
 
         .result-item:last-child {
             border-bottom: none;
+        }
+
+        .result-item:active {
+            background: rgba(0,122,255,0.1);
         }
 
         .result-icon {
@@ -341,6 +356,14 @@
             color: white;
             font-size: 14px;
             text-align: center;
+            display: none;
+        }
+
+        /* Границы Душанбе */
+        .dushanbe-bounds {
+            border: 2px dashed #007AFF;
+            border-radius: 10px;
+            background: rgba(0,122,255,0.1);
         }
 
         /* Адаптация для разных размеров экрана */
@@ -377,6 +400,11 @@
             <div class="search-box">
                 <div class="search-icon">🔍</div>
                 <input type="text" id="search" placeholder="Ҷустуҷӯ дар Душанбе...">
+                <select class="language-selector" id="language-selector">
+                    <option value="tg">ТЖ</option>
+                    <option value="ru">РУ</option>
+                    <option value="en">EN</option>
+                </select>
             </div>
         </div>
 
@@ -408,6 +436,10 @@
                 <button class="category-btn" data-category="market">🛒 Марказ</button>
                 <button class="category-btn" data-category="hospital">🏥 Беморхона</button>
                 <button class="category-btn" data-category="transport">🚌 Истгоҳ</button>
+                <button class="category-btn" data-category="cafe">☕ Кафе</button>
+                <button class="category-btn" data-category="hotel">🏨 Меҳмонхона</button>
+                <button class="category-btn" data-category="school">🎓 Мактаб</button>
+                <button class="category-btn" data-category="government">🏛 Давлатӣ</button>
             </div>
 
             <!-- Быстрые действия -->
@@ -434,8 +466,9 @@
 
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
     <script>
-        // Данные организаций Душанбе
+        // Все места Душанбе (расширенный список)
         const places = [
+            // Рестораны
             {
                 id: 1,
                 name: {
@@ -457,6 +490,44 @@
             {
                 id: 2,
                 name: {
+                    tg: "Ресторани 'Памир'",
+                    ru: "Ресторан 'Памир'",
+                    en: "Restaurant 'Pamir'"
+                },
+                lat: 38.5815,
+                lng: 68.7790,
+                category: "restaurant",
+                address: {
+                    tg: "Кучаи Шотемур 23",
+                    ru: "ул. Шотемура 23",
+                    en: "Shotemur St. 23"
+                },
+                phone: "+992 37 224 5678",
+                icon: "🍽"
+            },
+            {
+                id: 3,
+                name: {
+                    tg: "Ресторани 'Вахш'",
+                    ru: "Ресторан 'Вахш'",
+                    en: "Restaurant 'Vakhsh'"
+                },
+                lat: 38.5730,
+                lng: 68.7915,
+                category: "restaurant",
+                address: {
+                    tg: "Кучаи Лоҳутӣ 67",
+                    ru: "ул. Лахути 67",
+                    en: "Lahuti St. 67"
+                },
+                phone: "+992 37 235 9012",
+                icon: "🍽"
+            },
+
+            // Аптеки
+            {
+                id: 4,
+                name: {
                     tg: "Дорухонаи Марказӣ",
                     ru: "Центральная Аптека",
                     en: "Central Pharmacy"
@@ -473,7 +544,27 @@
                 icon: "💊"
             },
             {
-                id: 3,
+                id: 5,
+                name: {
+                    tg: "Дорухонаи №1",
+                    ru: "Аптека №1",
+                    en: "Pharmacy №1"
+                },
+                lat: 38.5690,
+                lng: 68.7823,
+                category: "pharmacy",
+                address: {
+                    tg: "Кучаи Фирдавсӣ 34",
+                    ru: "ул. Фирдавси 34",
+                    en: "Firdausi St. 34"
+                },
+                phone: "+992 37 228 3456",
+                icon: "💊"
+            },
+
+            // Банки
+            {
+                id: 6,
                 name: {
                     tg: "Бонки Амонат",
                     ru: "Банк Амонат",
@@ -491,7 +582,27 @@
                 icon: "🏦"
             },
             {
-                id: 4,
+                id: 7,
+                name: {
+                    tg: "Бонки Ориён",
+                    ru: "Банк Ориён",
+                    en: "Orien Bank"
+                },
+                lat: 38.5725,
+                lng: 68.7880,
+                category: "bank",
+                address: {
+                    tg: "Кучаи Шерали 89",
+                    ru: "ул. Шерали 89",
+                    en: "Sherali St. 89"
+                },
+                phone: "+992 37 236 7890",
+                icon: "🏦"
+            },
+
+            // Торговые центры
+            {
+                id: 8,
                 name: {
                     tg: "Маркази савдои 'Корвон'",
                     ru: "Торговый центр 'Корвон'",
@@ -509,7 +620,27 @@
                 icon: "🛒"
             },
             {
-                id: 5,
+                id: 9,
+                name: {
+                    tg: "Маркази 'Садриддин Айнӣ'",
+                    ru: "Торговый центр 'Садриддин Айни'",
+                    en: "Sadriddin Ayni Center"
+                },
+                lat: 38.5789,
+                lng: 68.7812,
+                category: "market",
+                address: {
+                    tg: "Кучаи Айнӣ 56",
+                    ru: "ул. Айни 56",
+                    en: "Ayni St. 56"
+                },
+                phone: "+992 37 222 4567",
+                icon: "🛒"
+            },
+
+            // Больницы
+            {
+                id: 10,
                 name: {
                     tg: "Беморхонаи Шафа",
                     ru: "Больница Шафа",
@@ -527,7 +658,27 @@
                 icon: "🏥"
             },
             {
-                id: 6,
+                id: 11,
+                name: {
+                    tg: "Беморхонаи Боло",
+                    ru: "Больница Боло",
+                    en: "Bolo Hospital"
+                },
+                lat: 38.5834,
+                lng: 68.7756,
+                category: "hospital",
+                address: {
+                    tg: "Кучаи Борбад 12",
+                    ru: "ул. Борбад 12",
+                    en: "Borbad St. 12"
+                },
+                phone: "+992 37 229 1234",
+                icon: "🏥"
+            },
+
+            // Транспорт
+            {
+                id: 12,
                 name: {
                     tg: "Истгоҳи автобус",
                     ru: "Автобусная остановка",
@@ -542,14 +693,202 @@
                     en: "Lahuti St."
                 },
                 icon: "🚌"
+            },
+            {
+                id: 13,
+                name: {
+                    tg: "Истгоҳи такси",
+                    ru: "Станция такси",
+                    en: "Taxi Station"
+                },
+                lat: 38.5765,
+                lng: 68.7898,
+                category: "transport",
+                address: {
+                    tg: "Кучаи Рудакӣ 78",
+                    ru: "ул. Рудаки 78",
+                    en: "Rudaki St. 78"
+                },
+                icon: "🚕"
+            },
+
+            // Кафе
+            {
+                id: 14,
+                name: {
+                    tg: "Кафе 'Сиёма'",
+                    ru: "Кафе 'Сиёма'",
+                    en: "Cafe 'Siyoma'"
+                },
+                lat: 38.5743,
+                lng: 68.7856,
+                category: "cafe",
+                address: {
+                    tg: "Кучаи Фирдавсӣ 45",
+                    ru: "ул. Фирдавси 45",
+                    en: "Firdausi St. 45"
+                },
+                phone: "+992 37 226 3344",
+                icon: "☕"
+            },
+
+            // Отели
+            {
+                id: 15,
+                name: {
+                    tg: "Меҳмонхонаи 'Душанбе'",
+                    ru: "Отель 'Душанбе'",
+                    en: "Hotel 'Dushanbe'"
+                },
+                lat: 38.5798,
+                lng: 68.7867,
+                category: "hotel",
+                address: {
+                    tg: "Кучаи Рудакӣ 22",
+                    ru: "ул. Рудаки 22",
+                    en: "Rudaki St. 22"
+                },
+                phone: "+992 37 221 5566",
+                icon: "🏨"
+            },
+
+            // Школы
+            {
+                id: 16,
+                name: {
+                    tg: "Мактаби №1",
+                    ru: "Школа №1",
+                    en: "School №1"
+                },
+                lat: 38.5762,
+                lng: 68.7821,
+                category: "school",
+                address: {
+                    tg: "Кучаи Айнӣ 34",
+                    ru: "ул. Айни 34",
+                    en: "Ayni St. 34"
+                },
+                icon: "🎓"
+            },
+
+            // Государственные учреждения
+            {
+                id: 17,
+                name: {
+                    tg: "Вазорати корҳои хориҷӣ",
+                    ru: "Министерство иностранных дел",
+                    en: "Ministry of Foreign Affairs"
+                },
+                lat: 38.5801,
+                lng: 68.7803,
+                category: "government",
+                address: {
+                    tg: "Кучаи Шотемур 11",
+                    ru: "ул. Шотемура 11",
+                    en: "Shotemur St. 11"
+                },
+                icon: "🏛"
             }
         ];
 
-        // Инициализация карты
+        // Границы Душанбе
+        const dushanbeBounds = [
+            [38.53, 68.74], // Юго-запад
+            [38.62, 68.83]  // Северо-восток
+        ];
+
+        // Тексты интерфейса на разных языках
+        const uiTexts = {
+            tg: {
+                searchPlaceholder: "Ҷустуҷӯ дар Душанбе...",
+                all: "Ҳама",
+                restaurant: "🍽 Ресторан",
+                pharmacy: "💊 Дорухона",
+                bank: "🏦 Бонк",
+                market: "🛒 Марказ",
+                hospital: "🏥 Беморхона",
+                transport: "🚌 Истгоҳ",
+                cafe: "☕ Кафе",
+                hotel: "🏨 Меҳмонхона",
+                school: "🎓 Мактаб",
+                government: "🏛 Давлатӣ",
+                route: "Роҳ",
+                nearby: "Дар наздикӣ",
+                favorites: "Дӯстдошта",
+                more: "Бештар",
+                welcome: "Хуш омадед ба TajNav!",
+                locationFound: "Ҷойгиршавӣ муайян шуд",
+                locationError: "Хато дар ҷойгиршавӣ",
+                routeBuilding: "Маршрут сохта мешавад...",
+                routeReady: "Маршрут омода аст",
+                noResults: "Ҳеҷ чиз ёфт нашуд",
+                call: "Занг",
+                showRoute: "Роҳ"
+            },
+            ru: {
+                searchPlaceholder: "Поиск в Душанбе...",
+                all: "Все",
+                restaurant: "🍽 Ресторан",
+                pharmacy: "💊 Аптека",
+                bank: "🏦 Банк",
+                market: "🛒 Торговый центр",
+                hospital: "🏥 Больница",
+                transport: "🚌 Остановка",
+                cafe: "☕ Кафе",
+                hotel: "🏨 Отель",
+                school: "🎓 Школа",
+                government: "🏛 Государственный",
+                route: "Маршрут",
+                nearby: "Рядом",
+                favorites: "Избранное",
+                more: "Еще",
+                welcome: "Добро пожаловать в TajNav!",
+                locationFound: "Местоположение определено",
+                locationError: "Ошибка определения местоположения",
+                routeBuilding: "Построение маршрута...",
+                routeReady: "Маршрут готов",
+                noResults: "Ничего не найдено",
+                call: "Звонок",
+                showRoute: "Маршрут"
+            },
+            en: {
+                searchPlaceholder: "Search in Dushanbe...",
+                all: "All",
+                restaurant: "🍽 Restaurant",
+                pharmacy: "💊 Pharmacy",
+                bank: "🏦 Bank",
+                market: "🛒 Market",
+                hospital: "🏥 Hospital",
+                transport: "🚌 Station",
+                cafe: "☕ Cafe",
+                hotel: "🏨 Hotel",
+                school: "🎓 School",
+                government: "🏛 Government",
+                route: "Route",
+                nearby: "Nearby",
+                favorites: "Favorites",
+                more: "More",
+                welcome: "Welcome to TajNav!",
+                locationFound: "Location found",
+                locationError: "Location error",
+                routeBuilding: "Building route...",
+                routeReady: "Route ready",
+                noResults: "Nothing found",
+                call: "Call",
+                showRoute: "Route"
+            }
+        };
+
+        // Инициализация карты с ограничениями по Душанбе
         const map = L.map('map', {
             zoomControl: false,
-            attributionControl: false
+            attributionControl: false,
+            maxBounds: dushanbeBounds,
+            maxBoundsViscosity: 1.0
         }).setView([38.575, 68.785], 14);
+
+        // Ограничение зума для Душанбе
+        map.setMaxBounds(dushanbeBounds);
 
         // Слои карты
         const mapLayers = {
@@ -564,52 +903,119 @@
 
         mapLayers.street.addTo(map);
 
+        // Добавляем границы Душанбе
+        const boundsRectangle = L.rectangle(dushanbeBounds, {
+            color: "#007AFF",
+            weight: 2,
+            fillOpacity: 0.1,
+            className: 'dushanbe-bounds'
+        }).addTo(map);
+
         // Переменные
         let currentLanguage = 'tg';
         let currentMapType = 'street';
         let userLocation = null;
         let userMarker = null;
         let currentCategory = 'all';
+        let allMarkers = [];
+
+        // Инициализация языка
+        function initLanguage() {
+            const savedLanguage = localStorage.getItem('tajnav-language');
+            if (savedLanguage) {
+                currentLanguage = savedLanguage;
+                document.getElementById('language-selector').value = currentLanguage;
+            }
+            updateLanguage();
+        }
+
+        // Обновление языка интерфейса
+        function updateLanguage() {
+            const texts = uiTexts[currentLanguage];
+            
+            // Обновление поиска
+            document.getElementById('search').placeholder = texts.searchPlaceholder;
+            
+            // Обновление категорий
+            document.querySelectorAll('.category-btn').forEach(btn => {
+                const category = btn.dataset.category;
+                if (category === 'all') {
+                    btn.textContent = texts.all;
+                } else {
+                    btn.textContent = texts[category];
+                }
+            });
+            
+            // Обновление быстрых действий
+            document.querySelectorAll('.action-btn').forEach(btn => {
+                const action = btn.dataset.action;
+                btn.querySelector('span').textContent = texts[action];
+            });
+            
+            // Перерисовка маркеров
+            updateMarkersLanguage();
+            
+            localStorage.setItem('tajnav-language', currentLanguage);
+        }
 
         // Создание маркеров
-        const markers = [];
-        places.forEach(place => {
-            const marker = L.marker([place.lat, place.lng])
-                .bindPopup(`
-                    <div class="custom-popup">
-                        <div class="popup-header">
-                            <div class="popup-title">${place.name[currentLanguage]}</div>
-                            <div class="popup-address">${place.address[currentLanguage]}</div>
-                        </div>
-                        <div class="popup-content">
-                            ${place.phone ? `<div style="margin-bottom: 12px;">📞 ${place.phone}</div>` : ''}
-                            <div class="popup-actions">
-                                <button class="popup-btn secondary" onclick="showRoute(${place.lat}, ${place.lng})">
-                                    ${currentLanguage === 'tg' ? 'Роҳ' : currentLanguage === 'ru' ? 'Маршрут' : 'Route'}
-                                </button>
-                                <button class="popup-btn primary" onclick="callNumber('${place.phone}')">
-                                    ${currentLanguage === 'tg' ? 'Занг' : currentLanguage === 'ru' ? 'Звонок' : 'Call'}
-                                </button>
-                            </div>
+        function createMarkers() {
+            // Удаляем старые маркеры
+            allMarkers.forEach(marker => map.removeLayer(marker));
+            allMarkers = [];
+
+            places.forEach(place => {
+                const marker = L.marker([place.lat, place.lng])
+                    .bindPopup(createPopupContent(place))
+                    .addTo(map);
+                allMarkers.push(marker);
+            });
+        }
+
+        function createPopupContent(place) {
+            return `
+                <div class="custom-popup">
+                    <div class="popup-header">
+                        <div class="popup-title">${place.name[currentLanguage]}</div>
+                        <div class="popup-address">${place.address[currentLanguage]}</div>
+                    </div>
+                    <div class="popup-content">
+                        ${place.phone ? `<div style="margin-bottom: 12px;">📞 ${place.phone}</div>` : ''}
+                        <div class="popup-actions">
+                            <button class="popup-btn secondary" onclick="showRoute(${place.lat}, ${place.lng})">
+                                ${uiTexts[currentLanguage].showRoute}
+                            </button>
+                            ${place.phone ? `
+                            <button class="popup-btn primary" onclick="callNumber('${place.phone}')">
+                                ${uiTexts[currentLanguage].call}
+                            </button>
+                            ` : ''}
                         </div>
                     </div>
-                `);
-            marker.addTo(map);
-            markers.push(marker);
-        });
+                </div>
+            `;
+        }
+
+        function updateMarkersLanguage() {
+            allMarkers.forEach((marker, index) => {
+                const place = places[index];
+                marker.setPopupContent(createPopupContent(place));
+            });
+        }
 
         // Поиск
         const searchInput = document.getElementById('search');
         const resultsPanel = document.getElementById('results-panel');
 
         searchInput.addEventListener('input', function(e) {
-            const searchTerm = e.target.value.toLowerCase();
+            const searchTerm = e.target.value.toLowerCase().trim();
             if (searchTerm.length > 0) {
                 showResultsPanel();
-                const filtered = places.filter(place => 
-                    place.name[currentLanguage].toLowerCase().includes(searchTerm) ||
-                    place.address[currentLanguage].toLowerCase().includes(searchTerm)
-                );
+                const filtered = places.filter(place => {
+                    const name = place.name[currentLanguage].toLowerCase();
+                    const address = place.address[currentLanguage].toLowerCase();
+                    return name.includes(searchTerm) || address.includes(searchTerm);
+                });
                 updateResults(filtered);
             } else {
                 hideResultsPanel();
@@ -630,8 +1036,7 @@
             if (filteredPlaces.length === 0) {
                 resultsPanel.innerHTML = `
                     <div style="padding: 40px 20px; text-align: center; color: #666;">
-                        ${currentLanguage === 'tg' ? 'Ҳеҷ чиз ёфт нашуд' : 
-                          currentLanguage === 'ru' ? 'Ничего не найдено' : 'Nothing found'}
+                        ${uiTexts[currentLanguage].noResults}
                     </div>
                 `;
                 return;
@@ -646,12 +1051,11 @@
                         <div class="result-name">${place.name[currentLanguage]}</div>
                         <div class="result-address">${place.address[currentLanguage]}</div>
                     </div>
-                    <div class="result-distance">1.2 км</div>
                 `;
                 
                 resultItem.addEventListener('click', () => {
                     map.setView([place.lat, place.lng], 16);
-                    markers.forEach(marker => {
+                    allMarkers.forEach(marker => {
                         if (marker.getLatLng().lat === place.lat && marker.getLatLng().lng === place.lng) {
                             marker.openPopup();
                         }
@@ -677,14 +1081,14 @@
         });
 
         function filterByCategory(category) {
-            markers.forEach(marker => marker.removeFrom(map));
+            allMarkers.forEach(marker => marker.removeFrom(map));
             
             if (category === 'all') {
-                markers.forEach(marker => marker.addTo(map));
+                allMarkers.forEach(marker => marker.addTo(map));
             } else {
                 places.forEach((place, index) => {
                     if (place.category === category) {
-                        markers[index].addTo(map);
+                        allMarkers[index].addTo(map);
                     }
                 });
             }
@@ -695,16 +1099,23 @@
 
         function locateUser() {
             if (!navigator.geolocation) {
-                showStatus('Геолокация дастгирӣ намешавад', 'error');
+                showStatus(uiTexts[currentLanguage].locationError, 'error');
                 return;
             }
 
-            showStatus('Ҷустуҷӯи ҷойгиршавӣ...', 'loading');
+            showStatus(uiTexts[currentLanguage].routeBuilding, 'loading');
 
             navigator.geolocation.getCurrentPosition(
                 function(position) {
                     const lat = position.coords.latitude;
                     const lng = position.coords.longitude;
+                    
+                    // Проверяем, находится ли пользователь в Душанбе
+                    if (lat < dushanbeBounds[0][0] || lat > dushanbeBounds[1][0] || 
+                        lng < dushanbeBounds[0][1] || lng > dushanbeBounds[1][1]) {
+                        showStatus('Шумо берун аз Душанбе ҳастед', 'error');
+                        return;
+                    }
                     
                     userLocation = { lat, lng };
                     
@@ -722,23 +1133,10 @@
                     }).addTo(map);
                     
                     map.setView([lat, lng], 16);
-                    showStatus('Ҷойгиршавӣ муайян шуд', 'success');
+                    showStatus(uiTexts[currentLanguage].locationFound, 'success');
                 },
                 function(error) {
-                    let message = '';
-                    switch(error.code) {
-                        case error.PERMISSION_DENIED:
-                            message = 'Иҷозати ҷойгиршавӣ дода нашуд';
-                            break;
-                        case error.POSITION_UNAVAILABLE:
-                            message = 'Маълумоти ҷойгиршавӣ дастрас нест';
-                            break;
-                        case error.TIMEOUT:
-                            message = 'Ҷустуҷӯи ҷойгиршавӣ ба охир расид';
-                            break;
-                        default:
-                            message = 'Хатои номаълум';
-                    }
+                    let message = uiTexts[currentLanguage].locationError;
                     showStatus(message, 'error');
                 },
                 {
@@ -748,6 +1146,12 @@
                 }
             );
         }
+
+        // Переключение языка
+        document.getElementById('language-selector').addEventListener('change', function() {
+            currentLanguage = this.value;
+            updateLanguage();
+        });
 
         // Переключение типа карты
         document.getElementById('map-type-btn').addEventListener('click', function() {
@@ -764,22 +1168,34 @@
             }
         });
 
+        // Кнопка фильтра
+        document.getElementById('filter-btn').addEventListener('click', function() {
+            showStatus('Филтр кушода шуд', 'info');
+        });
+
         // Быстрые действия
         document.querySelectorAll('.action-btn').forEach(btn => {
             btn.addEventListener('click', function() {
                 const action = this.dataset.action;
                 switch(action) {
                     case 'route':
-                        showStatus('Хизмати роҳ ба зудӣ дастрас мешавад', 'info');
+                        if (userLocation) {
+                            showStatus(uiTexts[currentLanguage].routeBuilding, 'loading');
+                            setTimeout(() => {
+                                showStatus(uiTexts[currentLanguage].routeReady, 'success');
+                            }, 1500);
+                        } else {
+                            showStatus('Аввал ҷойгиршавии худро муайян кунед', 'warning');
+                        }
                         break;
                     case 'nearby':
                         showNearbyPlaces();
                         break;
                     case 'favorites':
-                        showStatus('Ҷойҳои дӯстдошта', 'info');
+                        showStatus(uiTexts[currentLanguage].favorites, 'info');
                         break;
                     case 'menu':
-                        showStatus('Меню', 'info');
+                        showStatus(uiTexts[currentLanguage].more, 'info');
                         break;
                 }
             });
@@ -791,7 +1207,34 @@
                 locateUser();
                 return;
             }
+            
+            // Показываем ближайшие места
+            const nearbyPlaces = places
+                .map(place => {
+                    const distance = calculateDistance(
+                        userLocation.lat, userLocation.lng,
+                        place.lat, place.lng
+                    );
+                    return { ...place, distance };
+                })
+                .sort((a, b) => a.distance - b.distance)
+                .slice(0, 5);
+            
+            updateResults(nearbyPlaces);
+            showResultsPanel();
             showStatus('Ҷойҳои дар наздикӣ', 'success');
+        }
+
+        function calculateDistance(lat1, lon1, lat2, lon2) {
+            const R = 6371; // Радиус Земли в км
+            const dLat = (lat2 - lat1) * Math.PI / 180;
+            const dLon = (lon2 - lon1) * Math.PI / 180;
+            const a = 
+                Math.sin(dLat/2) * Math.sin(dLat/2) +
+                Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) * 
+                Math.sin(dLon/2) * Math.sin(dLon/2);
+            const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+            return R * c;
         }
 
         // Статус бар
@@ -799,6 +1242,19 @@
             const statusBar = document.getElementById('status-bar');
             statusBar.textContent = message;
             statusBar.style.display = 'block';
+            
+            // Цвет в зависимости от типа
+            if (type === 'error') {
+                statusBar.style.background = 'linear-gradient(180deg, rgba(255,59,48,0.8) 0%, transparent 100%)';
+            } else if (type === 'success') {
+                statusBar.style.background = 'linear-gradient(180deg, rgba(52,199,89,0.8) 0%, transparent 100%)';
+            } else if (type === 'warning') {
+                statusBar.style.background = 'linear-gradient(180deg, rgba(255,149,0,0.8) 0%, transparent 100%)';
+            } else if (type === 'loading') {
+                statusBar.style.background = 'linear-gradient(180deg, rgba(0,122,255,0.8) 0%, transparent 100%)';
+            } else {
+                statusBar.style.background = 'linear-gradient(180deg, rgba(0,0,0,0.8) 0%, transparent 100%)';
+            }
             
             setTimeout(() => {
                 statusBar.style.display = 'none';
@@ -808,9 +1264,9 @@
         // Вспомогательные функции
         window.showRoute = function(lat, lng) {
             if (userLocation) {
-                showStatus('Маршрут сохта мешавад...', 'loading');
+                showStatus(uiTexts[currentLanguage].routeBuilding, 'loading');
                 setTimeout(() => {
-                    showStatus('Маршрут омода аст', 'success');
+                    showStatus(uiTexts[currentLanguage].routeReady, 'success');
                 }, 1500);
             } else {
                 showStatus('Барои роҳ ҷойгиршавии худро муайян кунед', 'warning');
@@ -830,7 +1286,14 @@
         });
 
         // Инициализация
-        showStatus('Хуш омадед ба TajNav!', 'success');
+        function initApp() {
+            initLanguage();
+            createMarkers();
+            showStatus(uiTexts[currentLanguage].welcome, 'success');
+        }
+
+        // Запуск приложения
+        initApp();
     </script>
 </body>
 </html>
