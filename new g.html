@@ -15,81 +15,120 @@
         body {
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
             background: #f5f5f5;
+            height: 100vh;
+            overflow: hidden;
         }
 
         .container {
             display: flex;
+            flex-direction: column;
             height: 100vh;
         }
 
-        /* Сайдбар */
+        /* Сайдбар для мобильных */
         .sidebar {
-            width: 400px;
+            width: 100%;
             background: white;
-            border-right: 1px solid #ddd;
             display: flex;
             flex-direction: column;
-            box-shadow: 2px 0 5px rgba(0,0,0,0.1);
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+            z-index: 1000;
+            transition: all 0.3s ease;
+        }
+
+        .sidebar.collapsed {
+            height: 60px;
+            overflow: hidden;
+        }
+
+        .sidebar.expanded {
+            height: 45vh;
         }
 
         .header {
-            padding: 20px;
+            padding: 12px 15px;
             background: #2c3e50;
             color: white;
-        }
-
-        .logo {
-            font-size: 24px;
-            font-weight: bold;
-            margin-bottom: 10px;
-        }
-
-        .search-container {
             position: relative;
         }
 
-        #search {
-            width: 100%;
-            padding: 12px 40px 12px 15px;
-            border: none;
-            border-radius: 6px;
-            font-size: 14px;
+        .logo {
+            font-size: 18px;
+            font-weight: bold;
         }
 
-        .search-icon {
+        .toggle-sidebar {
             position: absolute;
             right: 15px;
             top: 50%;
             transform: translateY(-50%);
+            background: none;
+            border: none;
+            color: white;
+            font-size: 16px;
+            cursor: pointer;
+            padding: 5px;
+        }
+
+        .search-container {
+            position: relative;
+            margin-top: 8px;
+        }
+
+        #search {
+            width: 100%;
+            padding: 10px 35px 10px 12px;
+            border: none;
+            border-radius: 20px;
+            font-size: 14px;
+            background: rgba(255,255,255,0.9);
+        }
+
+        .search-icon {
+            position: absolute;
+            right: 12px;
+            top: 50%;
+            transform: translateY(-50%);
             color: #666;
+            font-size: 14px;
         }
 
         /* Категории */
         .categories {
-            padding: 15px;
+            padding: 10px 15px;
             border-bottom: 1px solid #eee;
         }
 
         .category-title {
             font-weight: 600;
-            margin-bottom: 10px;
+            margin-bottom: 8px;
             color: #333;
+            font-size: 14px;
         }
 
         .category-buttons {
             display: flex;
-            flex-wrap: wrap;
-            gap: 8px;
+            flex-wrap: nowrap;
+            gap: 6px;
+            overflow-x: auto;
+            padding-bottom: 5px;
+            -webkit-overflow-scrolling: touch;
+        }
+
+        .category-buttons::-webkit-scrollbar {
+            display: none;
         }
 
         .category-btn {
-            padding: 8px 12px;
+            padding: 6px 10px;
             background: #f8f9fa;
             border: 1px solid #ddd;
-            border-radius: 20px;
-            font-size: 12px;
+            border-radius: 15px;
+            font-size: 11px;
             cursor: pointer;
             transition: all 0.3s;
+            white-space: nowrap;
+            flex-shrink: 0;
         }
 
         .category-btn:hover {
@@ -102,38 +141,40 @@
         .results {
             flex: 1;
             overflow-y: auto;
-            padding: 10px;
+            padding: 8px;
+            -webkit-overflow-scrolling: touch;
         }
 
         .result-item {
-            padding: 15px;
+            padding: 12px;
             border-bottom: 1px solid #eee;
             cursor: pointer;
             transition: background 0.2s;
         }
 
-        .result-item:hover {
-            background: #f8f9fa;
+        .result-item:active {
+            background: #e3f2fd;
         }
 
         .result-name {
             font-weight: 600;
-            margin-bottom: 5px;
+            margin-bottom: 4px;
             color: #2c3e50;
+            font-size: 14px;
         }
 
         .result-address {
-            font-size: 12px;
+            font-size: 11px;
             color: #666;
-            margin-bottom: 5px;
+            margin-bottom: 4px;
         }
 
         .result-category {
-            font-size: 11px;
+            font-size: 10px;
             color: #3498db;
             background: #e8f4fd;
-            padding: 2px 8px;
-            border-radius: 10px;
+            padding: 2px 6px;
+            border-radius: 8px;
             display: inline-block;
         }
 
@@ -141,6 +182,7 @@
         .map-container {
             flex: 1;
             position: relative;
+            height: 100%;
         }
 
         #map {
@@ -148,26 +190,27 @@
             width: 100%;
         }
 
-        /* Панель управления */
+        /* Панель управления для мобильных */
         .control-panel {
             position: absolute;
-            top: 20px;
-            right: 20px;
+            top: 10px;
+            right: 10px;
             z-index: 1000;
             display: flex;
             flex-direction: column;
-            gap: 10px;
+            gap: 8px;
         }
 
         .control-group {
             background: white;
-            border-radius: 6px;
-            box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+            border-radius: 8px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.2);
             overflow: hidden;
+            backdrop-filter: blur(10px);
         }
 
         .lang-btn, .map-type-btn, .location-btn {
-            padding: 8px 15px;
+            padding: 10px 12px;
             border: none;
             background: none;
             cursor: pointer;
@@ -176,10 +219,11 @@
             display: block;
             width: 100%;
             text-align: left;
+            min-width: 80px;
         }
 
-        .lang-btn:hover, .map-type-btn:hover, .location-btn:hover {
-            background: #f8f9fa;
+        .lang-btn:active, .map-type-btn:active, .location-btn:active {
+            background: #f0f0f0;
         }
 
         .lang-btn.active, .map-type-btn.active {
@@ -201,19 +245,35 @@
             font-size: 10px;
         }
 
-        /* Адаптивность */
-        @media (max-width: 768px) {
-            .container {
-                flex-direction: column;
-            }
-            .sidebar {
-                width: 100%;
-                height: 40%;
-            }
-            .control-panel {
-                top: 10px;
-                right: 10px;
-            }
+        /* Кнопка быстрого действия */
+        .quick-actions {
+            position: absolute;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            z-index: 1000;
+            display: flex;
+            gap: 10px;
+        }
+
+        .quick-action-btn {
+            background: white;
+            border: none;
+            border-radius: 50%;
+            width: 50px;
+            height: 50px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 18px;
+            transition: all 0.3s;
+        }
+
+        .quick-action-btn:active {
+            transform: scale(0.95);
+            background: #f0f0f0;
         }
 
         /* Маркер местоположения */
@@ -243,14 +303,94 @@
             70% { transform: scale(2); opacity: 0; }
             100% { transform: scale(2); opacity: 0; }
         }
+
+        /* Адаптивность для планшетов */
+        @media (min-width: 768px) and (max-width: 1024px) {
+            .container {
+                flex-direction: row;
+            }
+            .sidebar {
+                width: 350px;
+                height: 100%;
+            }
+            .sidebar.collapsed {
+                width: 60px;
+                height: 100%;
+            }
+            .toggle-sidebar {
+                display: block;
+            }
+        }
+
+        /* Адаптивность для десктопов */
+        @media (min-width: 1025px) {
+            .container {
+                flex-direction: row;
+            }
+            .sidebar {
+                width: 400px;
+                height: 100%;
+            }
+            .sidebar.collapsed {
+                width: 60px;
+                height: 100%;
+            }
+            .toggle-sidebar {
+                display: block;
+            }
+            .quick-actions {
+                display: none;
+            }
+        }
+
+        /* Скрытие элементов при свернутой панели */
+        .sidebar.collapsed .search-container,
+        .sidebar.collapsed .categories,
+        .sidebar.collapsed .results {
+            display: none;
+        }
+
+        /* Улучшение для touch устройств */
+        @media (hover: none) and (pointer: coarse) {
+            .category-btn:hover {
+                background: #f8f9fa;
+                color: inherit;
+                border-color: #ddd;
+            }
+            
+            .category-btn:active {
+                background: #3498db;
+                color: white;
+                border-color: #3498db;
+            }
+            
+            .result-item:hover {
+                background: inherit;
+            }
+            
+            .result-item:active {
+                background: #e3f2fd;
+            }
+        }
+
+        /* Улучшение скролла для iOS */
+        .results {
+            -webkit-overflow-scrolling: touch;
+            scrollbar-width: none;
+        }
+
+        .results::-webkit-scrollbar {
+            display: none;
+        }
     </style>
 </head>
 <body>
     <div class="container">
         <!-- Сайдбар с поиском и результатами -->
-        <div class="sidebar">
+        <div class="sidebar expanded" id="sidebar">
             <div class="header">
                 <div class="logo">TajNav</div>
+                <button class="toggle-sidebar" id="toggle-sidebar">▼</button>
                 <div class="search-container">
                     <input type="text" id="search" placeholder="Ҷустуҷӯи ресторан, дорухона, бонк...">
                     <div class="search-icon">🔍</div>
@@ -266,6 +406,8 @@
                     <button class="category-btn" data-category="market">Марказҳои савдо</button>
                     <button class="category-btn" data-category="hospital">Беморхонаҳо</button>
                     <button class="category-btn" data-category="transport">Истгоҳҳо</button>
+                    <button class="category-btn" data-category="cafe">Кафеҳо</button>
+                    <button class="category-btn" data-category="hotel">Меҳмонхонаҳо</button>
                 </div>
             </div>
 
@@ -277,6 +419,8 @@
         <!-- Карта -->
         <div class="map-container">
             <div id="map"></div>
+            
+            <!-- Панель управления -->
             <div class="control-panel">
                 <!-- Переключатель языка -->
                 <div class="control-group">
@@ -287,7 +431,7 @@
 
                 <!-- Переключатель типа карты -->
                 <div class="control-group">
-                    <button class="map-type-btn active" data-type="street">Картаи оддӣ</button>
+                    <button class="map-type-btn active" data-type="street">Карта</button>
                     <button class="map-type-btn" data-type="satellite">Спутник</button>
                 </div>
 
@@ -298,6 +442,12 @@
                         <span class="location-loading">●</span>
                     </button>
                 </div>
+            </div>
+
+            <!-- Быстрые действия -->
+            <div class="quick-actions">
+                <button class="quick-action-btn" id="quick-location" title="Ҷойгиршавӣ">📍</button>
+                <button class="quick-action-btn" id="quick-search" title="Ҷустуҷӯ">🔍</button>
             </div>
         </div>
     </div>
@@ -430,12 +580,13 @@
 
         // Переменные для управления
         const markers = {};
-        const categories = ['restaurant', 'pharmacy', 'bank', 'market', 'hospital', 'transport'];
+        const categories = ['restaurant', 'pharmacy', 'bank', 'market', 'hospital', 'transport', 'cafe', 'hotel'];
         let currentLanguage = 'tg';
         let currentMapType = 'street';
         let userLocation = null;
         let userMarker = null;
         let watchId = null;
+        let isSidebarExpanded = true;
 
         // Создаем группы маркеров
         categories.forEach(category => {
@@ -455,11 +606,11 @@
             const marker = L.marker([place.lat, place.lng])
                 .bindPopup(`
                     <div style="min-width: 200px;">
-                        <h3>${place.name[currentLanguage]}</h3>
-                        <p>${place.address[currentLanguage]}</p>
-                        ${place.phone ? `<p>📞 ${place.phone}</p>` : ''}
+                        <h3 style="margin: 0 0 8px 0; font-size: 16px;">${place.name[currentLanguage]}</h3>
+                        <p style="margin: 0 0 8px 0; font-size: 14px; color: #666;">${place.address[currentLanguage]}</p>
+                        ${place.phone ? `<p style="margin: 0 0 8px 0; font-size: 14px;">📞 ${place.phone}</p>` : ''}
                         <button onclick="showRoute(${place.lat}, ${place.lng})" 
-                                style="background: #3498db; color: white; border: none; padding: 5px 10px; border-radius: 3px; cursor: pointer; margin-top: 5px;">
+                                style="background: #3498db; color: white; border: none; padding: 8px 16px; border-radius: 6px; cursor: pointer; width: 100%; font-size: 14px;">
                             ${currentLanguage === 'tg' ? 'Нишон додани роҳ' : currentLanguage === 'ru' ? 'Показать маршрут' : 'Show route'}
                         </button>
                     </div>
@@ -589,6 +740,15 @@
         function updateResults(filteredPlaces = places) {
             resultsContainer.innerHTML = '';
             
+            if (filteredPlaces.length === 0) {
+                resultsContainer.innerHTML = `
+                    <div style="text-align: center; padding: 20px; color: #666; font-size: 14px;">
+                        ${currentLanguage === 'tg' ? 'Ҳеҷ чиз ёфт нашуд' : currentLanguage === 'ru' ? 'Ничего не найдено' : 'Nothing found'}
+                    </div>
+                `;
+                return;
+            }
+            
             filteredPlaces.forEach(place => {
                 const resultItem = document.createElement('div');
                 resultItem.className = 'result-item';
@@ -606,6 +766,10 @@
                             layer.openPopup();
                         }
                     });
+                    // Сворачиваем сайдбар на мобильных
+                    if (window.innerWidth < 768) {
+                        toggleSidebar();
+                    }
                 });
                 
                 resultsContainer.appendChild(resultItem);
@@ -619,9 +783,34 @@
                 bank: { tg: 'Бонк', ru: 'Банк', en: 'Bank' },
                 market: { tg: 'Маркази савдо', ru: 'Торговый центр', en: 'Market' },
                 hospital: { tg: 'Беморхона', ru: 'Больница', en: 'Hospital' },
-                transport: { tg: 'Нақлиёт', ru: 'Транспорт', en: 'Transport' }
+                transport: { tg: 'Нақлиёт', ru: 'Транспорт', en: 'Transport' },
+                cafe: { tg: 'Кафе', ru: 'Кафе', en: 'Cafe' },
+                hotel: { tg: 'Меҳмонхона', ru: 'Отель', en: 'Hotel' }
             };
             return names[category][currentLanguage];
+        }
+
+        // Переключение сайдбара
+        function toggleSidebar() {
+            const sidebar = document.getElementById('sidebar');
+            const toggleBtn = document.getElementById('toggle-sidebar');
+            
+            if (isSidebarExpanded) {
+                sidebar.classList.remove('expanded');
+                sidebar.classList.add('collapsed');
+                toggleBtn.textContent = '▲';
+            } else {
+                sidebar.classList.remove('collapsed');
+                sidebar.classList.add('expanded');
+                toggleBtn.textContent = '▼';
+            }
+            
+            isSidebarExpanded = !isSidebarExpanded;
+            
+            // Обновляем карту
+            setTimeout(() => {
+                map.invalidateSize();
+            }, 300);
         }
 
         // Обработчики событий
@@ -682,7 +871,26 @@
         // Кнопка местоположения
         document.getElementById('location-btn').addEventListener('click', locateUser);
 
+        // Быстрые действия
+        document.getElementById('quick-location').addEventListener('click', locateUser);
+        document.getElementById('quick-search').addEventListener('click', function() {
+            if (!isSidebarExpanded) {
+                toggleSidebar();
+            }
+            searchInput.focus();
+        });
+
+        // Переключение сайдбара
+        document.getElementById('toggle-sidebar').addEventListener('click', toggleSidebar);
+
         function updateLanguage() {
+            // Обновляем placeholder поиска
+            searchInput.placeholder = currentLanguage === 'tg' ? 
+                'Ҷустуҷӯи ресторан, дорухона, бонк...' :
+                currentLanguage === 'ru' ?
+                'Поиск ресторана, аптеки, банка...' :
+                'Search for restaurant, pharmacy, bank...';
+            
             updateResults();
             
             // Обновляем текст кнопки местоположения
@@ -706,11 +914,11 @@
                 markers[place.category].eachLayer(layer => {
                     layer.setPopupContent(`
                         <div style="min-width: 200px;">
-                            <h3>${place.name[currentLanguage]}</h3>
-                            <p>${place.address[currentLanguage]}</p>
-                            ${place.phone ? `<p>📞 ${place.phone}</p>` : ''}
+                            <h3 style="margin: 0 0 8px 0; font-size: 16px;">${place.name[currentLanguage]}</h3>
+                            <p style="margin: 0 0 8px 0; font-size: 14px; color: #666;">${place.address[currentLanguage]}</p>
+                            ${place.phone ? `<p style="margin: 0 0 8px 0; font-size: 14px;">📞 ${place.phone}</p>` : ''}
                             <button onclick="showRoute(${place.lat}, ${place.lng})" 
-                                    style="background: #3498db; color: white; border: none; padding: 5px 10px; border-radius: 3px; cursor: pointer; margin-top: 5px;">
+                                    style="background: #3498db; color: white; border: none; padding: 8px 16px; border-radius: 6px; cursor: pointer; width: 100%; font-size: 14px;">
                                 ${currentLanguage === 'tg' ? 'Нишон додани роҳ' : currentLanguage === 'ru' ? 'Показать маршрут' : 'Show route'}
                             </button>
                         </div>
@@ -749,6 +957,13 @@
 
         // Инициализация
         updateResults();
+
+        // Адаптация карты при изменении размера
+        window.addEventListener('resize', function() {
+            setTimeout(() => {
+                map.invalidateSize();
+            }, 100);
+        });
     </script>
 </body>
 </html>
