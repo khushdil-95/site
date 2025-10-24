@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Автоматический счетчик для авторизации с USB</title>
+    <title>Автоматический счетчик для S22</title>
     <style>
         body {
             font-family: Arial, sans-serif;
@@ -76,19 +76,19 @@
             animation: pulse 2s infinite;
         }
 
-        .usb-connected {
+        .s22-connected {
             background-color: #002233;
             color: #00ffff;
             border: 1px solid #00ffff;
         }
 
-        .usb-disconnected {
+        .s22-disconnected {
             background-color: #330000;
             color: #ff4444;
             border: 1px solid #ff4444;
         }
 
-        .usb-scanning {
+        .s22-scanning {
             background-color: #333300;
             color: #ffff00;
             border: 1px solid #ffff00;
@@ -173,7 +173,7 @@
             font-size: 1.1rem;
         }
 
-        .usb-status {
+        .s22-status {
             margin: 20px 0;
             padding: 15px;
             border-radius: 10px;
@@ -249,48 +249,47 @@
             border: 1px solid #00ffff;
         }
 
-        .connected-devices {
+        .s22-device {
             margin: 15px 0;
-            padding: 10px;
+            padding: 15px;
             background: #0a0a0a;
             border-radius: 8px;
             border: 1px solid #333;
         }
 
-        .device-item {
-            padding: 8px;
-            margin: 5px 0;
-            border-radius: 4px;
-            background: #111;
-            border-left: 4px solid #00ffff;
-            border: 1px solid #333;
+        .s22-icon {
+            font-size: 3rem;
+            margin-bottom: 10px;
         }
 
-        .device-info-line {
-            font-size: 0.8rem;
+        .device-details {
+            font-size: 0.9rem;
             color: #888;
-            margin-top: 2px;
+            margin: 5px 0;
         }
     </style>
 </head>
 <body>
     <div class="counter-container">
-        <h1>Автоматический счетчик для авторизации с USB</h1>
+        <h1>Автоматический счетчик для Samsung S22</h1>
         
-        <div class="usb-status" id="usb-status">
-            <span class="scanning-animation">🔍</span> Мониторинг USB устройств...
+        <div class="s22-status" id="s22-status">
+            <span class="scanning-animation">🔍</span> Поиск Samsung Galaxy S22...
         </div>
         
         <div class="device-info">
             <p>Текущий пароль: <span id="password-display">00000000</span></p>
-            <p>Активное устройство: <span id="active-device-name">Не выбрано</span></p>
-            <p>Статус: <span id="connection-status">Ожидание</span></p>
+            <p>Статус устройства: <span id="connection-status">Поиск S22...</span></p>
+            <p>Модель: <span id="device-model">Samsung Galaxy S22</span></p>
         </div>
 
-        <div class="connected-devices">
-            <p><strong>Обнаруженные USB устройства:</strong></p>
-            <div id="devices-list">
-                <div class="device-item">Загрузка списка устройств...</div>
+        <div class="s22-device" id="s22-device">
+            <div class="s22-icon">📱</div>
+            <div><strong>Samsung Galaxy S22</strong></div>
+            <div class="device-details">Snapdragon 8 Gen 1 | 8GB RAM | 128GB</div>
+            <div class="device-details">Android 13 | One UI 5.1</div>
+            <div id="device-action">
+                <!-- Кнопка действия будет здесь -->
             </div>
         </div>
         
@@ -300,13 +299,13 @@
             <div class="progress-bar" id="progress-bar"></div>
         </div>
         
-        <div class="status" id="status">Выберите устройство для начала авторизации</div>
+        <div class="status" id="status">Ожидание подключения Samsung S22</div>
         
         <div class="controls">
             <button class="start" onclick="startAutoAuth()" id="startBtn" disabled>Старт</button>
             <button class="stop" onclick="stopAutoAuth()" id="stopBtn" disabled>Стоп</button>
             <button class="reset" onclick="resetCounter()" id="resetBtn">Сброс</button>
-            <button class="scan" onclick="scanRealUSBDevices()" id="scanBtn">Обновить список</button>
+            <button class="scan" onclick="scanForS22()" id="scanBtn">Сканировать</button>
         </div>
 
         <div class="stats">
@@ -331,118 +330,120 @@
         let speed = 1000;
         let attempts = 0;
         let nextResetPassword = 1;
-        let currentDevice = null;
-        let connectedDevices = [];
+        let isS22Connected = false;
         const MAX_COUNTER = 99999999;
         const TARGET_PASSWORD = "12345678";
 
-        // Список реальных USB устройств, которые могут быть подключены
-        const commonUSBDevices = [
-            { name: "Android Phone", vendor: "Google", type: "Смартфон" },
-            { name: "iPhone", vendor: "Apple", type: "Смартфон" },
-            { name: "USB Mass Storage", vendor: "Generic", type: "Флеш-накопитель" },
-            { name: "External HDD", vendor: "Seagate", type: "Жесткий диск" },
-            { name: "USB Keyboard", vendor: "Logitech", type: "Клавиатура" },
-            { name: "USB Mouse", vendor: "Razer", type: "Мышь" },
-            { name: "Web Camera", vendor: "Logitech", type: "Камера" },
-            { name: "USB Audio Device", vendor: "Realtek", type: "Аудио" },
-            { name: "Network Adapter", vendor: "TP-Link", type: "Сетевое устройство" },
-            { name: "USB Hub", vendor: "Generic", type: "USB-концентратор" },
-            { name: "Samsung Phone", vendor: "Samsung", type: "Смартфон" },
-            { name: "Xiaomi Phone", vendor: "Xiaomi", type: "Смартфон" },
-            { name: "Huawei Phone", vendor: "Huawei", type: "Смартфон" },
-            { name: "Printing Support", vendor: "HP", type: "Принтер" },
-            { name: "Card Reader", vendor: "Generic", type: "Кардридер" }
-        ];
-
-        // Функция для сканирования USB устройств (без запроса разрешений)
-        function scanRealUSBDevices() {
-            const usbStatus = document.getElementById('usb-status');
+        // Функция для поиска Samsung S22
+        function scanForS22() {
+            const s22Status = document.getElementById('s22-status');
             const scanBtn = document.getElementById('scanBtn');
+            const deviceAction = document.getElementById('device-action');
             
-            usbStatus.innerHTML = '<span class="scanning-animation">🔍</span> Сканирование USB портов...';
-            usbStatus.className = 'usb-status usb-scanning';
+            s22Status.innerHTML = '<span class="scanning-animation">🔍</span> Сканирование USB на наличие S22...';
+            s22Status.className = 's22-status s22-scanning';
             scanBtn.disabled = true;
 
-            // Имитация сканирования реальных устройств
+            // Имитация поиска S22
             setTimeout(() => {
-                connectedDevices = [];
+                // 70% шанс найти S22
+                const s22Found = Math.random() < 0.7;
                 
-                // Случайное количество устройств (0-6)
-                const deviceCount = Math.floor(Math.random() * 7);
-                
-                for (let i = 0; i < deviceCount; i++) {
-                    const randomDevice = commonUSBDevices[Math.floor(Math.random() * commonUSBDevices.length)];
-                    const device = {
-                        id: `usb_${Date.now()}_${i}`,
-                        name: randomDevice.name,
-                        vendor: randomDevice.vendor,
-                        type: randomDevice.type,
-                        connected: true,
-                        port: `USB ${Math.floor(Math.random() * 8) + 1}.${Math.floor(Math.random() * 4)}`
-                    };
-                    connectedDevices.push(device);
-                }
-                
-                updateDevicesList();
-                
-                if (connectedDevices.length > 0) {
-                    usbStatus.textContent = `✅ Обнаружено ${connectedDevices.length} USB устройств`;
-                    usbStatus.className = 'usb-status usb-connected';
+                if (s22Found) {
+                    isS22Connected = true;
+                    s22Status.textContent = '✅ Samsung Galaxy S22 обнаружен!';
+                    s22Status.className = 's22-status s22-connected';
                     
-                    // Автоматически выбираем первое устройство, если нет активного
-                    if (!currentDevice) {
-                        selectDevice(connectedDevices[0].id);
-                    }
+                    document.getElementById('connection-status').textContent = 'Подключено';
+                    document.getElementById('connection-status').style.color = '#00ff00';
+                    document.getElementById('startBtn').disabled = false;
+                    document.getElementById('status').textContent = 'Samsung S22 подключен. Нажмите "Старт" для начала авторизации';
+                    
+                    deviceAction.innerHTML = `
+                        <button style="margin-top: 10px; padding: 8px 16px; background: #006600; color: white; border: 1px solid #00ff00; border-radius: 5px;" 
+                                onclick="disconnectS22()">
+                            Отключить S22
+                        </button>
+                    `;
+                    
                 } else {
-                    usbStatus.textContent = '❌ USB устройства не обнаружены';
-                    usbStatus.className = 'usb-status usb-disconnected';
+                    isS22Connected = false;
+                    s22Status.textContent = '❌ Samsung Galaxy S22 не обнаружен';
+                    s22Status.className = 's22-status s22-disconnected';
+                    
+                    document.getElementById('connection-status').textContent = 'Не подключен';
+                    document.getElementById('connection-status').style.color = '#ff4444';
+                    document.getElementById('startBtn').disabled = true;
+                    document.getElementById('status').textContent = 'Samsung S22 не найден. Проверьте подключение и повторите сканирование';
+                    
+                    deviceAction.innerHTML = `
+                        <button style="margin-top: 10px; padding: 8px 16px; background: #660000; color: white; border: 1px solid #ff4444; border-radius: 5px;" 
+                                onclick="forceConnectS22()">
+                            Принудительно подключить S22
+                        </button>
+                    `;
                 }
                 
                 scanBtn.disabled = false;
                 
+            }, 2000);
+        }
+
+        // Принудительное подключение S22
+        function forceConnectS22() {
+            const s22Status = document.getElementById('s22-status');
+            const deviceAction = document.getElementById('device-action');
+            
+            s22Status.innerHTML = '<span class="scanning-animation">🔌</span> Принудительное подключение S22...';
+            s22Status.className = 's22-status s22-scanning';
+
+            setTimeout(() => {
+                isS22Connected = true;
+                s22Status.textContent = '✅ Samsung Galaxy S22 подключен (принудительно)';
+                s22Status.className = 's22-status s22-connected';
+                
+                document.getElementById('connection-status').textContent = 'Подключено (принудительно)';
+                document.getElementById('connection-status').style.color = '#00ff00';
+                document.getElementById('startBtn').disabled = false;
+                document.getElementById('status').textContent = 'Samsung S22 подключен. Нажмите "Старт" для начала авторизации';
+                
+                deviceAction.innerHTML = `
+                    <button style="margin-top: 10px; padding: 8px 16px; background: #006600; color: white; border: 1px solid #00ff00; border-radius: 5px;" 
+                            onclick="disconnectS22()">
+                        Отключить S22
+                    </button>
+                `;
             }, 1500);
         }
 
-        // Обновление списка устройств
-        function updateDevicesList() {
-            const devicesList = document.getElementById('devices-list');
-            devicesList.innerHTML = '';
+        // Отключение S22
+        function disconnectS22() {
+            const s22Status = document.getElementById('s22-status');
+            const deviceAction = document.getElementById('device-action');
             
-            if (connectedDevices.length === 0) {
-                devicesList.innerHTML = '<div class="device-item">USB устройства не обнаружены</div>';
-                return;
-            }
+            // Останавливаем авторизацию при отключении
+            stopAutoAuth();
             
-            connectedDevices.forEach(device => {
-                const deviceElement = document.createElement('div');
-                deviceElement.className = 'device-item';
-                deviceElement.innerHTML = `
-                    <div><strong>${device.name}</strong></div>
-                    <div class="device-info-line">${device.vendor} • ${device.type}</div>
-                    <div class="device-info-line">${device.port}</div>
-                    <button onclick="selectDevice('${device.id}')" 
-                            style="margin-top: 5px; padding: 4px 12px; font-size: 0.8rem; background: #333; color: white; border: 1px solid #555;"
-                            ${currentDevice && currentDevice.id === device.id ? 'disabled' : ''}>
-                        ${currentDevice && currentDevice.id === device.id ? '✅ Активно' : 'Выбрать'}
+            s22Status.innerHTML = '<span class="scanning-animation">🔌</span> Отключение S22...';
+            s22Status.className = 's22-status s22-scanning';
+
+            setTimeout(() => {
+                isS22Connected = false;
+                s22Status.textContent = '❌ Samsung Galaxy S22 отключен';
+                s22Status.className = 's22-status s22-disconnected';
+                
+                document.getElementById('connection-status').textContent = 'Не подключен';
+                document.getElementById('connection-status').style.color = '#ff4444';
+                document.getElementById('startBtn').disabled = true;
+                document.getElementById('status').textContent = 'Samsung S22 отключен. Для работы подключите устройство';
+                
+                deviceAction.innerHTML = `
+                    <button style="margin-top: 10px; padding: 8px 16px; background: #660000; color: white; border: 1px solid #ff4444; border-radius: 5px;" 
+                            onclick="forceConnectS22()">
+                        Принудительно подключить S22
                     </button>
                 `;
-                devicesList.appendChild(deviceElement);
-            });
-        }
-
-        // Выбор устройства
-        function selectDevice(deviceId) {
-            currentDevice = connectedDevices.find(device => device.id === deviceId);
-            if (currentDevice) {
-                document.getElementById('active-device-name').textContent = `${currentDevice.name} (${currentDevice.vendor})`;
-                document.getElementById('connection-status').textContent = 'Подключено';
-                document.getElementById('connection-status').style.color = '#00ff00';
-                document.getElementById('startBtn').disabled = false;
-                document.getElementById('status').textContent = `Устройство "${currentDevice.name}" выбрано. Нажмите "Старт"`;
-                document.getElementById('status').className = 'status';
-                updateDevicesList();
-            }
+            }, 1000);
         }
 
         // Функция для обновления отображения счетчика
@@ -468,10 +469,10 @@
             progressPercent.textContent = `${progress.toFixed(2)}%`;
         }
 
-        // Функция для имитации ввода пароля через USB
+        // Функция для имитации ввода пароля через S22
         function simulateAuth() {
-            if (!currentDevice) {
-                document.getElementById('status').textContent = 'Ошибка: устройство не выбрано!';
+            if (!isS22Connected) {
+                document.getElementById('status').textContent = 'Ошибка: Samsung S22 отключен!';
                 document.getElementById('status').className = 'status stopped';
                 stopAutoAuth();
                 return;
@@ -479,7 +480,7 @@
             
             // Имитация ввода 8-значного пароля
             const password = counter.toString().padStart(8, '0');
-            console.log(`Ввод пароля через ${currentDevice.name}: ${password}`);
+            console.log(`Ввод пароля через Samsung S22: ${password}`);
             
             attempts++;
             document.getElementById('attempts').textContent = attempts;
@@ -493,7 +494,7 @@
                 authStatus.style.color = "#00ff00";
                 
                 const statusElement = document.getElementById('status');
-                statusElement.textContent = `✅ АВТОРИЗАЦИЯ УСПЕШНА! Пароль: ${password} на устройстве ${currentDevice.name}`;
+                statusElement.textContent = `✅ АВТОРИЗАЦИЯ УСПЕШНА! Пароль: ${password} на Samsung S22`;
                 statusElement.className = 'status success';
                 
                 // Автоматически останавливаем счетчик
@@ -537,7 +538,7 @@
                 font-weight: bold;
                 border: 1px solid #00ff00;
             `;
-            notification.textContent = `✅ Пароль ${TARGET_PASSWORD} найден!`;
+            notification.textContent = `✅ Пароль ${TARGET_PASSWORD} найден на S22!`;
             document.body.appendChild(notification);
             
             setTimeout(() => {
@@ -549,8 +550,8 @@
         function startAutoAuth() {
             if (isAutoAuth) return;
             
-            if (!currentDevice) {
-                document.getElementById('status').textContent = 'Ошибка: устройство не выбрано!';
+            if (!isS22Connected) {
+                document.getElementById('status').textContent = 'Ошибка: Samsung S22 не подключен!';
                 document.getElementById('status').className = 'status stopped';
                 return;
             }
@@ -561,7 +562,7 @@
             const stopBtn = document.getElementById('stopBtn');
             const resetBtn = document.getElementById('resetBtn');
             
-            status.textContent = `Авторизация запущена на ${currentDevice.name}...`;
+            status.textContent = `Авторизация запущена на Samsung S22...`;
             status.className = 'status counting';
             
             startBtn.disabled = true;
@@ -626,8 +627,8 @@
         // Инициализация при загрузке страницы
         document.addEventListener('DOMContentLoaded', function() {
             updateDisplay();
-            // Автоматически сканируем устройства при загрузке
-            setTimeout(scanRealUSBDevices, 1000);
+            // Автоматически сканируем S22 при загрузке
+            setTimeout(scanForS22, 1000);
         });
 
         // Обработка нажатия клавиш
@@ -644,7 +645,13 @@
                     resetCounter();
                 }
             } else if (event.key === 's' || event.key === 'S') {
-                scanRealUSBDevices();
+                scanForS22();
+            } else if (event.key === 'c' || event.key === 'C') {
+                if (!isS22Connected) {
+                    forceConnectS22();
+                } else {
+                    disconnectS22();
+                }
             }
         });
     </script>
