@@ -32,7 +32,7 @@
         }
 
         .counter-display {
-            font-size: 4rem;
+            font-size: 3.5rem;
             font-weight: bold;
             font-family: 'Courier New', monospace;
             color: #2c3e50;
@@ -41,7 +41,7 @@
             border-radius: 15px;
             margin: 25px 0;
             border: 3px solid #dee2e6;
-            letter-spacing: 6px;
+            letter-spacing: 4px;
             box-shadow: inset 0 4px 8px rgba(0,0,0,0.1);
         }
 
@@ -195,6 +195,20 @@
             50% { opacity: 1; }
             100% { opacity: 0.5; }
         }
+
+        .speed-controls {
+            display: flex;
+            justify-content: center;
+            gap: 8px;
+            margin-top: 8px;
+            flex-wrap: wrap;
+        }
+
+        .speed-controls button {
+            padding: 6px 12px;
+            font-size: 0.8rem;
+            min-width: 60px;
+        }
     </style>
 </head>
 <body>
@@ -206,12 +220,12 @@
         </div>
         
         <div class="device-info">
-            <p>Текущий пароль: <span id="password-display">000000</span></p>
+            <p>Текущий пароль: <span id="password-display">00000000</span></p>
             <p>USB устройство: <span id="device-name">Не обнаружено</span></p>
             <p>Статус: <span id="connection-status">Поиск...</span></p>
         </div>
         
-        <div class="counter-display" id="counter">000000</div>
+        <div class="counter-display" id="counter">00000000</div>
         
         <div class="progress-container">
             <div class="progress-bar" id="progress-bar"></div>
@@ -227,9 +241,16 @@
 
         <div class="stats">
             <p>Скорость: <span id="speed">1</span> попытка/сек</p>
+            <div class="speed-controls">
+                <button onclick="changeSpeed(2000)">0.5/сек</button>
+                <button onclick="changeSpeed(1000)">1/сек</button>
+                <button onclick="changeSpeed(500)">2/сек</button>
+                <button onclick="changeSpeed(200)">5/сек</button>
+            </div>
             <p>Попыток: <span id="attempts">0</span></p>
             <p>Статус: <span id="auth-status">Ожидание</span></p>
-            <p>Следующий пароль: <span id="next-reset-password">000001</span></p>
+            <p>Следующий пароль: <span id="next-reset-password">00000001</span></p>
+            <p>Прогресс: <span id="progress-percent">0%</span></p>
         </div>
     </div>
 
@@ -243,6 +264,7 @@
         let nextResetPassword = 1;
         let currentDeviceName = "";
         let scanInterval;
+        const MAX_COUNTER = 99999999; // 8-значный максимум
 
         // Функция для сканирования USB устройств
         function scanUSBDevices() {
@@ -306,8 +328,8 @@
             const currentPassword = document.getElementById('current-password');
             const nextResetDisplay = document.getElementById('next-reset-password');
             
-            const formattedCounter = counter.toString().padStart(6, '0');
-            const formattedNextReset = nextResetPassword.toString().padStart(6, '0');
+            const formattedCounter = counter.toString().padStart(8, '0');
+            const formattedNextReset = nextResetPassword.toString().padStart(8, '0');
             
             display.textContent = formattedCounter;
             passwordDisplay.textContent = formattedCounter;
@@ -316,8 +338,10 @@
             
             // Обновление прогресс-бара
             const progressBar = document.getElementById('progress-bar');
-            const progress = (counter / 999999) * 100;
+            const progressPercent = document.getElementById('progress-percent');
+            const progress = (counter / MAX_COUNTER) * 100;
             progressBar.style.width = `${progress}%`;
+            progressPercent.textContent = `${progress.toFixed(2)}%`;
         }
 
         // Функция для имитации ввода пароля через USB
@@ -329,9 +353,9 @@
                 return;
             }
             
-            // Имитация ввода пароля
-            const password = counter.toString().padStart(6, '0');
-            console.log(`Ввод пароля через USB (${currentDeviceName}): ${password}`);
+            // Имитация ввода 8-значного пароля
+            const password = counter.toString().padStart(8, '0');
+            console.log(`Ввод 8-значного пароля через USB (${currentDeviceName}): ${password}`);
             
             attempts++;
             document.getElementById('attempts').textContent = attempts;
@@ -339,12 +363,12 @@
             // Имитация проверки авторизации
             const authStatus = document.getElementById('auth-status');
             
-            // Для демонстрации считаем, что авторизация успешна при пароле "123456"
-            if (password === "123456") {
+            // Для демонстрации считаем, что авторизация успешна при пароле "12345678"
+            if (password === "12345678") {
                 authStatus.textContent = "УСПЕШНО!";
                 authStatus.style.color = "green";
                 stopAutoAuth();
-                document.getElementById('status').textContent = "Авторизация успешна! Пароль: 123456";
+                document.getElementById('status').textContent = "Авторизация успешна! Пароль: 12345678";
                 document.getElementById('status').className = 'status counting';
                 
                 nextResetPassword = counter + 1;
@@ -354,12 +378,12 @@
                 authStatus.style.color = "red";
                 
                 // Увеличиваем счетчик для следующей попытки
-                if (counter < 999999) {
+                if (counter < MAX_COUNTER) {
                     counter++;
                     updateDisplay();
                 } else {
                     stopAutoAuth();
-                    document.getElementById('status').textContent = 'Достигнут максимальный предел!';
+                    document.getElementById('status').textContent = 'Достигнут максимальный предел 99999999!';
                     document.getElementById('status').className = 'status stopped';
                 }
             }
@@ -403,7 +427,7 @@
             const resetBtn = document.getElementById('resetBtn');
             
             if (status.textContent.indexOf("УСПЕШНО") === -1) {
-                status.textContent = `Авторизация остановлена. Текущий пароль: ${counter.toString().padStart(6, '0')}`;
+                status.textContent = `Авторизация остановлена. Текущий пароль: ${counter.toString().padStart(8, '0')}`;
                 status.className = 'status stopped';
             }
             
@@ -424,7 +448,7 @@
             const status = document.getElementById('status');
             const authStatus = document.getElementById('auth-status');
             
-            status.textContent = `Счетчик сброшен. Начинаем с пароля: ${counter.toString().padStart(6, '0')}`;
+            status.textContent = `Счетчик сброшен. Начинаем с пароля: ${counter.toString().padStart(8, '0')}`;
             status.className = 'status';
             
             authStatus.textContent = 'Ожидание';
