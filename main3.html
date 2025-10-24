@@ -1,835 +1,386 @@
-<<<<<<< HEAD
-<html>
+<!doctype html>
+<html lang="ru">
 <head>
-<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
-<title>Шахматы с ИИ</title>
-<style type="text/css">
-body {
-  background: #ddd6f3;
-  font-family: Arial, sans-serif;
-  margin: 0;
-  padding: 10px;
-  text-align: center;
-}
-h1 {
-  margin: 10px 0;
-  font-size: 24px;
-}
-.board-wrap {
-  border: 2px solid #333;
-  padding: 5px;
-  background: #fff;
-  display: inline-block;
-  max-width: 100%;
-}
-#board {
-  margin: 0 auto;
-  border: 2px solid #333;
-  width: 320px;
-  max-width: 95vw;
-}
-table {
-  border-collapse: collapse;
-  width: 100%;
-  table-layout: fixed;
-}
-td {
-  width: 12.5%;
-  height: 12.5vw;
-  max-height: 40px;
-  max-width: 40px;
-  text-align: center;
-  vertical-align: middle;
-  font-size: 6vw;
-  cursor: pointer;
-  border: 1px solid #888;
-}
-.light {
-  background: #f5e1c4;
-}
-.dark {
-  background: #b97a57;
-}
-.selected {
-  outline: 2px solid yellow;
-}
-.hint {
-  background: #ffff99;
-}
-#info {
-  margin: 10px auto;
-  font-size: 16px;
-}
-button {
-  padding: 8px 16px;
-  margin: 5px;
-  font-size: 14px;
-}
-footer {
-  font-size: 12px;
-  margin-top: 15px;
-  color: #333;
-}
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>TjMaps — локальный 2GIS для Таджикистана (HTML-прототип)</title>
 
-/* Оптимизация для мобильных устройств */
-@media screen and (max-width: 480px) {
-  body {
-    padding: 5px;
-  }
-  h1 {
-    font-size: 20px;
-  }
-  #board {
-    width: 280px;
-  }
-  td {
-    height: 10vw;
-    font-size: 5vw;
-  }
-  #info {
-    font-size: 14px;
-  }
-}
+  <!-- Tailwind Play CDN (для прототипа) -->
+  <script src="https://cdn.tailwindcss.com"></script>
 
-@media screen and (max-width: 320px) {
-  #board {
-    width: 240px;
-  }
-  td {
-    height: 8vw;
-    font-size: 4vw;
-  }
-}
-</style>
-<script type="text/javascript">
-// Глобальные переменные
-var piecesStart, glyph, board, selected, whiteTurn, possibleMoves, castling, enPassant;
+  <!-- Leaflet CSS & JS -->
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
+    integrity="sha256-sA+e2Yd3YpXxgGm3k8o4bH1y0k0hNw3w9fDk6b3uS4E=" crossorigin=""/>
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
+    integrity="sha256-o9N1j7k2fB0q7Vv0k6QfZt2g2z1Zrj2rT9q1h3qk6bM=" crossorigin=""></script>
 
-function initGame() {
-  piecesStart = [
-    ["r","n","b","q","k","b","n","r"],
-    ["p","p","p","p","p","p","p","p"],
-    ["","","","","","","",""],
-    ["","","","","","","",""],
-    ["","","","","","","",""],
-    ["","","","","","","",""],
-    ["P","P","P","P","P","P","P","P"],
-    ["R","N","B","Q","K","B","N","R"]
-  ];
-  
-  glyph = {
-    'r':'♜','n':'♞','b':'♝','q':'♛','k':'♚','p':'♟',
-    'R':'♖','N':'♘','B':'♗','Q':'♕','K':'♔','P':'♙','':''
-  };
-  
-  board = copyArray(piecesStart);
-  selected = null;
-  whiteTurn = true;
-  possibleMoves = [];
-  castling = {whiteK:true, whiteQ:true, blackK:true, blackQ:true};
-  enPassant = null;
-  
-  renderBoard();
-  updateTurnDisplay();
-}
-
-function copyArray(arr) {
-  var newArr = [];
-  for (var i = 0; i < arr.length; i++) {
-    newArr[i] = arr[i].slice();
-  }
-  return newArr;
-}
-
-function renderBoard() {
-  var wrap = document.getElementById("board");
-  var html = "<table cellpadding='0' cellspacing='0'>";
-  
-  for (var r = 0; r < 8; r++) {
-    html += "<tr>";
-    for (var c = 0; c < 8; c++) {
-      var color = ((r + c) % 2 == 0) ? 'light' : 'dark';
-      var piece = board[r][c] || "";
-      var disp = glyph[piece] || "";
-      var extra = "";
-      
-      if (selected && selected.r == r && selected.c == c) {
-        extra = " selected";
-      }
-      
-      if (possibleMoves.length > 0) {
-        for (var i = 0; i < possibleMoves.length; i++) {
-          if (possibleMoves[i].r == r && possibleMoves[i].c == c) {
-            extra += " hint";
-            break;
-          }
-        }
-      }
-      
-      html += '<td class="' + color + extra + '" onclick="cellClick(' + r + ',' + c + ')">' + disp + '</td>';
-    }
-    html += "</tr>";
-  }
-  html += "</table>";
-  
-  wrap.innerHTML = html;
-}
-
-function cellClick(r, c) {
-  if (!whiteTurn) return;
-  
-  var piece = board[r][c];
-  
-  if (!selected) {
-    if (piece && isWhite(piece)) {
-      selected = {r: r, c: c};
-      possibleMoves = calcMoves(r, c, true);
-    }
-  } else {
-    if (selected.r == r && selected.c == c) {
-      selected = null;
-      possibleMoves = [];
-    } else {
-      var moveValid = false;
-      for (var i = 0; i < possibleMoves.length; i++) {
-        if (possibleMoves[i].r == r && possibleMoves[i].c == c) {
-          moveValid = true;
-          break;
-        }
-      }
-      
-      if (moveValid) {
-        movePiece(selected.r, selected.c, r, c);
-        whiteTurn = false;
-        updateTurnDisplay();
-        
-        // Адаптивная задержка для ИИ в зависимости от устройства
-        var delay = 300;
-        if (navigator.userAgent.match(/Mobile/)) {
-          delay = 100; // Быстрее на мобильных
-        }
-        setTimeout(aiMove, delay);
-      } else {
-        if (piece && isWhite(piece)) {
-          selected = {r: r, c: c};
-          possibleMoves = calcMoves(r, c, true);
-        } else {
-          selected = null;
-          possibleMoves = [];
-        }
-      }
-    }
-  }
-  
-  renderBoard();
-}
-
-function movePiece(sr, sc, dr, dc) {
-  var piece = board[sr][sc];
-  
-  // Взятие на проходе
-  if (piece == "P" && enPassant && dr == enPassant.r && dc == enPassant.c) {
-    board[dr][dc] = piece;
-    board[sr][sc] = "";
-    board[dr+1][dc] = "";
-  } else if (piece == "p" && enPassant && dr == enPassant.r && dc == enPassant.c) {
-    board[dr][dc] = piece;
-    board[sr][sc] = "";
-    board[dr-1][dc] = "";
-  } else {
-    board[dr][dc] = piece;
-    board[sr][sc] = "";
-  }
-  
-  // Превращение пешки
-  if (piece == "P" && dr == 0) board[dr][dc] = "Q";
-  if (piece == "p" && dr == 7) board[dr][dc] = "q";
-  
-  // Рокировка
-  if (piece == "K" && sc == 4 && (dc == 6 || dc == 2)) {
-    if (dc == 6) {
-      board[7][5] = "R";
-      board[7][7] = "";
-    }
-    if (dc == 2) {
-      board[7][3] = "R";
-      board[7][0] = "";
-    }
-    castling.whiteK = false;
-    castling.whiteQ = false;
-  }
-  if (piece == "k" && sc == 4 && (dc == 6 || dc == 2)) {
-    if (dc == 6) {
-      board[0][5] = "r";
-      board[0][7] = "";
-    }
-    if (dc == 2) {
-      board[0][3] = "r";
-      board[0][0] = "";
-    }
-    castling.blackK = false;
-    castling.blackQ = false;
-  }
-  
-  // Установка en passant
-  enPassant = null;
-  if (piece == "P" && sr == 6 && dr == 4) enPassant = {r: 5, c: sc};
-  if (piece == "p" && sr == 1 && dr == 3) enPassant = {r: 2, c: sc};
-  
-  selected = null;
-  possibleMoves = [];
-}
-
-function isWhite(p) {
-  return p == p.toUpperCase() && p != "";
-}
-
-function isBlack(p) {
-  return p == p.toLowerCase() && p != "";
-}
-
-function calcMoves(r, c, isWhiteSide) {
-  var piece = board[r][c];
-  var moves = [];
-  if (!piece) return moves;
-  
-  // Пешка
-  if (piece == "P") {
-    if (r > 0 && !board[r-1][c]) moves.push({r: r-1, c: c});
-    if (r == 6 && !board[5][c] && !board[4][c]) moves.push({r: 4, c: c});
-    if (r > 0 && c > 0 && isBlack(board[r-1][c-1])) moves.push({r: r-1, c: c-1});
-    if (r > 0 && c < 7 && isBlack(board[r-1][c+1])) moves.push({r: r-1, c: c+1});
-    if (enPassant && r == 3 && Math.abs(c - enPassant.c) == 1) {
-      moves.push({r: enPassant.r, c: enPassant.c});
-    }
-  }
-  
-  if (piece == "p") {
-    if (r < 7 && !board[r+1][c]) moves.push({r: r+1, c: c});
-    if (r == 1 && !board[2][c] && !board[3][c]) moves.push({r: 3, c: c});
-    if (r < 7 && c > 0 && isWhite(board[r+1][c-1])) moves.push({r: r+1, c: c-1});
-    if (r < 7 && c < 7 && isWhite(board[r+1][c+1])) moves.push({r: r+1, c: c+1});
-    if (enPassant && r == 4 && Math.abs(c - enPassant.c) == 1) {
-      moves.push({r: enPassant.r, c: enPassant.c});
-    }
-  }
-  
-  // Ладья
-  if (piece.toLowerCase() == "r") {
-    addLineMoves(r, c, moves, [[-1,0],[1,0],[0,-1],[0,1]], piece);
-  }
-  
-  // Слон
-  if (piece.toLowerCase() == "b") {
-    addLineMoves(r, c, moves, [[-1,-1],[-1,1],[1,-1],[1,1]], piece);
-  }
-  
-  // Ферзь
-  if (piece.toLowerCase() == "q") {
-    addLineMoves(r, c, moves, [[-1,0],[1,0],[0,-1],[0,1],[-1,-1],[-1,1],[1,-1],[1,1]], piece);
-  }
-  
-  // Конь
-  if (piece.toLowerCase() == "n") {
-    addStepMoves(r, c, moves, [[2,1],[2,-1],[-2,1],[-2,-1],[1,2],[1,-2],[-1,2],[-1,-2]], piece);
-  }
-  
-  // Король
-  if (piece.toLowerCase() == "k") {
-    addStepMoves(r, c, moves, [[-1,0],[1,0],[0,-1],[0,1],[-1,-1],[-1,1],[1,-1],[1,1]], piece);
-    
-    // Рокировка
-    if (piece == "K" && r == 7 && c == 4) {
-      if (castling.whiteK && !board[7][5] && !board[7][6]) moves.push({r: 7, c: 6});
-      if (castling.whiteQ && !board[7][1] && !board[7][2] && !board[7][3]) moves.push({r: 7, c: 2});
-    }
-    if (piece == "k" && r == 0 && c == 4) {
-      if (castling.blackK && !board[0][5] && !board[0][6]) moves.push({r: 0, c: 6});
-      if (castling.blackQ && !board[0][1] && !board[0][2] && !board[0][3]) moves.push({r: 0, c: 2});
-    }
-  }
-  
-  return moves;
-}
-
-function addLineMoves(r, c, moves, dirs, piece) {
-  for (var i = 0; i < dirs.length; i++) {
-    var d = dirs[i];
-    var nr = r + d[0];
-    var nc = c + d[1];
-    
-    while (nr >= 0 && nr < 8 && nc >= 0 && nc < 8) {
-      if (!board[nr][nc]) {
-        moves.push({r: nr, c: nc});
-      } else {
-        if (isWhite(piece) && isBlack(board[nr][nc])) moves.push({r: nr, c: nc});
-        if (isBlack(piece) && isWhite(board[nr][nc])) moves.push({r: nr, c: nc});
-        break;
-      }
-      nr += d[0];
-      nc += d[1];
-    }
-  }
-}
-
-function addStepMoves(r, c, moves, steps, piece) {
-  for (var i = 0; i < steps.length; i++) {
-    var s = steps[i];
-    var nr = r + s[0];
-    var nc = c + s[1];
-    
-    if (nr >= 0 && nr < 8 && nc >= 0 && nc < 8) {
-      if (!board[nr][nc]) {
-        moves.push({r: nr, c: nc});
-      } else {
-        if (isWhite(piece) && isBlack(board[nr][nc])) moves.push({r: nr, c: nc});
-        if (isBlack(piece) && isWhite(board[nr][nc])) moves.push({r: nr, c: nc});
-      }
-    }
-  }
-}
-
-// ИИ среднего уровня
-function aiMove() {
-  var pieceValue = {p:1, n:3, b:3, r:5, q:9, k:100};
-  var allMoves = [];
-  
-  for (var r = 0; r < 8; r++) {
-    for (var c = 0; c < 8; c++) {
-      if (isBlack(board[r][c])) {
-        var moves = calcMoves(r, c, false);
-        for (var i = 0; i < moves.length; i++) {
-          var m = moves[i];
-          var target = board[m.r][m.c] || "";
-          var val = isWhite(target) ? pieceValue[target.toLowerCase()] || 0 : 0;
-          allMoves.push({sr: r, sc: c, dr: m.r, dc: m.c, score: val});
-        }
-      }
-    }
-  }
-  
-  if (allMoves.length > 0) {
-    // Сортировка по очкам
-    for (var i = 0; i < allMoves.length - 1; i++) {
-      for (var j = i + 1; j < allMoves.length; j++) {
-        if (allMoves[j].score > allMoves[i].score) {
-          var temp = allMoves[i];
-          allMoves[i] = allMoves[j];
-          allMoves[j] = temp;
-        }
-      }
-    }
-    
-    var best = allMoves[0];
-    movePiece(best.sr, best.sc, best.dr, best.dc);
-  }
-  
-  whiteTurn = true;
-  updateTurnDisplay();
-  renderBoard();
-=======
-<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
-<html>
-<head>
-<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-<title>Шахматы с ИИ</title>
-<style type="text/css">
- body {
-   background: #ddd6f3;
-   font-family: Arial, sans-serif;
-   margin: 0;
-   padding: 5px;
-   text-align: center;
-   overflow: hidden;
-   width: 100%;
-   height: 100vh;
- }
- h1 {
-   margin: 2px 0; 
-   font-size: 16px;
-   color: #333;
- }
- #board {
-   margin: 2px auto; 
-   border: 2px solid #333;
-   width: 96vw;
-   height: 96vw;
-   max-width: 360px;
-   max-height: 360px;
-   box-sizing: border-box;
- }
- table {
-   border-collapse: collapse; 
-   width: 100%;
-   height: 100%;
-   table-layout: fixed;
- }
- td {
-   width: 12.5%; 
-   height: 12.5%;
-   text-align: center; 
-   vertical-align: middle;
-   font-size: 4.5vw;
-   cursor: pointer;
-   border: 1px solid #666;
-   box-sizing: border-box;
-   padding: 0;
- }
- @media (min-width: 400px) {
-   td {
-     font-size: 18px;
-   }
- }
- .light{background: #f5e1c4}
- .dark{background: #b97a57}
- .selected{outline: 2px solid yellow}
- .hint{background: #ffff88}
- #info{
-   margin: 5px auto;
-   font-size: 12px;
- }
- button{
-   padding: 4px 8px; 
-   margin: 3px; 
-   font-size: 11px;
- }
- footer{
-   font-size: 9px; 
-   margin-top: 5px; 
-   color: #333;
- }
- .board-wrap{
-   border: 1px solid #666; 
-   padding: 3px; 
-   background: #e0d0b0; 
-   display: inline-block;
-   box-sizing: border-box;
- }
-</style>
+  <style>
+    /* Небольшие правки для Leaflet в Tailwind-окружении */
+    #map { height: 72vh; width: 100%; }
+    .leaflet-container { background: #fff; }
+  </style>
 </head>
-<body>
-<h1>Шахматы с ИИ</h1>
-<div class="board-wrap">
-  <div id="board"></div>
-</div>
-<div id="info">
-  <div id="turn">Ход: белые</div>
-  <button id="reset">Новая игра</button>
-</div>
-<footer>Шахматы с ИИ среднего уровня</footer>
+<body class="bg-slate-50 text-slate-900">
 
-<script type="text/javascript">
-var piecesStart = [
- ["r","n","b","q","k","b","n","r"],
- ["p","p","p","p","p","p","p","p"],
- ["","","","","","","",""],
- ["","","","","","","",""],
- ["","","","","","","",""],
- ["","","","","","","",""],
- ["P","P","P","P","P","P","P","P"],
- ["R","N","B","Q","K","B","N","R"]
-];
-var glyph = {
- 'r':'♜','n':'♞','b':'♝','q':'♛','k':'♚','p':'♟',
- 'R':'♖','N':'♘','B':'♗','Q':'♕','K':'♔','P':'♙','':''
-};
+  <header class="p-4 bg-white shadow-md flex items-center gap-4">
+    <div class="flex items-center gap-3">
+      <div class="w-10 h-10 rounded-full bg-gradient-to-br from-indigo-500 to-pink-500 flex items-center justify-center text-white font-bold">TJ</div>
+      <div>
+        <h1 class="text-lg font-semibold">TjMaps — локальный 2GIS для Таджикистана</h1>
+        <div class="text-xs text-slate-500">поиск организаций, афиши, отзывы и маршруты (прототип)</div>
+      </div>
+    </div>
 
-var board, selected, whiteTurn, possibleMoves;
-var castling={whiteK:true, whiteQ:true, blackK:true, blackQ:true};
-var enPassant=null;
+    <div class="ml-auto flex items-center gap-2">
+      <input id="inputQuery" placeholder="Поиск: кафе, сервис, адрес..." class="border rounded px-3 py-2 w-64 focus:outline-none" />
+      <select id="selectCity" class="border rounded px-2 py-2">
+        <option value="">Все города</option>
+      </select>
+      <select id="selectCategory" class="border rounded px-2 py-2">
+        <option value="">Все категории</option>
+      </select>
+      <button id="btnToggleAdd" class="px-3 py-2 rounded bg-green-500 text-white">Добавить место</button>
+      <button id="btnReset" class="px-3 py-2 rounded border">Сброс</button>
+    </div>
+  </header>
 
-function init(){
- board = JSON.parse(JSON.stringify(piecesStart));
- selected=null; whiteTurn=true; possibleMoves=[];
- castling={whiteK:true, whiteQ:true, blackK:true, blackQ:true};
- enPassant=null;
- renderBoard();
- document.getElementById("turn").innerText="Ход: белые";
-}
+  <main class="grid grid-cols-3 gap-4 p-4">
+    <aside class="col-span-1 bg-white shadow rounded p-3 max-h-[72vh] overflow-auto">
+      <div class="mb-2 text-sm text-slate-600">Результаты: <span id="resultsCount">0</span></div>
 
-function renderBoard(){
- var wrap=document.getElementById("board");
- var html="<table cellpadding='0' cellspacing='0'>";
- for(var r=0;r<8;r++){
-   html+="<tr>";
-   for(var c=0;c<8;c++){
-     var color=((r+c)%2==0)?'light':'dark';
-     var piece=board[r][c]||"";
-     var disp=glyph[piece]||"";
-     var extra="";
-     if(selected && selected.r==r && selected.c==c) extra=" selected";
-     if(possibleMoves.some(function(m){return m.r==r&&m.c==c})) extra+=" hint";
-     html+='<td class="'+color+extra+'" data-r="'+r+'" data-c="'+c+'">'+disp+'</td>';
-   }
-   html+="</tr>";
- }
- html+="</table>";
- wrap.innerHTML=html;
- var tds=wrap.getElementsByTagName("td");
- for(var i=0;i<tds.length;i++){
-   tds[i].onclick=onCellClick;
- }
-}
+      <div id="listContainer" class="space-y-2"></div>
 
-function onCellClick(e){
- if(!whiteTurn) return;
- var td=e.currentTarget||e.srcElement;
- var r=parseInt(td.getAttribute("data-r")), c=parseInt(td.getAttribute("data-c"));
- var piece=board[r][c];
- 
- if(!selected){
-   if(piece && isWhite(piece)){
-     selected={r:r,c:c};
-     possibleMoves=calcMoves(r,c,true);
-     renderBoard();
-   }
-   return;
- }
- 
- if(selected.r==r && selected.c==c){
-   selected=null; 
-   possibleMoves=[];
-   renderBoard();
-   return;
- }
- 
- if(possibleMoves.some(function(m){return m.r==r&&m.c==c})){
-   movePiece(selected.r,selected.c,r,c);
-   whiteTurn=false;
-   document.getElementById("turn").innerText="Ход: чёрные (ИИ)";
-   renderBoard();
-   // Убрал setTimeout и вызываем ИИ сразу
-   aiMove();
- } else {
-   if(piece && isWhite(piece)){
-     selected={r:r,c:c};
-     possibleMoves=calcMoves(r,c,true);
-     renderBoard();
-   } else {
-     selected=null; 
-     possibleMoves=[];
-     renderBoard();
-   }
- }
-}
+      <div class="mt-4">
+        <h3 class="font-semibold mb-2">Добавить место</h3>
+        <form id="formAdd" class="flex flex-col gap-2">
+          <input id="inpName" required placeholder="Название" class="border rounded px-2 py-1" />
+          <input id="inpCategory" placeholder="Категория" class="border rounded px-2 py-1" />
+          <input id="inpCity" placeholder="Город" class="border rounded px-2 py-1" />
+          <input id="inpAddress" placeholder="Адрес" class="border rounded px-2 py-1" />
+          <input id="inpPhone" placeholder="Телефон" class="border rounded px-2 py-1" />
+          <div class="text-xs text-slate-500">Координаты: <span id="coordsText">—</span></div>
+          <div class="flex gap-2">
+            <button type="submit" class="px-3 py-1 bg-indigo-600 text-white rounded">Сохранить</button>
+            <button type="button" id="btnClear" class="px-3 py-1 border rounded">Очистить</button>
+          </div>
+          <div class="text-xs text-slate-400 mt-1">Чтобы выбрать точку — включите режим добавления и кликните на карте.</div>
+        </form>
+      </div>
+    </aside>
 
-function movePiece(sr,sc,dr,dc){
- var piece=board[sr][sc];
- 
- if(piece=="P" && enPassant && dr==enPassant.r && dc==enPassant.c){
-   board[dr][dc]=piece; 
-   board[sr][sc]="";
-   board[dr+1][dc]="";
- }
- else if(piece=="p" && enPassant && dr==enPassant.r && dc==enPassant.c){
-   board[dr][dc]=piece; 
-   board[sr][sc]="";
-   board[dr-1][dc]="";
- }
- else {
-   board[dr][dc]=piece;
-   board[sr][sc]="";
- }
- 
- if(piece=="P" && dr==0) board[dr][dc]="Q";
- if(piece=="p" && dr==7) board[dr][dc]="q";
+    <section class="col-span-2 bg-white shadow rounded p-2">
+      <div id="map"></div>
+      <div class="text-xs text-slate-500 mt-2">Прототип сохраняет данные в localStorage. Для продакшена нужен сервер и БД.</div>
+    </section>
+  </main>
 
- if(piece=="K" && sc==4){
-   if(dc==6 && castling.whiteK){
-     board[7][5]="R"; 
-     board[7][7]="";
-     castling.whiteK=false; 
-     castling.whiteQ=false;
-   }
-   if(dc==2 && castling.whiteQ){
-     board[7][3]="R"; 
-     board[7][0]="";
-     castling.whiteK=false; 
-     castling.whiteQ=false;
-   }
- }
- if(piece=="k" && sc==4){
-   if(dc==6 && castling.blackK){
-     board[0][5]="r"; 
-     board[0][7]="";
-     castling.blackK=false; 
-     castling.blackQ=false;
-   }
-   if(dc==2 && castling.blackQ){
-     board[0][3]="r"; 
-     board[0][0]="";
-     castling.blackK=false; 
-     castling.blackQ=false;
-   }
- }
+  <footer class="p-3 text-sm text-slate-600 text-center">Прототип © TjMaps — данные в примере сохраняются в localStorage. Для продакшена: Postgres/PostGIS, API, индекс поиска.</footer>
 
- if(piece=="K"){castling.whiteK=false; castling.whiteQ=false;}
- if(piece=="k"){castling.blackK=false; castling.blackQ=false;}
- if(piece=="R" && sr==7){
-   if(sc==0) castling.whiteQ=false;
-   if(sc==7) castling.whiteK=false;
- }
- if(piece=="r" && sr==0){
-   if(sc==0) castling.blackQ=false;
-   if(sc==7) castling.blackK=false;
- }
+  <script>
+    // ========== Seed-данные ==========
+    const SEED = [
+      { id: 'p1', name: 'Кофейня «Сомони»', category: 'Кафе', city: 'Душанбе', coords: [38.559772, 68.787038], address: 'ул. Рудаки, 45', phone: '+992 37 123-45-67', hours: '08:00–23:00' },
+      { id: 'p2', name: 'Театр оперы и балета', category: 'Культура', city: 'Душанбе', coords: [38.5560, 68.7875], address: 'пр. Рудаки, 10', phone: '', hours: '09:00–20:00' },
+      { id: 'p3', name: 'Супермаркет «Ашан»', category: 'Супермаркет', city: 'Худжанд', coords: [40.2865, 69.6178], address: 'ул. Мирзо, 5', phone: '+992 92 765-43-21', hours: '08:00–22:00' },
+      { id: 'p4', name: 'Автосервис «Тахти-Толё»', category: 'Услуги', city: 'Куляб', coords: [37.8511, 69.7831], address: 'ул. Советская, 12', phone: '+992 36 234-11-99', hours: '09:00–18:00' }
+    ];
 
- enPassant=null;
- if(piece=="P" && sr==6 && dr==4) enPassant={r:5,c:sc};
- if(piece=="p" && sr==1 && dr==3) enPassant={r:2,c:sc};
+    // ========== LocalStorage helpers ==========
+    const STORAGE_KEY = 'tj_places_v1';
+    function loadPlaces() {
+      try {
+        const raw = localStorage.getItem(STORAGE_KEY);
+        return raw ? JSON.parse(raw) : SEED.slice();
+      } catch (e) { return SEED.slice(); }
+    }
+    function savePlaces(pl) { localStorage.setItem(STORAGE_KEY, JSON.stringify(pl)); }
 
- selected=null; 
- possibleMoves=[];
-}
+    // ========== State ==========
+    let places = loadPlaces();
+    let addingMode = false;
+    let tempCoords = null; // coords for new place
+    let map, markersLayer, dragMarkerForAdd = null;
 
-function isWhite(p){return p==p.toUpperCase() && p!="";}
-function isBlack(p){return p==p.toLowerCase() && p!="";}
+    // ========== DOM ==========
+    const inputQuery = document.getElementById('inputQuery');
+    const selectCity = document.getElementById('selectCity');
+    const selectCategory = document.getElementById('selectCategory');
+    const btnToggleAdd = document.getElementById('btnToggleAdd');
+    const btnReset = document.getElementById('btnReset');
+    const listContainer = document.getElementById('listContainer');
+    const resultsCount = document.getElementById('resultsCount');
+    const coordsText = document.getElementById('coordsText');
 
-function calcMoves(r,c,isWhiteSide){
- var piece=board[r][c];
- var moves=[];
- if(!piece) return moves;
+    const formAdd = document.getElementById('formAdd');
+    const inpName = document.getElementById('inpName');
+    const inpCategory = document.getElementById('inpCategory');
+    const inpCity = document.getElementById('inpCity');
+    const inpAddress = document.getElementById('inpAddress');
+    const inpPhone = document.getElementById('inpPhone');
+    const btnClear = document.getElementById('btnClear');
 
- if(piece=="P"){
-   if(r>0 && !board[r-1][c]) moves.push({r:r-1,c:c});
-   if(r==6 && !board[5][c] && !board[4][c]) moves.push({r:4,c:c});
-   if(r>0 && c>0 && isBlack(board[r-1][c-1])) moves.push({r:r-1,c:c-1});
-   if(r>0 && c<7 && isBlack(board[r-1][c+1])) moves.push({r:r-1,c:c+1});
-   if(enPassant && r==3 && enPassant.r==2 && Math.abs(c-enPassant.c)==1) 
-     moves.push({r:enPassant.r,c:enPassant.c});
- }
- if(piece=="p"){
-   if(r<7 && !board[r+1][c]) moves.push({r:r+1,c:c});
-   if(r==1 && !board[2][c] && !board[3][c]) moves.push({r:3,c:c});
-   if(r<7 && c>0 && isWhite(board[r+1][c-1])) moves.push({r:r+1,c:c-1});
-   if(r<7 && c<7 && isWhite(board[r+1][c+1])) moves.push({r:r+1,c:c+1});
-   if(enPassant && r==4 && enPassant.r==5 && Math.abs(c-enPassant.c)==1) 
-     moves.push({r:enPassant.r,c:enPassant.c});
- }
+    // ========== Map init ==========
+    function initMap() {
+      map = L.map('map').setView([38.559772, 68.787038], 7);
+      L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        attribution: '&copy; OpenStreetMap contributors'
+      }).addTo(map);
 
- if(piece.toLowerCase()=="r") 
-   addLineMoves(r,c,moves,[[-1,0],[1,0],[0,-1],[0,1]],piece);
- 
- if(piece.toLowerCase()=="b") 
-   addLineMoves(r,c,moves,[[-1,-1],[-1,1],[1,-1],[1,1]],piece);
- 
- if(piece.toLowerCase()=="q") 
-   addLineMoves(r,c,moves,[[-1,0],[1,0],[0,-1],[0,1],[-1,-1],[-1,1],[1,-1],[1,1]],piece);
- 
- if(piece.toLowerCase()=="n") 
-   addStepMoves(r,c,moves,[[2,1],[2,-1],[-2,1],[-2,-1],[1,2],[1,-2],[-1,2],[-1,-2]],piece);
- 
- if(piece.toLowerCase()=="k"){
-   addStepMoves(r,c,moves,[[-1,0],[1,0],[0,-1],[0,1],[-1,-1],[-1,1],[1,-1],[1,1]],piece);
-   
-   if(piece=="K" && r==7 && c==4){
-     if(castling.whiteK && !board[7][5] && !board[7][6])
-       moves.push({r:7,c:6});
-     if(castling.whiteQ && !board[7][1] && !board[7][2] && !board[7][3])
-       moves.push({r:7,c:2});
-   }
-   if(piece=="k" && r==0 && c==4){
-     if(castling.blackK && !board[0][5] && !board[0][6])
-       moves.push({r:0,c:6});
-     if(castling.blackQ && !board[0][1] && !board[0][2] && !board[0][3])
-       moves.push({r:0,c:2});
-   }
- }
- 
- return moves;
-}
+      markersLayer = L.layerGroup().addTo(map);
 
-function addLineMoves(r,c,moves,dirs,piece){
- for(var i=0;i<dirs.length;i++){
-   var d=dirs[i], nr=r+d[0], nc=c+d[1];
-   while(nr>=0&&nr<8&&nc>=0&&nc<8){
-     if(!board[nr][nc]){
-       moves.push({r:nr,c:nc});
-     } else {
-       if((isWhite(piece)&&isBlack(board[nr][nc])) || (isBlack(piece)&&isWhite(board[nr][nc]))){
-         moves.push({r:nr,c:nc});
-       }
-       break;
-     }
-     nr+=d[0]; nc+=d[1];
-   }
- }
-}
+      // click on map (for adding)
+      map.on('click', (e) => {
+        if (!addingMode) return;
+        const { lat, lng } = e.latlng;
+        setTempCoords([lat, lng]);
+      });
 
-function addStepMoves(r,c,moves,steps,piece){
- for(var i=0;i<steps.length;i++){
-   var s=steps[i], nr=r+s[0], nc=c+s[1];
-   if(nr>=0&&nr<8&&nc>=0&&nc<8){
-     if(!board[nr][nc] || 
-        (isWhite(piece)&&isBlack(board[nr][nc])) || 
-        (isBlack(piece)&&isWhite(board[nr][nc]))){
-       moves.push({r:nr,c:nc});
-     }
-   }
- }
-}
+      renderMarkers();
+      refreshFilters();
+    }
 
-var pieceValue={p:1,n:3,b:3,r:5,q:9,k:100};
-function aiMove(){
- // Быстрый ИИ без задержки
- var allMoves=[];
- for(var r=0;r<8;r++){
-   for(var c=0;c<8;c++){
-     if(isBlack(board[r][c])){
-       var moves=calcMoves(r,c,false);
-       for(var i=0;i<moves.length;i++){
-         var m=moves[i];
-         var target=board[m.r][m.c]||"";
-         var val=isWhite(target)?pieceValue[target.toLowerCase()]||0:0;
-         // Упрощенная оценка для скорости
-         val+=Math.random()*0.3;
-         allMoves.push({sr:r,sc:c,dr:m.r,dc:m.c,score:val});
-       }
-     }
-   }
- }
- if(allMoves.length>0){
-   // Быстрая сортировка - берем один из лучших ходов
-   allMoves.sort(function(a,b){return b.score-a.score;});
-   // Берем случайный ход из топ-3 для разнообразия
-   var topMoves = allMoves.slice(0, Math.min(3, allMoves.length));
-   var best = topMoves[Math.floor(Math.random() * topMoves.length)];
-   movePiece(best.sr,best.sc,best.dr,best.dc);
- }
- whiteTurn=true;
- document.getElementById("turn").innerText="Ход: белые";
- renderBoard();
->>>>>>> afe450daea540d2154677ecb552c9331dc7cb9b7
-}
+    // ========== Marker rendering ==========
+    function clearMarkers() {
+      markersLayer.clearLayers();
+    }
 
-function updateTurnDisplay() {
-  var turnText = whiteTurn ? "Ход: белые" : "Ход: чёрные (ИИ)";
-  document.getElementById("turn").innerHTML = turnText;
-}
+    function renderMarkers(filtered = null) {
+      clearMarkers();
+      const list = filtered || places;
+      list.forEach(p => {
+        const m = L.marker(p.coords).addTo(markersLayer);
+        const popupHtml = `
+          <div style="min-width:180px">
+            <strong>${escapeHtml(p.name)}</strong><br/>
+            <small>${escapeHtml(p.category)} • ${escapeHtml(p.city)}</small><br/>
+            <div style="font-size:90%">${escapeHtml(p.address || '')}</div>
+            <div style="margin-top:6px"><button data-id="${p.id}" class="btn-open-route text-xs px-2 py-1 border rounded">Копировать</button>
+            <button data-id="${p.id}" class="btn-delete text-xs px-2 py-1 border rounded">Удалить</button></div>
+          </div>
+        `;
+        m.bindPopup(popupHtml);
+      });
 
-function resetGame() {
-  initGame();
-}
+      // Внутри попапа события клика по кнопкам будут срабатывать вслед за открытием попапа.
+      markersLayer.eachLayer(layer => {
+        layer.on('popupopen', () => {
+          const container = layer.getPopup().getElement();
+          if (!container) return;
+          const btnCopy = container.querySelector('.btn-open-route');
+          const btnDel = container.querySelector('.btn-delete');
+          if (btnCopy) btnCopy.addEventListener('click', () => {
+            const id = btnCopy.getAttribute('data-id');
+            const pl = places.find(x => x.id === id);
+            if (pl) {
+              navigator.clipboard?.writeText(`${pl.name}, ${pl.address || ''} ${pl.city || ''}`);
+              alert('Скопировано в буфер обмена');
+            }
+          });
+          if (btnDel) btnDel.addEventListener('click', () => {
+            const id = btnDel.getAttribute('data-id');
+            if (confirm('Удалить место?')) {
+              places = places.filter(x => x.id !== id);
+              savePlaces(places);
+              render();
+            }
+          });
+        });
+      });
+    }
 
-// Инициализация при загрузке
-window.onload = initGame;
-</script>
-</head>
+    // ========== List render ==========
+    function renderList(filtered = null) {
+      const list = filtered || places;
+      listContainer.innerHTML = '';
+      list.forEach(p => {
+        const el = document.createElement('div');
+        el.className = 'p-3 border rounded mb-2 hover:shadow cursor-pointer bg-white';
+        el.innerHTML = `
+          <div class="flex justify-between items-start gap-2">
+            <div>
+              <div class="font-semibold">${escapeHtml(p.name)}</div>
+              <div class="text-xs text-slate-500">${escapeHtml(p.category)} • ${escapeHtml(p.city)}</div>
+              <div class="text-sm">${escapeHtml(p.address || '')}</div>
+            </div>
+            <div class="text-right text-xs">
+              <div>${escapeHtml(p.phone || '')}</div>
+              <div class="text-slate-400">${escapeHtml(p.hours || '')}</div>
+            </div>
+          </div>
+          <div class="mt-2 flex gap-2">
+            <button data-id="${p.id}" class="btn-copy text-xs px-2 py-1 border rounded">Копировать</button>
+            <button data-id="${p.id}" class="btn-delete text-xs px-2 py-1 border rounded">Удалить</button>
+            <button data-id="${p.id}" class="btn-zoom text-xs px-2 py-1 border rounded">Показать на карте</button>
+          </div>
+        `;
+        listContainer.appendChild(el);
+      });
 
-<body>
-<h1>Шахматы с ИИ</h1>
+      // attach events
+      listContainer.querySelectorAll('.btn-copy').forEach(b => b.addEventListener('click', (e) => {
+        e.stopPropagation();
+        const id = b.getAttribute('data-id');
+        const p = places.find(x => x.id === id);
+        if (p) { navigator.clipboard?.writeText(`${p.name}, ${p.address || ''}`); alert('Скопировано'); }
+      }));
+      listContainer.querySelectorAll('.btn-delete').forEach(b => b.addEventListener('click', (e) => {
+        e.stopPropagation();
+        const id = b.getAttribute('data-id');
+        if (confirm('Удалить место?')) {
+          places = places.filter(x => x.id !== id);
+          savePlaces(places);
+          render();
+        }
+      }));
+      listContainer.querySelectorAll('.btn-zoom').forEach(b => b.addEventListener('click', (e) => {
+        e.stopPropagation();
+        const id = b.getAttribute('data-id');
+        const p = places.find(x => x.id === id);
+        if (p) {
+          map.setView(p.coords, 15, { animate: true });
+        }
+      }));
 
-<div class="board-wrap">
-  <div id="board"></div>
-</div>
+      resultsCount.textContent = list.length;
+    }
 
-<div id="info">
-  <div id="turn">Ход: белые</div>
-  <button onclick="resetGame()">Сбросить игру</button>
-</div>
+    // ========== Filters & Search ==========
+    function getUniqueCities() {
+      return Array.from(new Set(places.map(p => p.city).filter(Boolean))).sort();
+    }
+    function getUniqueCategories() {
+      return Array.from(new Set(places.map(p => p.category).filter(Boolean))).sort();
+    }
+    function refreshFilters() {
+      // cities
+      const cities = getUniqueCities();
+      selectCity.innerHTML = '<option value="">Все города</option>';
+      cities.forEach(c => selectCity.appendChild(new Option(c, c)));
+      // categories
+      const cats = getUniqueCategories();
+      selectCategory.innerHTML = '<option value="">Все категории</option>';
+      cats.forEach(c => selectCategory.appendChild(new Option(c, c)));
+    }
 
-<footer>Шахматы с ИИ среднего уровня (оптимизировано для мобильных устройств)</footer>
+    function applyFilterAndRender() {
+      const q = inputQuery.value.trim().toLowerCase();
+      const city = selectCity.value;
+      const cat = selectCategory.value;
+      const filtered = places.filter(p => {
+        if (q) {
+          const hay = (p.name + ' ' + p.address + ' ' + p.category + ' ' + p.city).toLowerCase();
+          if (!hay.includes(q)) return false;
+        }
+        if (city && p.city !== city) return false;
+        if (cat && p.category !== cat) return false;
+        return true;
+      });
+      renderMarkers(filtered);
+      renderList(filtered);
+      // auto-fit bounds if many results
+      if (filtered.length > 0) {
+        try {
+          const latlngs = filtered.map(x => x.coords);
+          if (latlngs.length > 1) map.fitBounds(latlngs, { padding: [40,40] });
+          else map.setView(latlngs[0], 14);
+        } catch(e) {}
+      }
+    }
 
+    // ========== Add place UI ==========
+    function setAddingMode(on) {
+      addingMode = !!on;
+      btnToggleAdd.textContent = addingMode ? 'Отмена' : 'Добавить место';
+      btnToggleAdd.classList.toggle('bg-red-500', addingMode);
+      btnToggleAdd.classList.toggle('bg-green-500', !addingMode);
+
+      // remove dragMarker if turning off
+      if (!addingMode) {
+        setTempCoords(null);
+      } else {
+        // create draggable marker at center
+        const center = map.getCenter();
+        setTempCoords([center.lat, center.lng]);
+      }
+    }
+
+    function setTempCoords(c) {
+      tempCoords = c;
+      coordsText.textContent = c ? `${c[0].toFixed(5)}, ${c[1].toFixed(5)}` : '—';
+      if (dragMarkerForAdd) {
+        markersLayer.removeLayer(dragMarkerForAdd);
+        dragMarkerForAdd = null;
+      }
+      if (c) {
+        dragMarkerForAdd = L.marker(c, { draggable: true }).addTo(markersLayer);
+        dragMarkerForAdd.on('dragend', (e) => {
+          const p = e.target.getLatLng();
+          setTempCoords([p.lat, p.lng]);
+        });
+        dragMarkerForAdd.bindPopup('Перетащите маркер или кликните на карте, чтобы выбрать точку.').openPopup();
+      }
+    }
+
+    formAdd.addEventListener('submit', (ev) => {
+      ev.preventDefault();
+      if (!tempCoords) { alert('Выберите координаты на карте (включите режим добавления и кликните).'); return; }
+      const id = 'p' + Date.now();
+      const newPlace = {
+        id,
+        name: inpName.value.trim(),
+        category: inpCategory.value.trim(),
+        city: inpCity.value.trim(),
+        address: inpAddress.value.trim(),
+        phone: inpPhone.value.trim(),
+        coords: tempCoords,
+        hours: ''
+      };
+      places.unshift(newPlace);
+      savePlaces(places);
+      // reset form
+      inpName.value = inpCategory.value = inpCity.value = inpAddress.value = inpPhone.value = '';
+      setAddingMode(false);
+      render();
+      alert('Место добавлено');
+    });
+
+    btnClear.addEventListener('click', () => {
+      inpName.value = inpCategory.value = inpCity.value = inpAddress.value = inpPhone.value = '';
+      setTempCoords(null);
+    });
+
+    // ========== UI events ==========
+    btnToggleAdd.addEventListener('click', () => setAddingMode(!addingMode));
+    btnReset.addEventListener('click', () => {
+      if (confirm('Сбросить данные до начального набора seed? Все ваши изменения удалятся.')) {
+        places = SEED.slice();
+        savePlaces(places);
+        render();
+      }
+    });
+
+    inputQuery.addEventListener('input', applyFilterAndRender);
+    selectCity.addEventListener('change', applyFilterAndRender);
+    selectCategory.addEventListener('change', applyFilterAndRender);
+
+    // ========== Render entry ==========
+    function render() {
+      refreshFilters();
+      applyFilterAndRender();
+      renderMarkers();
+    }
+
+    // ========== Utils ==========
+    function escapeHtml(s) {
+      if (!s) return '';
+      return s.replaceAll('&','&amp;').replaceAll('<','&lt;').replaceAll('>','&gt;').replaceAll('"','&quot;').replaceAll("'", '&#39;');
+    }
+
+    // ========== Boot ==========
+    document.addEventListener('DOMContentLoaded', () => {
+      initMap();
+      render();
+    });
+  </script>
 </body>
 </html>
