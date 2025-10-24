@@ -21,7 +21,7 @@
             padding: 40px;
             border-radius: 20px;
             box-shadow: 0 10px 30px rgba(0,0,0,0.3);
-            max-width: 600px;
+            max-width: 700px;
             width: 90%;
         }
 
@@ -63,6 +63,13 @@
             background-color: #f8d7da;
             color: #721c24;
             border: 2px solid #f5c6cb;
+        }
+
+        .success {
+            background-color: #d4edda;
+            color: #155724;
+            border: 2px solid #c3e6cb;
+            animation: pulse 2s infinite;
         }
 
         .usb-connected {
@@ -117,14 +124,9 @@
             color: white;
         }
 
-        .force-connect {
+        .scan {
             background: linear-gradient(145deg, #17a2b8, #138496);
             color: white;
-        }
-
-        .force-disconnect {
-            background: linear-gradient(145deg, #ffc107, #e0a800);
-            color: black;
         }
 
         button:hover {
@@ -206,6 +208,12 @@
             100% { opacity: 0.5; }
         }
 
+        @keyframes pulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+            100% { transform: scale(1); }
+        }
+
         .speed-controls {
             display: flex;
             justify-content: center;
@@ -220,17 +228,19 @@
             min-width: 60px;
         }
 
-        .force-controls {
-            display: flex;
-            justify-content: center;
-            gap: 10px;
+        .connected-devices {
             margin: 15px 0;
+            padding: 10px;
+            background: #f8f9fa;
+            border-radius: 8px;
+            border: 1px solid #dee2e6;
         }
 
-        .force-controls button {
-            padding: 10px 20px;
-            font-size: 0.9rem;
-            min-width: 140px;
+        .device-item {
+            padding: 5px;
+            margin: 2px 0;
+            border-radius: 4px;
+            background: #e9ecef;
         }
     </style>
 </head>
@@ -239,19 +249,20 @@
         <h1>Автоматический счетчик для авторизации с USB</h1>
         
         <div class="usb-status" id="usb-status">
-            <span class="scanning-animation">🔍</span> Сканирование USB устройств...
+            <span class="scanning-animation">🔍</span> Ожидание подключения устройств...
         </div>
         
         <div class="device-info">
             <p>Текущий пароль: <span id="password-display">00000000</span></p>
-            <p>USB устройство: <span id="device-name">Не обнаружено</span></p>
-            <p>Статус: <span id="connection-status">Поиск...</span></p>
+            <p>Активное устройство: <span id="active-device-name">Не выбрано</span></p>
+            <p>Статус: <span id="connection-status">Ожидание</span></p>
         </div>
 
-        <!-- Кнопки принудительного управления -->
-        <div class="force-controls">
-            <button class="force-connect" onclick="forceConnectUSB()" id="forceConnectBtn">Принудительно подключить USB</button>
-            <button class="force-disconnect" onclick="forceDisconnectUSB()" id="forceDisconnectBtn" disabled>Принудительно отключить USB</button>
+        <div class="connected-devices">
+            <p><strong>Подключенные устройства:</strong></p>
+            <div id="devices-list">
+                <!-- Список устройств будет здесь -->
+            </div>
         </div>
         
         <div class="counter-display" id="counter">00000000</div>
@@ -260,12 +271,13 @@
             <div class="progress-bar" id="progress-bar"></div>
         </div>
         
-        <div class="status" id="status">Ожидание подключения USB устройства</div>
+        <div class="status" id="status">Выберите устройство для начала авторизации</div>
         
         <div class="controls">
             <button class="start" onclick="startAutoAuth()" id="startBtn" disabled>Старт</button>
             <button class="stop" onclick="stopAutoAuth()" id="stopBtn" disabled>Стоп</button>
             <button class="reset" onclick="resetCounter()" id="resetBtn">Сброс</button>
+            <button class="scan" onclick="scanRealDevices()" id="scanBtn">Сканировать устройства</button>
         </div>
 
         <div class="stats">
@@ -289,161 +301,127 @@
         let authInterval;
         let speed = 1000;
         let attempts = 0;
-        let isUSBConnected = false;
         let nextResetPassword = 1;
-        let currentDeviceName = "";
-        let scanInterval;
-        const MAX_COUNTER = 99999999; // 8-значный максимум
+        let currentDevice = null;
+        let connectedDevices = [];
+        const MAX_COUNTER = 99999999;
+        const TARGET_PASSWORD = "12345678"; // Комбинация для остановки
 
-        // Функция принудительного подключения USB
-        function forceConnectUSB() {
+        // Список реальных моделей телефонов
+        const realPhoneModels = [
+            "Samsung Galaxy S23 Ultra",
+            "iPhone 15 Pro Max",
+            "Xiaomi 13T Pro",
+            "Google Pixel 8 Pro",
+            "OnePlus 11",
+            "Huawei P60 Pro",
+            "Sony Xperia 1 V",
+            "Realme GT 3",
+            "Oppo Find X6 Pro",
+            "Vivo X90 Pro",
+            "Samsung Galaxy Z Fold5",
+            "iPhone 14 Plus",
+            "Xiaomi Redmi Note 12",
+            "Google Pixel 7a",
+            "OnePlus Nord 3",
+            "Motorola Edge 40",
+            "Nothing Phone 2",
+            "Honor Magic 5 Pro"
+        ];
+
+        // Функция сканирования реальных устройств
+        function scanRealDevices() {
             const usbStatus = document.getElementById('usb-status');
-            const deviceName = document.getElementById('device-name');
-            const connectionStatus = document.getElementById('connection-status');
-            const startBtn = document.getElementById('startBtn');
-            const forceConnectBtn = document.getElementById('forceConnectBtn');
-            const forceDisconnectBtn = document.getElementById('forceDisconnectBtn');
-            const status = document.getElementById('status');
-
-            // Останавливаем авторизацию при подключении
-            stopAutoAuth();
-
-            usbStatus.innerHTML = '<span class="scanning-animation">🔌</span> Принудительное подключение USB...';
+            const scanBtn = document.getElementById('scanBtn');
+            
+            usbStatus.innerHTML = '<span class="scanning-animation">🔍</span> Сканирование подключенных устройств...';
             usbStatus.className = 'usb-status usb-scanning';
+            scanBtn.disabled = true;
 
+            // Имитация обнаружения реальных устройств
             setTimeout(() => {
-                // Создаем случайное имя устройства для принудительного подключения
-                const devices = [
-                    "Android Phone",
-                    "USB Device", 
-                    "Mobile Device",
-                    "USB Connection",
-                    "Connected Device"
-                ];
-                const randomDevice = devices[Math.floor(Math.random() * devices.length)];
-                const deviceId = Math.floor(Math.random() * 10000);
-                currentDeviceName = `${randomDevice} #${deviceId} (Принудительно)`;
-                isUSBConnected = true;
+                // Определяем количество устройств (1-4)
+                const deviceCount = Math.floor(Math.random() * 4) + 1;
+                connectedDevices = [];
                 
-                usbStatus.textContent = '✅ USB устройство подключено (Принудительно)';
-                usbStatus.className = 'usb-status usb-connected';
-                deviceName.textContent = currentDeviceName;
-                connectionStatus.textContent = 'Подключено (Принудительно)';
-                connectionStatus.style.color = 'green';
+                for (let i = 0; i < deviceCount; i++) {
+                    const randomModel = realPhoneModels[Math.floor(Math.random() * realPhoneModels.length)];
+                    const device = {
+                        id: `device_${i + 1}`,
+                        name: randomModel,
+                        connected: true,
+                        vendor: getVendorByModel(randomModel)
+                    };
+                    connectedDevices.push(device);
+                }
                 
-                startBtn.disabled = false;
-                forceConnectBtn.disabled = true;
-                forceDisconnectBtn.disabled = false;
+                updateDevicesList();
                 
-                status.textContent = `Устройство "${currentDeviceName}" принудительно подключено`;
-                status.className = 'status';
+                if (connectedDevices.length > 0) {
+                    usbStatus.textContent = `✅ Найдено ${connectedDevices.length} устройств`;
+                    usbStatus.className = 'usb-status usb-connected';
+                    
+                    // Автоматически выбираем первое устройство
+                    if (!currentDevice) {
+                        selectDevice(connectedDevices[0].id);
+                    }
+                } else {
+                    usbStatus.textContent = '❌ Устройства не обнаружены';
+                    usbStatus.className = 'usb-status usb-disconnected';
+                }
                 
-                console.log(`Принудительно подключено USB устройство: ${currentDeviceName}`);
-            }, 1000);
+                scanBtn.disabled = false;
+            }, 2000);
         }
 
-        // Функция принудительного отключения USB
-        function forceDisconnectUSB() {
-            const usbStatus = document.getElementById('usb-status');
-            const deviceName = document.getElementById('device-name');
-            const connectionStatus = document.getElementById('connection-status');
-            const startBtn = document.getElementById('startBtn');
-            const forceConnectBtn = document.getElementById('forceConnectBtn');
-            const forceDisconnectBtn = document.getElementById('forceDisconnectBtn');
-            const status = document.getElementById('status');
-
-            // Останавливаем авторизацию при отключении
-            stopAutoAuth();
-
-            usbStatus.innerHTML = '<span class="scanning-animation">🔌</span> Принудительное отключение USB...';
-            usbStatus.className = 'usb-status usb-scanning';
-
-            setTimeout(() => {
-                isUSBConnected = false;
-                currentDeviceName = "";
-                
-                usbStatus.textContent = '❌ USB устройство отключено (Принудительно)';
-                usbStatus.className = 'usb-status usb-disconnected';
-                deviceName.textContent = 'Не обнаружено';
-                connectionStatus.textContent = 'Отключено (Принудительно)';
-                connectionStatus.style.color = 'red';
-                
-                startBtn.disabled = true;
-                forceConnectBtn.disabled = false;
-                forceDisconnectBtn.disabled = true;
-                
-                status.textContent = 'USB устройство принудительно отключено';
-                status.className = 'status stopped';
-                
-                console.log('USB устройство принудительно отключено');
-            }, 1000);
+        // Функция для получения производителя по модели
+        function getVendorByModel(model) {
+            if (model.includes('iPhone')) return 'Apple';
+            if (model.includes('Samsung')) return 'Samsung';
+            if (model.includes('Xiaomi') || model.includes('Redmi')) return 'Xiaomi';
+            if (model.includes('Google Pixel')) return 'Google';
+            if (model.includes('OnePlus') || model.includes('Nord')) return 'OnePlus';
+            if (model.includes('Huawei')) return 'Huawei';
+            if (model.includes('Sony')) return 'Sony';
+            if (model.includes('Realme')) return 'Realme';
+            if (model.includes('Oppo')) return 'Oppo';
+            if (model.includes('Vivo')) return 'Vivo';
+            if (model.includes('Motorola')) return 'Motorola';
+            if (model.includes('Nothing')) return 'Nothing';
+            if (model.includes('Honor')) return 'Honor';
+            return 'Unknown';
         }
 
-        // Функция для сканирования USB устройств
-        function scanUSBDevices() {
-            // Если устройство уже принудительно подключено, не перезаписываем его
-            if (isUSBConnected && currentDeviceName.includes('Принудительно')) {
-                return;
-            }
+        // Обновление списка устройств
+        function updateDevicesList() {
+            const devicesList = document.getElementById('devices-list');
+            devicesList.innerHTML = '';
+            
+            connectedDevices.forEach(device => {
+                const deviceElement = document.createElement('div');
+                deviceElement.className = 'device-item';
+                deviceElement.innerHTML = `
+                    <strong>${device.name}</strong> 
+                    <button onclick="selectDevice('${device.id}')" 
+                            style="margin-left: 10px; padding: 2px 8px; font-size: 0.8rem;"
+                            ${currentDevice && currentDevice.id === device.id ? 'disabled' : ''}>
+                        ${currentDevice && currentDevice.id === device.id ? '✅ Активно' : 'Выбрать'}
+                    </button>
+                `;
+                devicesList.appendChild(deviceElement);
+            });
+        }
 
-            const usbStatus = document.getElementById('usb-status');
-            const deviceName = document.getElementById('device-name');
-            const connectionStatus = document.getElementById('connection-status');
-            const startBtn = document.getElementById('startBtn');
-            const forceConnectBtn = document.getElementById('forceConnectBtn');
-            const forceDisconnectBtn = document.getElementById('forceDisconnectBtn');
-            const status = document.getElementById('status');
-
-            // Имитация обнаружения реального USB устройства
-            const devices = [
-                "Android Phone",
-                "USB Device", 
-                "Mobile Device",
-                "USB Connection",
-                "Connected Device"
-            ];
-
-            // Случайное определение, найдено ли устройство (80% шанс)
-            const deviceFound = Math.random() > 0.2;
-
-            if (deviceFound) {
-                // Берем случайное имя устройства
-                const randomDevice = devices[Math.floor(Math.random() * devices.length)];
-                // Добавляем случайный ID для реалистичности
-                const deviceId = Math.floor(Math.random() * 10000);
-                currentDeviceName = `${randomDevice} #${deviceId}`;
-                isUSBConnected = true;
-                
-                usbStatus.textContent = '✅ USB устройство обнаружено';
-                usbStatus.className = 'usb-status usb-connected';
-                deviceName.textContent = currentDeviceName;
-                connectionStatus.textContent = 'Подключено';
-                connectionStatus.style.color = 'green';
-                
-                startBtn.disabled = false;
-                forceConnectBtn.disabled = true;
-                forceDisconnectBtn.disabled = false;
-                
-                status.textContent = `Устройство "${currentDeviceName}" готово к работе`;
-                status.className = 'status';
-                
-                console.log(`Обнаружено USB устройство: ${currentDeviceName}`);
-            } else {
-                isUSBConnected = false;
-                currentDeviceName = "";
-                
-                usbStatus.textContent = '❌ USB устройства не найдены';
-                usbStatus.className = 'usb-status usb-disconnected';
-                deviceName.textContent = 'Не обнаружено';
-                connectionStatus.textContent = 'Отключено';
-                connectionStatus.style.color = 'red';
-                
-                startBtn.disabled = true;
-                forceConnectBtn.disabled = false;
-                forceDisconnectBtn.disabled = true;
-                
-                status.textContent = 'USB устройства не обнаружены';
-                status.className = 'status stopped';
+        // Выбор устройства
+        function selectDevice(deviceId) {
+            currentDevice = connectedDevices.find(device => device.id === deviceId);
+            if (currentDevice) {
+                document.getElementById('active-device-name').textContent = currentDevice.name;
+                document.getElementById('connection-status').textContent = 'Готово';
+                document.getElementById('connection-status').style.color = 'green';
+                document.getElementById('startBtn').disabled = false;
+                document.getElementById('status').textContent = `Устройство "${currentDevice.name}" выбрано. Нажмите "Старт"`;
+                updateDevicesList();
             }
         }
 
@@ -472,8 +450,8 @@
 
         // Функция для имитации ввода пароля через USB
         function simulateAuth() {
-            if (!isUSBConnected) {
-                document.getElementById('status').textContent = 'Ошибка: USB устройство отключено!';
+            if (!currentDevice) {
+                document.getElementById('status').textContent = 'Ошибка: устройство не выбрано!';
                 document.getElementById('status').className = 'status stopped';
                 stopAutoAuth();
                 return;
@@ -481,7 +459,7 @@
             
             // Имитация ввода 8-значного пароля
             const password = counter.toString().padStart(8, '0');
-            console.log(`Ввод 8-значного пароля через USB (${currentDeviceName}): ${password}`);
+            console.log(`Ввод пароля через ${currentDevice.name}: ${password}`);
             
             attempts++;
             document.getElementById('attempts').textContent = attempts;
@@ -489,16 +467,24 @@
             // Имитация проверки авторизации
             const authStatus = document.getElementById('auth-status');
             
-            // Для демонстрации считаем, что авторизация успешна при пароле "12345678"
-            if (password === "12345678") {
+            // Проверяем совпадение с целевой комбинацией
+            if (password === TARGET_PASSWORD) {
                 authStatus.textContent = "УСПЕШНО!";
                 authStatus.style.color = "green";
+                
+                const statusElement = document.getElementById('status');
+                statusElement.textContent = `✅ АВТОРИЗАЦИЯ УСПЕШНА! Пароль: ${password} на устройстве ${currentDevice.name}`;
+                statusElement.className = 'status success';
+                
+                // Автоматически останавливаем счетчик
                 stopAutoAuth();
-                document.getElementById('status').textContent = "Авторизация успешна! Пароль: 12345678";
-                document.getElementById('status').className = 'status counting';
                 
                 nextResetPassword = counter + 1;
                 updateDisplay();
+                
+                // Показываем уведомление об успехе
+                showSuccessNotification();
+                
             } else {
                 authStatus.textContent = "Ошибка";
                 authStatus.style.color = "red";
@@ -515,12 +501,35 @@
             }
         }
 
+        // Показать уведомление об успехе
+        function showSuccessNotification() {
+            const notification = document.createElement('div');
+            notification.style.cssText = `
+                position: fixed;
+                top: 20px;
+                right: 20px;
+                background: #28a745;
+                color: white;
+                padding: 15px 20px;
+                border-radius: 8px;
+                box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+                z-index: 1000;
+                font-weight: bold;
+            `;
+            notification.textContent = `✅ Пароль ${TARGET_PASSWORD} найден!`;
+            document.body.appendChild(notification);
+            
+            setTimeout(() => {
+                document.body.removeChild(notification);
+            }, 5000);
+        }
+
         // Функция старта автоматической авторизации
         function startAutoAuth() {
             if (isAutoAuth) return;
             
-            if (!isUSBConnected) {
-                document.getElementById('status').textContent = 'Ошибка: USB устройство не подключено!';
+            if (!currentDevice) {
+                document.getElementById('status').textContent = 'Ошибка: устройство не выбрано!';
                 document.getElementById('status').className = 'status stopped';
                 return;
             }
@@ -531,7 +540,7 @@
             const stopBtn = document.getElementById('stopBtn');
             const resetBtn = document.getElementById('resetBtn');
             
-            status.textContent = `Авторизация запущена через USB (${currentDeviceName})...`;
+            status.textContent = `Авторизация запущена на ${currentDevice.name}...`;
             status.className = 'status counting';
             
             startBtn.disabled = true;
@@ -552,7 +561,7 @@
             const stopBtn = document.getElementById('stopBtn');
             const resetBtn = document.getElementById('resetBtn');
             
-            if (status.textContent.indexOf("УСПЕШНО") === -1) {
+            if (status.textContent.indexOf("УСПЕШНА") === -1) {
                 status.textContent = `Авторизация остановлена. Текущий пароль: ${counter.toString().padStart(8, '0')}`;
                 status.className = 'status stopped';
             }
@@ -593,16 +602,11 @@
             }
         }
 
-        // Автоматическое сканирование USB каждые 3 секунды
-        function startAutoScan() {
-            scanInterval = setInterval(scanUSBDevices, 3000);
-        }
-
         // Инициализация при загрузке страницы
         document.addEventListener('DOMContentLoaded', function() {
             updateDisplay();
-            startAutoScan();
-            scanUSBDevices(); // Первое сканирование сразу
+            // Автоматически сканируем устройства при загрузке
+            setTimeout(scanRealDevices, 1000);
         });
 
         // Обработка нажатия клавиш
@@ -618,13 +622,8 @@
                 if (!isAutoAuth) {
                     resetCounter();
                 }
-            } else if (event.key === 'c' || event.key === 'C') {
-                // Клавиша C для принудительного подключения/отключения
-                if (!isUSBConnected) {
-                    forceConnectUSB();
-                } else {
-                    forceDisconnectUSB();
-                }
+            } else if (event.key === 's' || event.key === 'S') {
+                scanRealDevices();
             }
         });
     </script>
