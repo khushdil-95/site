@@ -148,29 +148,57 @@
             width: 100%;
         }
 
-        /* Языковой переключатель */
-        .language-switcher {
+        /* Панель управления */
+        .control-panel {
             position: absolute;
             top: 20px;
             right: 20px;
             z-index: 1000;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .control-group {
             background: white;
             border-radius: 6px;
             box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+            overflow: hidden;
         }
 
-        .lang-btn {
+        .lang-btn, .map-type-btn, .location-btn {
             padding: 8px 15px;
             border: none;
             background: none;
             cursor: pointer;
             font-size: 12px;
+            transition: all 0.3s;
+            display: block;
+            width: 100%;
+            text-align: left;
         }
 
-        .lang-btn.active {
+        .lang-btn:hover, .map-type-btn:hover, .location-btn:hover {
+            background: #f8f9fa;
+        }
+
+        .lang-btn.active, .map-type-btn.active {
             background: #3498db;
             color: white;
-            border-radius: 6px;
+        }
+
+        .location-btn {
+            border-top: 1px solid #eee;
+        }
+
+        .location-btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        .location-loading {
+            display: none;
+            font-size: 10px;
         }
 
         /* Адаптивность */
@@ -182,6 +210,38 @@
                 width: 100%;
                 height: 40%;
             }
+            .control-panel {
+                top: 10px;
+                right: 10px;
+            }
+        }
+
+        /* Маркер местоположения */
+        .location-marker {
+            background: #3498db;
+            border: 3px solid white;
+            border-radius: 50%;
+            width: 16px;
+            height: 16px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.3);
+        }
+
+        .location-pulse {
+            background: #3498db;
+            border-radius: 50%;
+            width: 24px;
+            height: 24px;
+            position: absolute;
+            left: -4px;
+            top: -4px;
+            opacity: 0.4;
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0% { transform: scale(1); opacity: 0.4; }
+            70% { transform: scale(2); opacity: 0; }
+            100% { transform: scale(2); opacity: 0; }
         }
     </style>
 </head>
@@ -217,10 +277,27 @@
         <!-- Карта -->
         <div class="map-container">
             <div id="map"></div>
-            <div class="language-switcher">
-                <button class="lang-btn active" data-lang="tg">Тоҷикӣ</button>
-                <button class="lang-btn" data-lang="ru">Русский</button>
-                <button class="lang-btn" data-lang="en">English</button>
+            <div class="control-panel">
+                <!-- Переключатель языка -->
+                <div class="control-group">
+                    <button class="lang-btn active" data-lang="tg">Тоҷикӣ</button>
+                    <button class="lang-btn" data-lang="ru">Русский</button>
+                    <button class="lang-btn" data-lang="en">English</button>
+                </div>
+
+                <!-- Переключатель типа карты -->
+                <div class="control-group">
+                    <button class="map-type-btn active" data-type="street">Картаи оддӣ</button>
+                    <button class="map-type-btn" data-type="satellite">Спутник</button>
+                </div>
+
+                <!-- Кнопка местоположения -->
+                <div class="control-group">
+                    <button class="location-btn" id="location-btn">
+                        <span class="location-text">Ҷойгиршавӣ</span>
+                        <span class="location-loading">●</span>
+                    </button>
+                </div>
             </div>
         </div>
     </div>
@@ -335,22 +412,43 @@
         // Инициализация карты
         const map = L.map('map').setView([38.575, 68.785], 14);
 
-        // Добавление слоя карты (OpenStreetMap)
-        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-            attribution: '© OpenStreetMap contributors',
-            maxZoom: 18
-        }).addTo(map);
+        // Слои карты
+        const mapLayers = {
+            street: L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                attribution: '© OpenStreetMap contributors',
+                maxZoom: 18
+            }),
+            satellite: L.tileLayer('https://{s}.google.com/vt/lyrs=s&x={x}&y={y}&z={z}', {
+                maxZoom: 20,
+                subdomains: ['mt0', 'mt1', 'mt2', 'mt3'],
+                attribution: '© Google'
+            })
+        };
 
-        // Группы маркеров по категориям
+        // Добавляем стандартный слой по умолчанию
+        mapLayers.street.addTo(map);
+
+        // Переменные для управления
         const markers = {};
         const categories = ['restaurant', 'pharmacy', 'bank', 'market', 'hospital', 'transport'];
-        
+        let currentLanguage = 'tg';
+        let currentMapType = 'street';
+        let userLocation = null;
+        let userMarker = null;
+        let watchId = null;
+
+        // Создаем группы маркеров
         categories.forEach(category => {
             markers[category] = L.layerGroup().addTo(map);
         });
 
-        let currentLanguage = 'tg';
-        let popup = null;
+        // Создаем кастомный маркер для местоположения пользователя
+        const locationIcon = L.divIcon({
+            className: 'location-marker',
+            html: '<div class="location-pulse"></div>',
+            iconSize: [16, 16],
+            iconAnchor: [8, 8]
+        });
 
         // Функция для создания маркера
         function createMarker(place) {
@@ -362,7 +460,7 @@
                         ${place.phone ? `<p>📞 ${place.phone}</p>` : ''}
                         <button onclick="showRoute(${place.lat}, ${place.lng})" 
                                 style="background: #3498db; color: white; border: none; padding: 5px 10px; border-radius: 3px; cursor: pointer; margin-top: 5px;">
-                            Нишон додани роҳ
+                            ${currentLanguage === 'tg' ? 'Нишон додани роҳ' : currentLanguage === 'ru' ? 'Показать маршрут' : 'Show route'}
                         </button>
                     </div>
                 `);
@@ -375,6 +473,113 @@
         places.forEach(place => {
             createMarker(place);
         });
+
+        // Функция определения местоположения
+        function locateUser() {
+            const locationBtn = document.getElementById('location-btn');
+            const locationText = locationBtn.querySelector('.location-text');
+            const locationLoading = locationBtn.querySelector('.location-loading');
+
+            if (!navigator.geolocation) {
+                alert(currentLanguage === 'tg' ? 
+                    'Ҷойгиршавии шумо дастгирӣ намешавад' :
+                    currentLanguage === 'ru' ?
+                    'Геолокация не поддерживается вашим браузером' :
+                    'Geolocation is not supported by your browser');
+                return;
+            }
+
+            locationBtn.disabled = true;
+            locationText.style.display = 'none';
+            locationLoading.style.display = 'inline';
+
+            // Останавливаем предыдущее отслеживание
+            if (watchId) {
+                navigator.geolocation.clearWatch(watchId);
+            }
+
+            watchId = navigator.geolocation.watchPosition(
+                function(position) {
+                    const lat = position.coords.latitude;
+                    const lng = position.coords.longitude;
+                    
+                    userLocation = { lat, lng };
+                    
+                    // Убираем старый маркер
+                    if (userMarker) {
+                        map.removeLayer(userMarker);
+                    }
+                    
+                    // Добавляем новый маркер
+                    userMarker = L.marker([lat, lng], { icon: locationIcon })
+                        .addTo(map)
+                        .bindPopup(currentLanguage === 'tg' ? 
+                            'Шумо дар ин ҷо ҳастед' :
+                            currentLanguage === 'ru' ?
+                            'Вы здесь' :
+                            'You are here'
+                        );
+                    
+                    // Центрируем карту на пользователе
+                    map.setView([lat, lng], 16);
+                    
+                    // Обновляем текст кнопки
+                    locationText.textContent = currentLanguage === 'tg' ? 
+                        'Ҷойгиршавии фаъол' :
+                        currentLanguage === 'ru' ?
+                        'Местоположение активно' :
+                        'Location active';
+                    
+                    locationBtn.disabled = false;
+                    locationText.style.display = 'inline';
+                    locationLoading.style.display = 'none';
+                },
+                function(error) {
+                    locationBtn.disabled = false;
+                    locationText.style.display = 'inline';
+                    locationLoading.style.display = 'none';
+                    
+                    let errorMessage = '';
+                    switch(error.code) {
+                        case error.PERMISSION_DENIED:
+                            errorMessage = currentLanguage === 'tg' ?
+                                'Иҷозати ҷойгиршавӣ дода нашуд' :
+                                currentLanguage === 'ru' ?
+                                'Доступ к геолокации запрещен' :
+                                'Location access denied';
+                            break;
+                        case error.POSITION_UNAVAILABLE:
+                            errorMessage = currentLanguage === 'tg' ?
+                                'Маълумоти ҷойгиршавӣ дастрас нест' :
+                                currentLanguage === 'ru' ?
+                                'Информация о местоположении недоступна' :
+                                'Location information unavailable';
+                            break;
+                        case error.TIMEOUT:
+                            errorMessage = currentLanguage === 'tg' ?
+                                'Ҷустуҷӯи ҷойгиршавӣ ба охир расид' :
+                                currentLanguage === 'ru' ?
+                                'Время определения местоположения истекло' :
+                                'Location request timed out';
+                            break;
+                        default:
+                            errorMessage = currentLanguage === 'tg' ?
+                                'Хатои номаълум' :
+                                currentLanguage === 'ru' ?
+                                'Неизвестная ошибка' :
+                                'Unknown error';
+                            break;
+                    }
+                    
+                    alert(errorMessage);
+                },
+                {
+                    enableHighAccuracy: true,
+                    timeout: 10000,
+                    maximumAge: 60000
+                }
+            );
+        }
 
         // Поиск и фильтрация
         const searchInput = document.getElementById('search');
@@ -447,7 +652,7 @@
             });
         });
 
-        // Языковой переключатель
+        // Переключатель языка
         document.querySelectorAll('.lang-btn').forEach(btn => {
             btn.addEventListener('click', function() {
                 document.querySelectorAll('.lang-btn').forEach(b => b.classList.remove('active'));
@@ -457,8 +662,45 @@
             });
         });
 
+        // Переключатель типа карты
+        document.querySelectorAll('.map-type-btn').forEach(btn => {
+            btn.addEventListener('click', function() {
+                document.querySelectorAll('.map-type-btn').forEach(b => b.classList.remove('active'));
+                this.classList.add('active');
+                
+                const newMapType = this.dataset.type;
+                
+                // Убираем текущий слой
+                mapLayers[currentMapType].removeFrom(map);
+                
+                // Добавляем новый слой
+                mapLayers[newMapType].addTo(map);
+                currentMapType = newMapType;
+            });
+        });
+
+        // Кнопка местоположения
+        document.getElementById('location-btn').addEventListener('click', locateUser);
+
         function updateLanguage() {
             updateResults();
+            
+            // Обновляем текст кнопки местоположения
+            const locationText = document.querySelector('.location-text');
+            if (watchId) {
+                locationText.textContent = currentLanguage === 'tg' ? 
+                    'Ҷойгиршавии фаъол' :
+                    currentLanguage === 'ru' ?
+                    'Местоположение активно' :
+                    'Location active';
+            } else {
+                locationText.textContent = currentLanguage === 'tg' ? 
+                    'Ҷойгиршавӣ' :
+                    currentLanguage === 'ru' ?
+                    'Местоположение' :
+                    'Location';
+            }
+            
             // Обновить попапы маркеров
             places.forEach(place => {
                 markers[place.category].eachLayer(layer => {
@@ -475,24 +717,38 @@
                     `);
                 });
             });
+            
+            // Обновить попап местоположения пользователя
+            if (userMarker) {
+                userMarker.setPopupContent(currentLanguage === 'tg' ? 
+                    'Шумо дар ин ҷо ҳастед' :
+                    currentLanguage === 'ru' ?
+                    'Вы здесь' :
+                    'You are here'
+                );
+            }
         }
 
         // Функция показа маршрута (заглушка)
         window.showRoute = function(lat, lng) {
-            alert(currentLanguage === 'tg' ? 
-                'Хизмати маршрут ба зудӣ дастрас мешавад!' :
-                currentLanguage === 'ru' ?
-                'Сервис маршрутизации скоро будет доступен!' :
-                'Route service will be available soon!');
+            if (userLocation) {
+                // Здесь можно добавить логику построения маршрута
+                alert(currentLanguage === 'tg' ? 
+                    `Маршрут аз ҷойгиршавии шумо то координатаҳо: ${lat.toFixed(4)}, ${lng.toFixed(4)}` :
+                    currentLanguage === 'ru' ?
+                    `Маршрут от вашего местоположения до координат: ${lat.toFixed(4)}, ${lng.toFixed(4)}` :
+                    `Route from your location to coordinates: ${lat.toFixed(4)}, ${lng.toFixed(4)}`);
+            } else {
+                alert(currentLanguage === 'tg' ? 
+                    'Хизмати маршрут ба зудӣ дастрас мешавад!' :
+                    currentLanguage === 'ru' ?
+                    'Сервис маршрутизации скоро будет доступен!' :
+                    'Route service will be available soon!');
+            }
         };
 
         // Инициализация
         updateResults();
-
-        // Показать все маркеры при загрузке
-        categories.forEach(category => {
-            map.addLayer(markers[category]);
-        });
     </script>
 </body>
 </html>
