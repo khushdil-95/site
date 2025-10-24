@@ -3,146 +3,229 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Автоматический счетчик для S22</title>
+    <title>IT Security Auth System</title>
     <style>
         body {
-            font-family: Arial, sans-serif;
+            font-family: 'Courier New', monospace;
             display: flex;
             justify-content: center;
             align-items: center;
             min-height: 100vh;
             margin: 0;
-            background: #000000;
-            color: #ffffff;
+            background: 
+                radial-gradient(circle at 20% 80%, rgba(120, 119, 198, 0.3) 0%, transparent 50%),
+                radial-gradient(circle at 80% 20%, rgba(255, 119, 198, 0.3) 0%, transparent 50%),
+                radial-gradient(circle at 40% 40%, rgba(120, 219, 255, 0.2) 0%, transparent 50%),
+                linear-gradient(135deg, #0c0c0c 0%, #1a1a2e 50%, #16213e 100%);
+            color: #00ff00;
+            overflow-x: hidden;
+        }
+
+        .matrix-bg {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: -1;
+            opacity: 0.1;
         }
 
         .counter-container {
             text-align: center;
-            background: #1a1a1a;
+            background: rgba(10, 15, 30, 0.95);
             padding: 40px;
             border-radius: 15px;
-            box-shadow: 0 0 30px rgba(0, 255, 255, 0.3);
-            max-width: 700px;
+            box-shadow: 
+                0 0 30px rgba(0, 255, 255, 0.5),
+                inset 0 0 20px rgba(0, 255, 255, 0.1);
+            max-width: 800px;
             width: 90%;
-            border: 1px solid #333;
+            border: 1px solid #00ffff;
+            position: relative;
+            backdrop-filter: blur(10px);
+        }
+
+        .counter-container::before {
+            content: '';
+            position: absolute;
+            top: -2px;
+            left: -2px;
+            right: -2px;
+            bottom: -2px;
+            background: linear-gradient(45deg, #00ffff, #00ff00, #ff00ff, #00ffff);
+            border-radius: 17px;
+            z-index: -1;
+            animation: borderGlow 3s linear infinite;
+        }
+
+        @keyframes borderGlow {
+            0% { opacity: 0.5; }
+            50% { opacity: 1; }
+            100% { opacity: 0.5; }
         }
 
         h1 {
             color: #00ffff;
             margin-bottom: 30px;
-            font-size: 1.8rem;
-            text-shadow: 0 0 10px rgba(0, 255, 255, 0.5);
+            font-size: 2.2rem;
+            text-shadow: 0 0 15px rgba(0, 255, 255, 0.7);
+            background: linear-gradient(90deg, #00ffff, #00ff00);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            font-weight: bold;
         }
 
         .counter-display {
-            font-size: 3.5rem;
+            font-size: 4rem;
             font-weight: bold;
             font-family: 'Courier New', monospace;
             color: #00ff00;
-            background: #0a0a0a;
-            padding: 25px;
+            background: rgba(0, 20, 0, 0.8);
+            padding: 30px;
             border-radius: 10px;
             margin: 25px 0;
             border: 2px solid #00ff00;
-            letter-spacing: 4px;
-            box-shadow: 0 0 20px rgba(0, 255, 0, 0.3);
-            text-shadow: 0 0 10px rgba(0, 255, 0, 0.5);
+            letter-spacing: 6px;
+            box-shadow: 
+                0 0 25px rgba(0, 255, 0, 0.4),
+                inset 0 0 15px rgba(0, 255, 0, 0.2);
+            text-shadow: 0 0 10px rgba(0, 255, 0, 0.8);
+            animation: pulseGlow 2s ease-in-out infinite alternate;
+        }
+
+        @keyframes pulseGlow {
+            from { box-shadow: 0 0 25px rgba(0, 255, 0, 0.4); }
+            to { box-shadow: 0 0 35px rgba(0, 255, 0, 0.8); }
         }
 
         .status {
             font-size: 1.1rem;
             margin: 15px 0;
-            padding: 10px;
+            padding: 12px;
             border-radius: 8px;
             font-weight: bold;
+            background: rgba(0, 20, 40, 0.8);
+            border: 1px solid #00ffff;
         }
 
         .counting {
-            background-color: #003300;
+            background: rgba(0, 40, 0, 0.8);
             color: #00ff00;
             border: 1px solid #00ff00;
+            animation: statusPulse 1s infinite;
         }
 
         .stopped {
-            background-color: #330000;
+            background: rgba(40, 0, 0, 0.8);
             color: #ff4444;
             border: 1px solid #ff4444;
         }
 
         .success {
-            background-color: #003300;
+            background: rgba(0, 40, 0, 0.9);
             color: #00ff00;
             border: 1px solid #00ff00;
-            animation: pulse 2s infinite;
+            animation: successPulse 0.5s infinite;
         }
 
-        .s22-connected {
-            background-color: #002233;
+        @keyframes statusPulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.7; }
+        }
+
+        @keyframes successPulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.02); }
+        }
+
+        .device-connected {
+            background: rgba(0, 20, 40, 0.8);
             color: #00ffff;
             border: 1px solid #00ffff;
         }
 
-        .s22-disconnected {
-            background-color: #330000;
+        .device-disconnected {
+            background: rgba(40, 0, 0, 0.8);
             color: #ff4444;
             border: 1px solid #ff4444;
         }
 
-        .s22-scanning {
-            background-color: #333300;
+        .device-scanning {
+            background: rgba(40, 40, 0, 0.8);
             color: #ffff00;
             border: 1px solid #ffff00;
+            animation: scanning 1.5s infinite;
         }
 
         .controls {
             display: flex;
-            gap: 10px;
+            gap: 12px;
             justify-content: center;
             margin-top: 25px;
             flex-wrap: wrap;
         }
 
         button {
-            padding: 12px 25px;
+            padding: 14px 28px;
             font-size: 1rem;
             border: none;
             border-radius: 8px;
             cursor: pointer;
             transition: all 0.3s ease;
             font-weight: bold;
-            min-width: 100px;
-            background: #333;
-            color: white;
-            border: 1px solid #555;
+            min-width: 120px;
+            background: linear-gradient(145deg, #1a1a2e, #16213e);
+            color: #00ffff;
+            border: 1px solid #00ffff;
+            position: relative;
+            overflow: hidden;
+        }
+
+        button::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(0, 255, 255, 0.2), transparent);
+            transition: left 0.5s;
+        }
+
+        button:hover::before {
+            left: 100%;
         }
 
         .start {
             background: linear-gradient(145deg, #006600, #00aa00);
-            color: white;
+            color: #000;
             border: 1px solid #00ff00;
+            font-weight: bold;
         }
 
         .stop {
             background: linear-gradient(145deg, #660000, #aa0000);
-            color: white;
+            color: #fff;
             border: 1px solid #ff4444;
         }
 
         .reset {
-            background: linear-gradient(145deg, #333333, #666666);
-            color: white;
-            border: 1px solid #888;
+            background: linear-gradient(145deg, #333344, #444466);
+            color: #ccc;
+            border: 1px solid #8888ff;
         }
 
         .scan {
-            background: linear-gradient(145deg, #006666, #00aaaa);
-            color: white;
+            background: linear-gradient(145deg, #006666, #008888);
+            color: #fff;
             border: 1px solid #00ffff;
         }
 
         button:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 4px 12px rgba(0, 255, 255, 0.3);
+            transform: translateY(-3px);
+            box-shadow: 0 6px 20px rgba(0, 255, 255, 0.4);
         }
 
         button:active {
@@ -150,30 +233,32 @@
         }
 
         button:disabled {
-            background: #222;
-            color: #666;
+            background: #222233;
+            color: #666677;
             cursor: not-allowed;
             transform: none;
             box-shadow: none;
-            border: 1px solid #444;
+            border: 1px solid #444455;
         }
 
         .device-info {
             margin: 20px 0;
-            padding: 15px;
-            background: #0a0a0a;
+            padding: 20px;
+            background: rgba(0, 10, 20, 0.8);
             border-radius: 10px;
-            border: 1px solid #333;
+            border: 1px solid #00ffff;
+            box-shadow: inset 0 0 10px rgba(0, 255, 255, 0.1);
         }
 
         .device-info p {
-            margin: 8px 0;
+            margin: 10px 0;
             font-weight: bold;
             color: #00ffff;
             font-size: 1.1rem;
+            text-shadow: 0 0 5px rgba(0, 255, 255, 0.5);
         }
 
-        .s22-status {
+        .device-status {
             margin: 20px 0;
             padding: 15px;
             border-radius: 10px;
@@ -183,32 +268,53 @@
 
         .progress-container {
             margin: 20px 0;
-            background: #0a0a0a;
+            background: rgba(0, 10, 20, 0.8);
             border-radius: 10px;
-            height: 15px;
+            height: 20px;
             overflow: hidden;
-            border: 1px solid #333;
+            border: 1px solid #00ffff;
+            box-shadow: inset 0 0 10px rgba(0, 255, 255, 0.1);
         }
 
         .progress-bar {
             height: 100%;
-            background: linear-gradient(90deg, #00ff00, #00aa00);
+            background: linear-gradient(90deg, #00ff00, #00cc00, #00ff00);
             width: 0%;
-            transition: width 0.3s ease;
+            transition: width 0.5s ease;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .progress-bar::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.4), transparent);
+            animation: progressShine 2s infinite;
+        }
+
+        @keyframes progressShine {
+            0% { left: -100%; }
+            100% { left: 100%; }
         }
 
         .stats {
-            margin-top: 20px;
-            padding: 15px;
-            background: #0a0a0a;
+            margin-top: 25px;
+            padding: 20px;
+            background: rgba(0, 10, 20, 0.8);
             border-radius: 10px;
-            border: 1px solid #333;
+            border: 1px solid #00ffff;
+            box-shadow: inset 0 0 10px rgba(0, 255, 255, 0.1);
         }
 
         .stats p {
-            margin: 5px 0;
-            color: #cccccc;
-            font-size: 0.9rem;
+            margin: 8px 0;
+            color: #ccccff;
+            font-size: 0.95rem;
+            font-family: 'Courier New', monospace;
         }
 
         .scanning-animation {
@@ -217,109 +323,143 @@
         }
 
         @keyframes scanning {
-            0% { opacity: 0.5; }
-            50% { opacity: 1; }
-            100% { opacity: 0.5; }
-        }
-
-        @keyframes pulse {
-            0% { transform: scale(1); }
-            50% { transform: scale(1.05); }
-            100% { transform: scale(1); }
+            0% { opacity: 0.3; transform: scale(0.9); }
+            50% { opacity: 1; transform: scale(1.1); }
+            100% { opacity: 0.3; transform: scale(0.9); }
         }
 
         .speed-controls {
             display: flex;
             justify-content: center;
-            gap: 8px;
-            margin-top: 8px;
+            gap: 10px;
+            margin-top: 10px;
             flex-wrap: wrap;
         }
 
         .speed-controls button {
-            padding: 6px 12px;
+            padding: 8px 16px;
             font-size: 0.8rem;
-            min-width: 60px;
-            background: #222;
-            border: 1px solid #444;
+            min-width: 70px;
+            background: rgba(20, 20, 40, 0.8);
         }
 
-        .speed-controls button:hover {
-            background: #333;
-            border: 1px solid #00ffff;
+        .device-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 15px;
+            margin: 20px 0;
         }
 
-        .s22-device {
-            margin: 15px 0;
+        .device-card {
+            background: rgba(0, 15, 30, 0.9);
             padding: 15px;
-            background: #0a0a0a;
             border-radius: 8px;
-            border: 1px solid #333;
+            border: 1px solid #00ffff;
+            transition: all 0.3s ease;
         }
 
-        .s22-icon {
-            font-size: 3rem;
+        .device-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0, 255, 255, 0.3);
+        }
+
+        .device-icon {
+            font-size: 2.5rem;
             margin-bottom: 10px;
         }
 
-        .device-details {
-            font-size: 0.9rem;
-            color: #888;
-            margin: 5px 0;
+        .terminal-text {
+            font-family: 'Courier New', monospace;
+            color: #00ff00;
+            background: #000;
+            padding: 10px;
+            border-radius: 5px;
+            border: 1px solid #00ff00;
+            margin: 10px 0;
+            min-height: 60px;
+            overflow-y: auto;
+        }
+
+        .hacker-text {
+            background: linear-gradient(90deg, #ff00ff, #00ffff, #ff00ff);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            animation: hackerGlow 2s linear infinite;
+        }
+
+        @keyframes hackerGlow {
+            0% { filter: hue-rotate(0deg); }
+            100% { filter: hue-rotate(360deg); }
         }
     </style>
 </head>
 <body>
+    <div class="matrix-bg" id="matrixBg"></div>
+    
     <div class="counter-container">
-        <h1>Автоматический счетчик для Samsung S22</h1>
+        <h1>🛡️ IT SECURITY AUTH SYSTEM</h1>
         
-        <div class="s22-status" id="s22-status">
-            <span class="scanning-animation">🔍</span> Поиск Samsung Galaxy S22...
+        <div class="device-status" id="deviceStatus">
+            <span class="scanning-animation">🔍</span> <span class="hacker-text">SCANNING NETWORK DEVICES...</span>
         </div>
         
         <div class="device-info">
-            <p>Текущий пароль: <span id="password-display">00000000</span></p>
-            <p>Статус устройства: <span id="connection-status">Поиск S22...</span></p>
-            <p>Модель: <span id="device-model">Samsung Galaxy S22</span></p>
+            <p>ACTIVE PASSWORD: <span id="passwordDisplay">00000000</span></p>
+            <p>SYSTEM STATUS: <span id="connectionStatus">INITIALIZING...</span></p>
+            <p>TARGET DEVICE: <span id="deviceModel">ANY CONNECTED DEVICE</span></p>
         </div>
 
-        <div class="s22-device" id="s22-device">
-            <div class="s22-icon">📱</div>
-            <div><strong>Samsung Galaxy S22</strong></div>
-            <div class="device-details">Snapdragon 8 Gen 1 | 8GB RAM | 128GB</div>
-            <div class="device-details">Android 13 | One UI 5.1</div>
-            <div id="device-action">
-                <!-- Кнопка действия будет здесь -->
+        <div class="device-grid">
+            <div class="device-card">
+                <div class="device-icon">💻</div>
+                <div><strong>PRIMARY WORKSTATION</strong></div>
+                <div class="terminal-text" id="pcTerminal">PC: Ready for auth...</div>
+                <button onclick="selectDevice('pc')" style="margin-top: 10px;">SELECT PC</button>
+            </div>
+            
+            <div class="device-card">
+                <div class="device-icon">📱</div>
+                <div><strong>MOBILE DEVICE</strong></div>
+                <div class="terminal-text" id="phoneTerminal">Phone: Waiting...</div>
+                <button onclick="selectDevice('phone')" style="margin-top: 10px;">SELECT PHONE</button>
+            </div>
+            
+            <div class="device-card">
+                <div class="device-icon">🌐</div>
+                <div><strong>NETWORK TARGETS</strong></div>
+                <div class="terminal-text" id="networkTerminal">Web: Monitoring...</div>
+                <button onclick="selectDevice('web')" style="margin-top: 10px;">SELECT WEB</button>
             </div>
         </div>
         
         <div class="counter-display" id="counter">00000000</div>
         
         <div class="progress-container">
-            <div class="progress-bar" id="progress-bar"></div>
+            <div class="progress-bar" id="progressBar"></div>
         </div>
         
-        <div class="status" id="status">Ожидание подключения Samsung S22</div>
+        <div class="status" id="status">SELECT TARGET DEVICE TO BEGIN AUTHORIZATION</div>
         
         <div class="controls">
-            <button class="start" onclick="startAutoAuth()" id="startBtn" disabled>Старт</button>
-            <button class="stop" onclick="stopAutoAuth()" id="stopBtn" disabled>Стоп</button>
-            <button class="reset" onclick="resetCounter()" id="resetBtn">Сброс</button>
-            <button class="scan" onclick="scanForS22()" id="scanBtn">Сканировать</button>
+            <button class="start" onclick="startAutoAuth()" id="startBtn">🚀 START AUTH</button>
+            <button class="stop" onclick="stopAutoAuth()" id="stopBtn" disabled>🛑 STOP AUTH</button>
+            <button class="reset" onclick="resetCounter()" id="resetBtn">🔄 RESET</button>
+            <button class="scan" onclick="scanAllDevices()" id="scanBtn">🔍 SCAN ALL</button>
         </div>
 
         <div class="stats">
-            <p>Скорость: <span id="speed">1</span> попытка/сек</p>
+            <p>SPEED: <span id="speed">1</span> ATTEMPTS/SECOND</p>
             <div class="speed-controls">
-                <button onclick="changeSpeed(2000)">0.5/сек</button>
-                <button onclick="changeSpeed(1000)">1/сек</button>
-                <button onclick="changeSpeed(500)">2/сек</button>
-                <button onclick="changeSpeed(200)">5/сек</button>
+                <button onclick="changeSpeed(2000)">0.5/SEC</button>
+                <button onclick="changeSpeed(1000)">1/SEC</button>
+                <button onclick="changeSpeed(500)">2/SEC</button>
+                <button onclick="changeSpeed(200)">5/SEC</button>
+                <button onclick="changeSpeed(100)">10/SEC</button>
             </div>
-            <p>Попыток: <span id="attempts">0</span></p>
-            <p>Статус: <span id="auth-status">Ожидание</span></p>
-            <p>Следующий пароль: <span id="next-reset-password">00000001</span></p>
-            <p>Прогресс: <span id="progress-percent">0%</span></p>
+            <p>ATTEMPTS: <span id="attempts">0</span> | SUCCESS RATE: <span id="successRate">0%</span></p>
+            <p>AUTH STATUS: <span id="authStatus">STANDBY</span></p>
+            <p>NEXT PASSWORD: <span id="nextResetPassword">00000001</span></p>
+            <p>PROGRESS: <span id="progressPercent">0%</span> | ETA: <span id="eta">--:--:--</span></p>
         </div>
     </div>
 
@@ -329,251 +469,243 @@
         let authInterval;
         let speed = 1000;
         let attempts = 0;
+        let successfulAttempts = 0;
         let nextResetPassword = 1;
-        let isS22Connected = false;
+        let currentDevice = null;
         const MAX_COUNTER = 99999999;
         const TARGET_PASSWORD = "12345678";
+        let startTime = null;
 
-        // Функция для поиска Samsung S22
-        function scanForS22() {
-            const s22Status = document.getElementById('s22-status');
-            const scanBtn = document.getElementById('scanBtn');
-            const deviceAction = document.getElementById('device-action');
-            
-            s22Status.innerHTML = '<span class="scanning-animation">🔍</span> Сканирование USB на наличие S22...';
-            s22Status.className = 's22-status s22-scanning';
-            scanBtn.disabled = true;
+        // Matrix background effect
+        function createMatrixEffect() {
+            const canvas = document.createElement('canvas');
+            const ctx = canvas.getContext('2d');
+            const matrixBg = document.getElementById('matrixBg');
+            matrixBg.appendChild(canvas);
 
-            // Имитация поиска S22
-            setTimeout(() => {
-                // 70% шанс найти S22
-                const s22Found = Math.random() < 0.7;
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight;
+
+            const chars = "01010101010101010101010101010101";
+            const charArray = chars.split("");
+            const rainDrops = [];
+
+            for(let i = 0; i < 100; i++) {
+                rainDrops[i] = Math.floor(Math.random() * canvas.height);
+            }
+
+            function draw() {
+                ctx.fillStyle = "rgba(0, 0, 0, 0.04)";
+                ctx.fillRect(0, 0, canvas.width, canvas.height);
                 
-                if (s22Found) {
-                    isS22Connected = true;
-                    s22Status.textContent = '✅ Samsung Galaxy S22 обнаружен!';
-                    s22Status.className = 's22-status s22-connected';
+                ctx.fillStyle = "#0F0";
+                ctx.font = "12px monospace";
+                
+                for(let i = 0; i < rainDrops.length; i++) {
+                    const text = charArray[Math.floor(Math.random() * charArray.length)];
+                    ctx.fillText(text, i * 20, rainDrops[i] * 1);
                     
-                    document.getElementById('connection-status').textContent = 'Подключено';
-                    document.getElementById('connection-status').style.color = '#00ff00';
-                    document.getElementById('startBtn').disabled = false;
-                    document.getElementById('status').textContent = 'Samsung S22 подключен. Нажмите "Старт" для начала авторизации';
-                    
-                    deviceAction.innerHTML = `
-                        <button style="margin-top: 10px; padding: 8px 16px; background: #006600; color: white; border: 1px solid #00ff00; border-radius: 5px;" 
-                                onclick="disconnectS22()">
-                            Отключить S22
-                        </button>
-                    `;
-                    
-                } else {
-                    isS22Connected = false;
-                    s22Status.textContent = '❌ Samsung Galaxy S22 не обнаружен';
-                    s22Status.className = 's22-status s22-disconnected';
-                    
-                    document.getElementById('connection-status').textContent = 'Не подключен';
-                    document.getElementById('connection-status').style.color = '#ff4444';
-                    document.getElementById('startBtn').disabled = true;
-                    document.getElementById('status').textContent = 'Samsung S22 не найден. Проверьте подключение и повторите сканирование';
-                    
-                    deviceAction.innerHTML = `
-                        <button style="margin-top: 10px; padding: 8px 16px; background: #660000; color: white; border: 1px solid #ff4444; border-radius: 5px;" 
-                                onclick="forceConnectS22()">
-                            Принудительно подключить S22
-                        </button>
-                    `;
+                    if(rainDrops[i] * 1 > canvas.height && Math.random() > 0.975) {
+                        rainDrops[i] = 0;
+                    }
+                    rainDrops[i]++;
                 }
+            }
+
+            setInterval(draw, 35);
+        }
+
+        // Device management
+        const devices = {
+            pc: { name: "Primary Workstation", type: "computer", connected: true, terminal: "pcTerminal" },
+            phone: { name: "Mobile Device", type: "phone", connected: false, terminal: "phoneTerminal" },
+            web: { name: "Network Targets", type: "web", connected: true, terminal: "networkTerminal" }
+        };
+
+        function selectDevice(deviceId) {
+            currentDevice = devices[deviceId];
+            if (currentDevice) {
+                updateTerminal(currentDevice.terminal, `>>> ${currentDevice.name} SELECTED\nREADY FOR AUTHENTICATION`);
+                document.getElementById('deviceModel').textContent = currentDevice.name;
+                document.getElementById('connectionStatus').textContent = 'DEVICE SELECTED';
+                document.getElementById('connectionStatus').style.color = '#00ff00';
+                document.getElementById('startBtn').disabled = false;
+                document.getElementById('status').textContent = `${currentDevice.name} READY - PRESS START AUTH`;
+                document.getElementById('status').className = 'status device-connected';
+            }
+        }
+
+        function updateTerminal(terminalId, message) {
+            const terminal = document.getElementById(terminalId);
+            terminal.textContent = message;
+            terminal.scrollTop = terminal.scrollHeight;
+        }
+
+        function scanAllDevices() {
+            const deviceStatus = document.getElementById('deviceStatus');
+            deviceStatus.innerHTML = '<span class="scanning-animation">🔍</span> <span class="hacker-text">SCANNING NETWORK...</span>';
+            deviceStatus.className = 'device-status device-scanning';
+
+            // Simulate device discovery
+            setTimeout(() => {
+                devices.phone.connected = Math.random() > 0.3;
                 
-                scanBtn.disabled = false;
-                
+                let foundDevices = Object.values(devices).filter(d => d.connected).length;
+                deviceStatus.innerHTML = `✅ <span class="hacker-text">FOUND ${foundDevices} ACTIVE DEVICES</span>`;
+                deviceStatus.className = 'device-status device-connected';
+
+                // Update terminals
+                updateTerminal('pcTerminal', 'PC: Online and ready\nSystem: Windows 11 Pro\nStatus: Connected via USB');
+                updateTerminal('phoneTerminal', devices.phone.connected ? 
+                    'Phone: Samsung S22 Connected\nStatus: USB Debugging Enabled\nReady for auth' : 
+                    'Phone: Not detected\nCheck USB connection');
+                updateTerminal('networkTerminal', 'Web: Monitoring active sessions\nTargets: Any password field detected\nStatus: Active monitoring');
+
             }, 2000);
         }
 
-        // Принудительное подключение S22
-        function forceConnectS22() {
-            const s22Status = document.getElementById('s22-status');
-            const deviceAction = document.getElementById('device-action');
-            
-            s22Status.innerHTML = '<span class="scanning-animation">🔌</span> Принудительное подключение S22...';
-            s22Status.className = 's22-status s22-scanning';
-
-            setTimeout(() => {
-                isS22Connected = true;
-                s22Status.textContent = '✅ Samsung Galaxy S22 подключен (принудительно)';
-                s22Status.className = 's22-status s22-connected';
-                
-                document.getElementById('connection-status').textContent = 'Подключено (принудительно)';
-                document.getElementById('connection-status').style.color = '#00ff00';
-                document.getElementById('startBtn').disabled = false;
-                document.getElementById('status').textContent = 'Samsung S22 подключен. Нажмите "Старт" для начала авторизации';
-                
-                deviceAction.innerHTML = `
-                    <button style="margin-top: 10px; padding: 8px 16px; background: #006600; color: white; border: 1px solid #00ff00; border-radius: 5px;" 
-                            onclick="disconnectS22()">
-                        Отключить S22
-                    </button>
-                `;
-            }, 1500);
-        }
-
-        // Отключение S22
-        function disconnectS22() {
-            const s22Status = document.getElementById('s22-status');
-            const deviceAction = document.getElementById('device-action');
-            
-            // Останавливаем авторизацию при отключении
-            stopAutoAuth();
-            
-            s22Status.innerHTML = '<span class="scanning-animation">🔌</span> Отключение S22...';
-            s22Status.className = 's22-status s22-scanning';
-
-            setTimeout(() => {
-                isS22Connected = false;
-                s22Status.textContent = '❌ Samsung Galaxy S22 отключен';
-                s22Status.className = 's22-status s22-disconnected';
-                
-                document.getElementById('connection-status').textContent = 'Не подключен';
-                document.getElementById('connection-status').style.color = '#ff4444';
-                document.getElementById('startBtn').disabled = true;
-                document.getElementById('status').textContent = 'Samsung S22 отключен. Для работы подключите устройство';
-                
-                deviceAction.innerHTML = `
-                    <button style="margin-top: 10px; padding: 8px 16px; background: #660000; color: white; border: 1px solid #ff4444; border-radius: 5px;" 
-                            onclick="forceConnectS22()">
-                        Принудительно подключить S22
-                    </button>
-                `;
-            }, 1000);
-        }
-
-        // Функция для обновления отображения счетчика
+        // Counter functions
         function updateDisplay() {
             const display = document.getElementById('counter');
             const passwordDisplay = document.getElementById('password-display');
-            const currentPassword = document.getElementById('current-password');
-            const nextResetDisplay = document.getElementById('next-reset-password');
+            const nextResetDisplay = document.getElementById('nextResetPassword');
             
             const formattedCounter = counter.toString().padStart(8, '0');
             const formattedNextReset = nextResetPassword.toString().padStart(8, '0');
             
             display.textContent = formattedCounter;
             passwordDisplay.textContent = formattedCounter;
-            currentPassword.textContent = formattedCounter;
             nextResetDisplay.textContent = formattedNextReset;
             
-            // Обновление прогресс-бара
-            const progressBar = document.getElementById('progress-bar');
-            const progressPercent = document.getElementById('progress-percent');
+            // Progress calculations
+            const progressBar = document.getElementById('progressBar');
+            const progressPercent = document.getElementById('progressPercent');
             const progress = (counter / MAX_COUNTER) * 100;
             progressBar.style.width = `${progress}%`;
-            progressPercent.textContent = `${progress.toFixed(2)}%`;
+            progressPercent.textContent = `${progress.toFixed(4)}%`;
+
+            // ETA calculation
+            if (startTime && isAutoAuth) {
+                const currentTime = new Date();
+                const elapsed = (currentTime - startTime) / 1000;
+                const rate = counter / elapsed;
+                const remaining = MAX_COUNTER - counter;
+                const etaSeconds = rate > 0 ? remaining / rate : 0;
+                
+                const etaElement = document.getElementById('eta');
+                if (etaSeconds > 0) {
+                    const hours = Math.floor(etaSeconds / 3600);
+                    const minutes = Math.floor((etaSeconds % 3600) / 60);
+                    const seconds = Math.floor(etaSeconds % 60);
+                    etaElement.textContent = `${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+                }
+            }
+
+            // Success rate
+            const successRate = attempts > 0 ? (successfulAttempts / attempts * 100).toFixed(2) : 0;
+            document.getElementById('successRate').textContent = `${successRate}%`;
         }
 
-        // Функция для имитации ввода пароля через S22
         function simulateAuth() {
-            if (!isS22Connected) {
-                document.getElementById('status').textContent = 'Ошибка: Samsung S22 отключен!';
-                document.getElementById('status').className = 'status stopped';
-                stopAutoAuth();
-                return;
-            }
-            
-            // Имитация ввода 8-значного пароля
+            if (!currentDevice) return;
+
             const password = counter.toString().padStart(8, '0');
-            console.log(`Ввод пароля через Samsung S22: ${password}`);
-            
             attempts++;
-            document.getElementById('attempts').textContent = attempts;
             
-            // Имитация проверки авторизации
-            const authStatus = document.getElementById('auth-status');
+            // Update all terminals with attempt
+            Object.values(devices).forEach(device => {
+                if (device.connected) {
+                    updateTerminal(device.terminal, 
+                        `${device.name}: Attempt ${attempts}\nTrying: ${password}\nStatus: ${password === TARGET_PASSWORD ? 'SUCCESS!' : 'FAILED'}`);
+                }
+            });
+
+            const authStatus = document.getElementById('authStatus');
             
-            // Проверяем совпадение с целевой комбинацией
             if (password === TARGET_PASSWORD) {
-                authStatus.textContent = "УСПЕШНО!";
+                authStatus.textContent = "ACCESS GRANTED!";
                 authStatus.style.color = "#00ff00";
+                successfulAttempts++;
                 
                 const statusElement = document.getElementById('status');
-                statusElement.textContent = `✅ АВТОРИЗАЦИЯ УСПЕШНА! Пароль: ${password} на Samsung S22`;
+                statusElement.textContent = `✅ CRITICAL SUCCESS! PASSWORD: ${password} FOUND ON ${currentDevice.name.toUpperCase()}`;
                 statusElement.className = 'status success';
                 
-                // Автоматически останавливаем счетчик
                 stopAutoAuth();
-                
                 nextResetPassword = counter + 1;
                 updateDisplay();
                 
-                // Показываем уведомление об успехе
                 showSuccessNotification();
                 
             } else {
-                authStatus.textContent = "Ошибка";
+                authStatus.textContent = "ACCESS DENIED";
                 authStatus.style.color = "#ff4444";
                 
-                // Увеличиваем счетчик для следующей попытки
                 if (counter < MAX_COUNTER) {
                     counter++;
                     updateDisplay();
                 } else {
                     stopAutoAuth();
-                    document.getElementById('status').textContent = 'Достигнут максимальный предел 99999999!';
+                    document.getElementById('status').textContent = 'MAXIMUM LIMIT REACHED - RESET REQUIRED';
                     document.getElementById('status').className = 'status stopped';
                 }
             }
         }
 
-        // Показать уведомление об успехе
         function showSuccessNotification() {
             const notification = document.createElement('div');
             notification.style.cssText = `
                 position: fixed;
                 top: 20px;
                 right: 20px;
-                background: #003300;
+                background: rgba(0, 40, 0, 0.9);
                 color: #00ff00;
-                padding: 15px 20px;
+                padding: 20px;
                 border-radius: 8px;
-                box-shadow: 0 0 20px rgba(0, 255, 0, 0.5);
-                z-index: 1000;
+                box-shadow: 0 0 30px rgba(0, 255, 0, 0.7);
+                z-index: 10000;
                 font-weight: bold;
-                border: 1px solid #00ff00;
+                border: 2px solid #00ff00;
+                font-family: 'Courier New', monospace;
+                max-width: 400px;
             `;
-            notification.textContent = `✅ Пароль ${TARGET_PASSWORD} найден на S22!`;
+            notification.innerHTML = `
+                <div style="font-size: 1.2rem; margin-bottom: 10px;">🚨 SECURITY BREACH DETECTED</div>
+                <div>PASSWORD: ${TARGET_PASSWORD}</div>
+                <div>DEVICE: ${currentDevice.name}</div>
+                <div>ATTEMPTS: ${attempts}</div>
+                <div>TIME: ${new Date().toLocaleTimeString()}</div>
+            `;
             document.body.appendChild(notification);
             
             setTimeout(() => {
                 document.body.removeChild(notification);
-            }, 5000);
+            }, 8000);
         }
 
-        // Функция старта автоматической авторизации
         function startAutoAuth() {
-            if (isAutoAuth) return;
-            
-            if (!isS22Connected) {
-                document.getElementById('status').textContent = 'Ошибка: Samsung S22 не подключен!';
-                document.getElementById('status').className = 'status stopped';
-                return;
-            }
+            if (isAutoAuth || !currentDevice) return;
             
             isAutoAuth = true;
+            startTime = new Date();
             const status = document.getElementById('status');
             const startBtn = document.getElementById('startBtn');
             const stopBtn = document.getElementById('stopBtn');
             const resetBtn = document.getElementById('resetBtn');
             
-            status.textContent = `Авторизация запущена на Samsung S22...`;
+            status.textContent = `AUTHENTICATION ACTIVE ON ${currentDevice.name.toUpperCase()}...`;
             status.className = 'status counting';
             
             startBtn.disabled = true;
             stopBtn.disabled = false;
             resetBtn.disabled = true;
 
-            // Запускаем интервал
+            updateTerminal(currentDevice.terminal, 
+                `>>> AUTHENTICATION SEQUENCE INITIATED\nTARGET: ${TARGET_PASSWORD}\nMETHOD: BRUTE FORCE\nSTATUS: RUNNING...`);
+
             authInterval = setInterval(simulateAuth, speed);
         }
 
-        // Функция остановки автоматической авторизации
         function stopAutoAuth() {
             if (!isAutoAuth) return;
             
@@ -583,8 +715,8 @@
             const stopBtn = document.getElementById('stopBtn');
             const resetBtn = document.getElementById('resetBtn');
             
-            if (status.textContent.indexOf("УСПЕШНА") === -1) {
-                status.textContent = `Авторизация остановлена. Текущий пароль: ${counter.toString().padStart(8, '0')}`;
+            if (status.textContent.indexOf("SUCCESS") === -1) {
+                status.textContent = `AUTHENTICATION STOPPED - LAST ATTEMPT: ${counter.toString().padStart(8, '0')}`;
                 status.className = 'status stopped';
             }
             
@@ -592,28 +724,39 @@
             stopBtn.disabled = true;
             resetBtn.disabled = false;
 
+            if (currentDevice) {
+                updateTerminal(currentDevice.terminal, 
+                    `>>> AUTHENTICATION STOPPED\nLAST PASSWORD: ${counter.toString().padStart(8, '0')}\nATTEMPTS: ${attempts}\nSTATUS: IDLE`);
+            }
+
             clearInterval(authInterval);
         }
 
-        // Функция сброса счетчика
         function resetCounter() {
             stopAutoAuth();
             counter = nextResetPassword;
             attempts = 0;
+            successfulAttempts = 0;
+            startTime = null;
             updateDisplay();
             
             const status = document.getElementById('status');
-            const authStatus = document.getElementById('auth-status');
+            const authStatus = document.getElementById('authStatus');
             
-            status.textContent = `Счетчик сброшен. Начинаем с пароля: ${counter.toString().padStart(8, '0')}`;
+            status.textContent = `COUNTER RESET - STARTING AT: ${counter.toString().padStart(8, '0')}`;
             status.className = 'status';
             
-            authStatus.textContent = 'Ожидание';
-            authStatus.style.color = '#cccccc';
+            authStatus.textContent = 'STANDBY';
+            authStatus.style.color = '#ccccff';
             document.getElementById('attempts').textContent = '0';
+            document.getElementById('successRate').textContent = '0%';
+            document.getElementById('eta').textContent = '--:--:--';
+
+            if (currentDevice) {
+                updateTerminal(currentDevice.terminal, '>>> COUNTER RESET\nREADY FOR NEW AUTHENTICATION SEQUENCE');
+            }
         }
 
-        // Функция изменения скорости
         function changeSpeed(newSpeed) {
             speed = newSpeed;
             document.getElementById('speed').textContent = (1000 / speed).toFixed(1);
@@ -624,14 +767,17 @@
             }
         }
 
-        // Инициализация при загрузке страницы
+        // Initialize
         document.addEventListener('DOMContentLoaded', function() {
+            createMatrixEffect();
             updateDisplay();
-            // Автоматически сканируем S22 при загрузке
-            setTimeout(scanForS22, 1000);
+            scanAllDevices();
+            
+            // Auto-select PC by default
+            setTimeout(() => selectDevice('pc'), 1000);
         });
 
-        // Обработка нажатия клавиш
+        // Keyboard controls
         document.addEventListener('keydown', function(event) {
             if (event.code === 'Space') {
                 event.preventDefault();
@@ -645,13 +791,13 @@
                     resetCounter();
                 }
             } else if (event.key === 's' || event.key === 'S') {
-                scanForS22();
-            } else if (event.key === 'c' || event.key === 'C') {
-                if (!isS22Connected) {
-                    forceConnectS22();
-                } else {
-                    disconnectS22();
-                }
+                scanAllDevices();
+            } else if (event.key === '1') {
+                selectDevice('pc');
+            } else if (event.key === '2') {
+                selectDevice('phone');
+            } else if (event.key === '3') {
+                selectDevice('web');
             }
         });
     </script>
