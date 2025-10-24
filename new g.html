@@ -77,11 +77,18 @@
             border: 2px solid #f5c6cb;
         }
 
+        .usb-scanning {
+            background-color: #fff3cd;
+            color: #856404;
+            border: 2px solid #ffeaa7;
+        }
+
         .controls {
             display: flex;
             gap: 15px;
             justify-content: center;
             margin-top: 30px;
+            flex-wrap: wrap;
         }
 
         button {
@@ -110,7 +117,7 @@
             color: white;
         }
 
-        .usb-btn {
+        .scan-btn {
             background: linear-gradient(145deg, #007bff, #0056b3);
             color: white;
         }
@@ -143,20 +150,6 @@
             margin: 5px 0;
             color: #495057;
             font-size: 0.9rem;
-        }
-
-        .login-info {
-            margin: 20px 0;
-            padding: 15px;
-            background: #e7f3ff;
-            border-radius: 10px;
-            border: 2px solid #b3d9ff;
-        }
-
-        .login-info p {
-            margin: 5px 0;
-            font-weight: bold;
-            color: #004085;
         }
 
         .usb-status {
@@ -193,6 +186,31 @@
             font-size: 0.9rem;
             min-width: 70px;
         }
+
+        .device-info {
+            margin: 20px 0;
+            padding: 15px;
+            background: #e7f3ff;
+            border-radius: 10px;
+            border: 2px solid #b3d9ff;
+        }
+
+        .device-info p {
+            margin: 5px 0;
+            font-weight: bold;
+            color: #004085;
+        }
+
+        .scanning-animation {
+            display: inline-block;
+            animation: scanning 1.5s infinite;
+        }
+
+        @keyframes scanning {
+            0% { opacity: 0.5; }
+            50% { opacity: 1; }
+            100% { opacity: 0.5; }
+        }
     </style>
 </head>
 <body>
@@ -200,12 +218,12 @@
         <h1>Автоматический счетчик для авторизации с USB</h1>
         
         <div class="usb-status" id="usb-status">
-            Статус USB: Не подключено
+            <span class="scanning-animation">🔍</span> Сканирование USB-устройств...
         </div>
         
-        <div class="login-info">
-            <p>Логин: 2024030175</p>
-            <p>Пароль: <span id="password-display">000000</span></p>
+        <div class="device-info">
+            <p>Текущий пароль: <span id="password-display">000000</span></p>
+            <p>Обнаруженное устройство: <span id="device-name">Не обнаружено</span></p>
         </div>
         
         <div class="counter-display" id="counter">000000</div>
@@ -214,13 +232,13 @@
             <div class="progress-bar" id="progress-bar"></div>
         </div>
         
-        <div class="status" id="status">Нажмите "Старт" для начала автоматической авторизации</div>
+        <div class="status" id="status">Ожидание подключения устройства...</div>
         
         <div class="controls">
-            <button class="start" onclick="startAutoAuth()" id="startBtn">Старт</button>
+            <button class="start" onclick="startAutoAuth()" id="startBtn" disabled>Старт</button>
             <button class="stop" onclick="stopAutoAuth()" id="stopBtn" disabled>Стоп</button>
             <button class="reset" onclick="resetCounter()" id="resetBtn">Сброс</button>
-            <button class="usb-btn" onclick="simulateUSBConnection()" id="usbBtn">Подключить USB</button>
+            <button class="scan-btn" onclick="scanUSBDevices()" id="scanBtn">Сканировать USB</button>
         </div>
 
         <div class="stats">
@@ -244,9 +262,9 @@
         let authInterval;
         let speed = 1000; // 1 попытка в секунду
         let attempts = 0;
-        let login = "2024030175";
         let isUSBConnected = false;
         let nextResetPassword = 1; // Следующий пароль при сбросе
+        let usbScanInterval;
 
         // Функция для обновления отображения счетчика
         function updateDisplay() {
@@ -269,17 +287,14 @@
             progressBar.style.width = `${progress}%`;
         }
 
-        // Функция для имитации ввода логина и пароля через USB
+        // Функция для имитации ввода пароля через USB
         function simulateAuth() {
             if (!isUSBConnected) {
-                document.getElementById('status').textContent = 'Ошибка: USB не подключен!';
+                document.getElementById('status').textContent = 'Ошибка: USB устройство отключено!';
                 document.getElementById('status').className = 'status stopped';
                 stopAutoAuth();
                 return;
             }
-            
-            // Имитация ввода логина
-            console.log(`Ввод логина через USB: ${login}`);
             
             // Имитация ввода пароля
             const password = counter.toString().padStart(6, '0');
@@ -327,7 +342,7 @@
             if (isAutoAuth) return;
             
             if (!isUSBConnected) {
-                document.getElementById('status').textContent = 'Ошибка: USB не подключен!';
+                document.getElementById('status').textContent = 'Ошибка: USB устройство не подключено!';
                 document.getElementById('status').className = 'status stopped';
                 return;
             }
@@ -403,38 +418,67 @@
             }
         }
 
-        // Функция имитации подключения USB
-        function simulateUSBConnection() {
+        // Функция для имитации обнаружения USB-устройств
+        function scanUSBDevices() {
             const usbStatus = document.getElementById('usb-status');
-            const usbBtn = document.getElementById('usbBtn');
+            const deviceName = document.getElementById('device-name');
+            const startBtn = document.getElementById('startBtn');
+            const status = document.getElementById('status');
             
-            if (!isUSBConnected) {
-                isUSBConnected = true;
-                usbStatus.textContent = 'Статус USB: Подключено';
-                usbStatus.className = 'usb-status usb-connected';
-                usbBtn.textContent = 'Отключить USB';
+            // Имитация процесса сканирования
+            usbStatus.innerHTML = '<span class="scanning-animation">🔍</span> Сканирование USB-устройств...';
+            usbStatus.className = 'usb-status usb-scanning';
+            
+            // Имитация случайного обнаружения устройства
+            setTimeout(() => {
+                const devices = [
+                    "Samsung Galaxy S21",
+                    "iPhone 13",
+                    "Xiaomi Redmi Note 10",
+                    "Google Pixel 6",
+                    "Huawei P40",
+                    "OnePlus 9",
+                    "Sony Xperia 5"
+                ];
                 
-                document.getElementById('status').textContent = 'USB подключен. Нажмите "Старт" для начала автоматической авторизации';
-            } else {
-                isUSBConnected = false;
-                usbStatus.textContent = 'Статус USB: Не подключено';
-                usbStatus.className = 'usb-status usb-disconnected';
-                usbBtn.textContent = 'Подключить USB';
+                // Случайное определение, подключено ли устройство
+                const isConnected = Math.random() > 0.3; // 70% шанс обнаружения
                 
-                document.getElementById('status').textContent = 'USB отключен. Подключите USB для начала работы';
-                document.getElementById('status').className = 'status stopped';
-                
-                // Останавливаем авторизацию при отключении USB
-                stopAutoAuth();
-            }
+                if (isConnected) {
+                    const randomDevice = devices[Math.floor(Math.random() * devices.length)];
+                    isUSBConnected = true;
+                    usbStatus.textContent = '✅ USB устройство подключено';
+                    usbStatus.className = 'usb-status usb-connected';
+                    deviceName.textContent = randomDevice;
+                    startBtn.disabled = false;
+                    status.textContent = 'Устройство обнаружено. Нажмите "Старт" для начала автоматической авторизации';
+                } else {
+                    isUSBConnected = false;
+                    usbStatus.textContent = '❌ USB устройства не обнаружены';
+                    usbStatus.className = 'usb-status usb-disconnected';
+                    deviceName.textContent = 'Не обнаружено';
+                    startBtn.disabled = true;
+                    status.textContent = 'USB устройства не обнаружены. Подключите устройство и нажмите "Сканировать USB"';
+                    status.className = 'status stopped';
+                }
+            }, 1500);
+        }
+
+        // Функция для автоматического сканирования USB-устройств
+        function startAutoScan() {
+            // Сканируем каждые 5 секунд
+            usbScanInterval = setInterval(scanUSBDevices, 5000);
         }
 
         // Инициализация при загрузке страницы
         document.addEventListener('DOMContentLoaded', function() {
             updateDisplay();
             
-            // Имитируем автоматическое подключение USB для демонстрации
-            setTimeout(simulateUSBConnection, 1000);
+            // Начинаем автоматическое сканирование USB-устройств
+            startAutoScan();
+            
+            // Первоначальное сканирование
+            scanUSBDevices();
         });
 
         // Обработка нажатия клавиш
@@ -453,8 +497,8 @@
             } else if (event.key === 'Enter') {
                 // Имитация нажатия Enter для тестирования
                 console.log("Нажатие Enter (имитация отправки формы)");
-            } else if (event.key === 'u' || event.key === 'U') {
-                simulateUSBConnection();
+            } else if (event.key === 's' || event.key === 'S') {
+                scanUSBDevices();
             }
         });
     </script>
