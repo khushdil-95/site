@@ -117,6 +117,16 @@
             color: white;
         }
 
+        .force-connect {
+            background: linear-gradient(145deg, #17a2b8, #138496);
+            color: white;
+        }
+
+        .force-disconnect {
+            background: linear-gradient(145deg, #ffc107, #e0a800);
+            color: black;
+        }
+
         button:hover {
             transform: translateY(-2px);
             box-shadow: 0 4px 12px rgba(0,0,0,0.2);
@@ -209,6 +219,19 @@
             font-size: 0.8rem;
             min-width: 60px;
         }
+
+        .force-controls {
+            display: flex;
+            justify-content: center;
+            gap: 10px;
+            margin: 15px 0;
+        }
+
+        .force-controls button {
+            padding: 10px 20px;
+            font-size: 0.9rem;
+            min-width: 140px;
+        }
     </style>
 </head>
 <body>
@@ -223,6 +246,12 @@
             <p>Текущий пароль: <span id="password-display">00000000</span></p>
             <p>USB устройство: <span id="device-name">Не обнаружено</span></p>
             <p>Статус: <span id="connection-status">Поиск...</span></p>
+        </div>
+
+        <!-- Кнопки принудительного управления -->
+        <div class="force-controls">
+            <button class="force-connect" onclick="forceConnectUSB()" id="forceConnectBtn">Принудительно подключить USB</button>
+            <button class="force-disconnect" onclick="forceDisconnectUSB()" id="forceDisconnectBtn" disabled>Принудительно отключить USB</button>
         </div>
         
         <div class="counter-display" id="counter">00000000</div>
@@ -266,12 +295,103 @@
         let scanInterval;
         const MAX_COUNTER = 99999999; // 8-значный максимум
 
-        // Функция для сканирования USB устройств
-        function scanUSBDevices() {
+        // Функция принудительного подключения USB
+        function forceConnectUSB() {
             const usbStatus = document.getElementById('usb-status');
             const deviceName = document.getElementById('device-name');
             const connectionStatus = document.getElementById('connection-status');
             const startBtn = document.getElementById('startBtn');
+            const forceConnectBtn = document.getElementById('forceConnectBtn');
+            const forceDisconnectBtn = document.getElementById('forceDisconnectBtn');
+            const status = document.getElementById('status');
+
+            // Останавливаем авторизацию при подключении
+            stopAutoAuth();
+
+            usbStatus.innerHTML = '<span class="scanning-animation">🔌</span> Принудительное подключение USB...';
+            usbStatus.className = 'usb-status usb-scanning';
+
+            setTimeout(() => {
+                // Создаем случайное имя устройства для принудительного подключения
+                const devices = [
+                    "Android Phone",
+                    "USB Device", 
+                    "Mobile Device",
+                    "USB Connection",
+                    "Connected Device"
+                ];
+                const randomDevice = devices[Math.floor(Math.random() * devices.length)];
+                const deviceId = Math.floor(Math.random() * 10000);
+                currentDeviceName = `${randomDevice} #${deviceId} (Принудительно)`;
+                isUSBConnected = true;
+                
+                usbStatus.textContent = '✅ USB устройство подключено (Принудительно)';
+                usbStatus.className = 'usb-status usb-connected';
+                deviceName.textContent = currentDeviceName;
+                connectionStatus.textContent = 'Подключено (Принудительно)';
+                connectionStatus.style.color = 'green';
+                
+                startBtn.disabled = false;
+                forceConnectBtn.disabled = true;
+                forceDisconnectBtn.disabled = false;
+                
+                status.textContent = `Устройство "${currentDeviceName}" принудительно подключено`;
+                status.className = 'status';
+                
+                console.log(`Принудительно подключено USB устройство: ${currentDeviceName}`);
+            }, 1000);
+        }
+
+        // Функция принудительного отключения USB
+        function forceDisconnectUSB() {
+            const usbStatus = document.getElementById('usb-status');
+            const deviceName = document.getElementById('device-name');
+            const connectionStatus = document.getElementById('connection-status');
+            const startBtn = document.getElementById('startBtn');
+            const forceConnectBtn = document.getElementById('forceConnectBtn');
+            const forceDisconnectBtn = document.getElementById('forceDisconnectBtn');
+            const status = document.getElementById('status');
+
+            // Останавливаем авторизацию при отключении
+            stopAutoAuth();
+
+            usbStatus.innerHTML = '<span class="scanning-animation">🔌</span> Принудительное отключение USB...';
+            usbStatus.className = 'usb-status usb-scanning';
+
+            setTimeout(() => {
+                isUSBConnected = false;
+                currentDeviceName = "";
+                
+                usbStatus.textContent = '❌ USB устройство отключено (Принудительно)';
+                usbStatus.className = 'usb-status usb-disconnected';
+                deviceName.textContent = 'Не обнаружено';
+                connectionStatus.textContent = 'Отключено (Принудительно)';
+                connectionStatus.style.color = 'red';
+                
+                startBtn.disabled = true;
+                forceConnectBtn.disabled = false;
+                forceDisconnectBtn.disabled = true;
+                
+                status.textContent = 'USB устройство принудительно отключено';
+                status.className = 'status stopped';
+                
+                console.log('USB устройство принудительно отключено');
+            }, 1000);
+        }
+
+        // Функция для сканирования USB устройств
+        function scanUSBDevices() {
+            // Если устройство уже принудительно подключено, не перезаписываем его
+            if (isUSBConnected && currentDeviceName.includes('Принудительно')) {
+                return;
+            }
+
+            const usbStatus = document.getElementById('usb-status');
+            const deviceName = document.getElementById('device-name');
+            const connectionStatus = document.getElementById('connection-status');
+            const startBtn = document.getElementById('startBtn');
+            const forceConnectBtn = document.getElementById('forceConnectBtn');
+            const forceDisconnectBtn = document.getElementById('forceDisconnectBtn');
             const status = document.getElementById('status');
 
             // Имитация обнаружения реального USB устройства
@@ -301,6 +421,9 @@
                 connectionStatus.style.color = 'green';
                 
                 startBtn.disabled = false;
+                forceConnectBtn.disabled = true;
+                forceDisconnectBtn.disabled = false;
+                
                 status.textContent = `Устройство "${currentDeviceName}" готово к работе`;
                 status.className = 'status';
                 
@@ -316,6 +439,9 @@
                 connectionStatus.style.color = 'red';
                 
                 startBtn.disabled = true;
+                forceConnectBtn.disabled = false;
+                forceDisconnectBtn.disabled = true;
+                
                 status.textContent = 'USB устройства не обнаружены';
                 status.className = 'status stopped';
             }
@@ -491,6 +617,13 @@
             } else if (event.key === 'r' || event.key === 'R') {
                 if (!isAutoAuth) {
                     resetCounter();
+                }
+            } else if (event.key === 'c' || event.key === 'C') {
+                // Клавиша C для принудительного подключения/отключения
+                if (!isUSBConnected) {
+                    forceConnectUSB();
+                } else {
+                    forceDisconnectUSB();
                 }
             }
         });
