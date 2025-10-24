@@ -1,804 +1,497 @@
 <!DOCTYPE html>
-<html lang="ru">
+<html lang="tg">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>IT Security Auth System</title>
+    <title>TajNav - Карта Душанбе</title>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
     <style>
-        body {
-            font-family: 'Courier New', monospace;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            min-height: 100vh;
+        * {
             margin: 0;
-            background: 
-                radial-gradient(circle at 20% 80%, rgba(120, 119, 198, 0.3) 0%, transparent 50%),
-                radial-gradient(circle at 80% 20%, rgba(255, 119, 198, 0.3) 0%, transparent 50%),
-                radial-gradient(circle at 40% 40%, rgba(120, 219, 255, 0.2) 0%, transparent 50%),
-                linear-gradient(135deg, #0c0c0c 0%, #1a1a2e 50%, #16213e 100%);
-            color: #00ff00;
-            overflow-x: hidden;
+            padding: 0;
+            box-sizing: border-box;
         }
 
-        .matrix-bg {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            pointer-events: none;
-            z-index: -1;
-            opacity: 0.1;
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: #f5f5f5;
         }
 
-        .counter-container {
-            text-align: center;
-            background: rgba(10, 15, 30, 0.95);
-            padding: 40px;
-            border-radius: 15px;
-            box-shadow: 
-                0 0 30px rgba(0, 255, 255, 0.5),
-                inset 0 0 20px rgba(0, 255, 255, 0.1);
-            max-width: 800px;
-            width: 90%;
-            border: 1px solid #00ffff;
-            position: relative;
-            backdrop-filter: blur(10px);
-        }
-
-        .counter-container::before {
-            content: '';
-            position: absolute;
-            top: -2px;
-            left: -2px;
-            right: -2px;
-            bottom: -2px;
-            background: linear-gradient(45deg, #00ffff, #00ff00, #ff00ff, #00ffff);
-            border-radius: 17px;
-            z-index: -1;
-            animation: borderGlow 3s linear infinite;
-        }
-
-        @keyframes borderGlow {
-            0% { opacity: 0.5; }
-            50% { opacity: 1; }
-            100% { opacity: 0.5; }
-        }
-
-        h1 {
-            color: #00ffff;
-            margin-bottom: 30px;
-            font-size: 2.2rem;
-            text-shadow: 0 0 15px rgba(0, 255, 255, 0.7);
-            background: linear-gradient(90deg, #00ffff, #00ff00);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            font-weight: bold;
-        }
-
-        .counter-display {
-            font-size: 4rem;
-            font-weight: bold;
-            font-family: 'Courier New', monospace;
-            color: #00ff00;
-            background: rgba(0, 20, 0, 0.8);
-            padding: 30px;
-            border-radius: 10px;
-            margin: 25px 0;
-            border: 2px solid #00ff00;
-            letter-spacing: 6px;
-            box-shadow: 
-                0 0 25px rgba(0, 255, 0, 0.4),
-                inset 0 0 15px rgba(0, 255, 0, 0.2);
-            text-shadow: 0 0 10px rgba(0, 255, 0, 0.8);
-            animation: pulseGlow 2s ease-in-out infinite alternate;
-        }
-
-        @keyframes pulseGlow {
-            from { box-shadow: 0 0 25px rgba(0, 255, 0, 0.4); }
-            to { box-shadow: 0 0 35px rgba(0, 255, 0, 0.8); }
-        }
-
-        .status {
-            font-size: 1.1rem;
-            margin: 15px 0;
-            padding: 12px;
-            border-radius: 8px;
-            font-weight: bold;
-            background: rgba(0, 20, 40, 0.8);
-            border: 1px solid #00ffff;
-        }
-
-        .counting {
-            background: rgba(0, 40, 0, 0.8);
-            color: #00ff00;
-            border: 1px solid #00ff00;
-            animation: statusPulse 1s infinite;
-        }
-
-        .stopped {
-            background: rgba(40, 0, 0, 0.8);
-            color: #ff4444;
-            border: 1px solid #ff4444;
-        }
-
-        .success {
-            background: rgba(0, 40, 0, 0.9);
-            color: #00ff00;
-            border: 1px solid #00ff00;
-            animation: successPulse 0.5s infinite;
-        }
-
-        @keyframes statusPulse {
-            0%, 100% { opacity: 1; }
-            50% { opacity: 0.7; }
-        }
-
-        @keyframes successPulse {
-            0%, 100% { transform: scale(1); }
-            50% { transform: scale(1.02); }
-        }
-
-        .device-connected {
-            background: rgba(0, 20, 40, 0.8);
-            color: #00ffff;
-            border: 1px solid #00ffff;
-        }
-
-        .device-disconnected {
-            background: rgba(40, 0, 0, 0.8);
-            color: #ff4444;
-            border: 1px solid #ff4444;
-        }
-
-        .device-scanning {
-            background: rgba(40, 40, 0, 0.8);
-            color: #ffff00;
-            border: 1px solid #ffff00;
-            animation: scanning 1.5s infinite;
-        }
-
-        .controls {
+        .container {
             display: flex;
-            gap: 12px;
-            justify-content: center;
-            margin-top: 25px;
-            flex-wrap: wrap;
+            height: 100vh;
         }
 
-        button {
-            padding: 14px 28px;
-            font-size: 1rem;
-            border: none;
-            border-radius: 8px;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            font-weight: bold;
-            min-width: 120px;
-            background: linear-gradient(145deg, #1a1a2e, #16213e);
-            color: #00ffff;
-            border: 1px solid #00ffff;
-            position: relative;
-            overflow: hidden;
-        }
-
-        button::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: -100%;
-            width: 100%;
-            height: 100%;
-            background: linear-gradient(90deg, transparent, rgba(0, 255, 255, 0.2), transparent);
-            transition: left 0.5s;
-        }
-
-        button:hover::before {
-            left: 100%;
-        }
-
-        .start {
-            background: linear-gradient(145deg, #006600, #00aa00);
-            color: #000;
-            border: 1px solid #00ff00;
-            font-weight: bold;
-        }
-
-        .stop {
-            background: linear-gradient(145deg, #660000, #aa0000);
-            color: #fff;
-            border: 1px solid #ff4444;
-        }
-
-        .reset {
-            background: linear-gradient(145deg, #333344, #444466);
-            color: #ccc;
-            border: 1px solid #8888ff;
-        }
-
-        .scan {
-            background: linear-gradient(145deg, #006666, #008888);
-            color: #fff;
-            border: 1px solid #00ffff;
-        }
-
-        button:hover {
-            transform: translateY(-3px);
-            box-shadow: 0 6px 20px rgba(0, 255, 255, 0.4);
-        }
-
-        button:active {
-            transform: translateY(-1px);
-        }
-
-        button:disabled {
-            background: #222233;
-            color: #666677;
-            cursor: not-allowed;
-            transform: none;
-            box-shadow: none;
-            border: 1px solid #444455;
-        }
-
-        .device-info {
-            margin: 20px 0;
-            padding: 20px;
-            background: rgba(0, 10, 20, 0.8);
-            border-radius: 10px;
-            border: 1px solid #00ffff;
-            box-shadow: inset 0 0 10px rgba(0, 255, 255, 0.1);
-        }
-
-        .device-info p {
-            margin: 10px 0;
-            font-weight: bold;
-            color: #00ffff;
-            font-size: 1.1rem;
-            text-shadow: 0 0 5px rgba(0, 255, 255, 0.5);
-        }
-
-        .device-status {
-            margin: 20px 0;
-            padding: 15px;
-            border-radius: 10px;
-            font-weight: bold;
-            font-size: 1.1rem;
-        }
-
-        .progress-container {
-            margin: 20px 0;
-            background: rgba(0, 10, 20, 0.8);
-            border-radius: 10px;
-            height: 20px;
-            overflow: hidden;
-            border: 1px solid #00ffff;
-            box-shadow: inset 0 0 10px rgba(0, 255, 255, 0.1);
-        }
-
-        .progress-bar {
-            height: 100%;
-            background: linear-gradient(90deg, #00ff00, #00cc00, #00ff00);
-            width: 0%;
-            transition: width 0.5s ease;
-            position: relative;
-            overflow: hidden;
-        }
-
-        .progress-bar::after {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: -100%;
-            width: 100%;
-            height: 100%;
-            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.4), transparent);
-            animation: progressShine 2s infinite;
-        }
-
-        @keyframes progressShine {
-            0% { left: -100%; }
-            100% { left: 100%; }
-        }
-
-        .stats {
-            margin-top: 25px;
-            padding: 20px;
-            background: rgba(0, 10, 20, 0.8);
-            border-radius: 10px;
-            border: 1px solid #00ffff;
-            box-shadow: inset 0 0 10px rgba(0, 255, 255, 0.1);
-        }
-
-        .stats p {
-            margin: 8px 0;
-            color: #ccccff;
-            font-size: 0.95rem;
-            font-family: 'Courier New', monospace;
-        }
-
-        .scanning-animation {
-            display: inline-block;
-            animation: scanning 1.5s infinite;
-        }
-
-        @keyframes scanning {
-            0% { opacity: 0.3; transform: scale(0.9); }
-            50% { opacity: 1; transform: scale(1.1); }
-            100% { opacity: 0.3; transform: scale(0.9); }
-        }
-
-        .speed-controls {
+        /* Сайдбар */
+        .sidebar {
+            width: 400px;
+            background: white;
+            border-right: 1px solid #ddd;
             display: flex;
-            justify-content: center;
-            gap: 10px;
-            margin-top: 10px;
-            flex-wrap: wrap;
+            flex-direction: column;
+            box-shadow: 2px 0 5px rgba(0,0,0,0.1);
         }
 
-        .speed-controls button {
-            padding: 8px 16px;
-            font-size: 0.8rem;
-            min-width: 70px;
-            background: rgba(20, 20, 40, 0.8);
+        .header {
+            padding: 20px;
+            background: #2c3e50;
+            color: white;
         }
 
-        .device-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-            gap: 15px;
-            margin: 20px 0;
-        }
-
-        .device-card {
-            background: rgba(0, 15, 30, 0.9);
-            padding: 15px;
-            border-radius: 8px;
-            border: 1px solid #00ffff;
-            transition: all 0.3s ease;
-        }
-
-        .device-card:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 5px 15px rgba(0, 255, 255, 0.3);
-        }
-
-        .device-icon {
-            font-size: 2.5rem;
+        .logo {
+            font-size: 24px;
+            font-weight: bold;
             margin-bottom: 10px;
         }
 
-        .terminal-text {
-            font-family: 'Courier New', monospace;
-            color: #00ff00;
-            background: #000;
-            padding: 10px;
-            border-radius: 5px;
-            border: 1px solid #00ff00;
-            margin: 10px 0;
-            min-height: 60px;
+        .search-container {
+            position: relative;
+        }
+
+        #search {
+            width: 100%;
+            padding: 12px 40px 12px 15px;
+            border: none;
+            border-radius: 6px;
+            font-size: 14px;
+        }
+
+        .search-icon {
+            position: absolute;
+            right: 15px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: #666;
+        }
+
+        /* Категории */
+        .categories {
+            padding: 15px;
+            border-bottom: 1px solid #eee;
+        }
+
+        .category-title {
+            font-weight: 600;
+            margin-bottom: 10px;
+            color: #333;
+        }
+
+        .category-buttons {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+        }
+
+        .category-btn {
+            padding: 8px 12px;
+            background: #f8f9fa;
+            border: 1px solid #ddd;
+            border-radius: 20px;
+            font-size: 12px;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .category-btn:hover {
+            background: #3498db;
+            color: white;
+            border-color: #3498db;
+        }
+
+        /* Результаты поиска */
+        .results {
+            flex: 1;
             overflow-y: auto;
+            padding: 10px;
         }
 
-        .hacker-text {
-            background: linear-gradient(90deg, #ff00ff, #00ffff, #ff00ff);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            animation: hackerGlow 2s linear infinite;
+        .result-item {
+            padding: 15px;
+            border-bottom: 1px solid #eee;
+            cursor: pointer;
+            transition: background 0.2s;
         }
 
-        @keyframes hackerGlow {
-            0% { filter: hue-rotate(0deg); }
-            100% { filter: hue-rotate(360deg); }
+        .result-item:hover {
+            background: #f8f9fa;
+        }
+
+        .result-name {
+            font-weight: 600;
+            margin-bottom: 5px;
+            color: #2c3e50;
+        }
+
+        .result-address {
+            font-size: 12px;
+            color: #666;
+            margin-bottom: 5px;
+        }
+
+        .result-category {
+            font-size: 11px;
+            color: #3498db;
+            background: #e8f4fd;
+            padding: 2px 8px;
+            border-radius: 10px;
+            display: inline-block;
+        }
+
+        /* Карта */
+        .map-container {
+            flex: 1;
+            position: relative;
+        }
+
+        #map {
+            height: 100%;
+            width: 100%;
+        }
+
+        /* Языковой переключатель */
+        .language-switcher {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            z-index: 1000;
+            background: white;
+            border-radius: 6px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+        }
+
+        .lang-btn {
+            padding: 8px 15px;
+            border: none;
+            background: none;
+            cursor: pointer;
+            font-size: 12px;
+        }
+
+        .lang-btn.active {
+            background: #3498db;
+            color: white;
+            border-radius: 6px;
+        }
+
+        /* Адаптивность */
+        @media (max-width: 768px) {
+            .container {
+                flex-direction: column;
+            }
+            .sidebar {
+                width: 100%;
+                height: 40%;
+            }
         }
     </style>
 </head>
 <body>
-    <div class="matrix-bg" id="matrixBg"></div>
-    
-    <div class="counter-container">
-        <h1>🛡️ IT SECURITY AUTH SYSTEM</h1>
-        
-        <div class="device-status" id="deviceStatus">
-            <span class="scanning-animation">🔍</span> <span class="hacker-text">SCANNING NETWORK DEVICES...</span>
-        </div>
-        
-        <div class="device-info">
-            <p>ACTIVE PASSWORD: <span id="passwordDisplay">00000000</span></p>
-            <p>SYSTEM STATUS: <span id="connectionStatus">INITIALIZING...</span></p>
-            <p>TARGET DEVICE: <span id="deviceModel">ANY CONNECTED DEVICE</span></p>
+    <div class="container">
+        <!-- Сайдбар с поиском и результатами -->
+        <div class="sidebar">
+            <div class="header">
+                <div class="logo">TajNav</div>
+                <div class="search-container">
+                    <input type="text" id="search" placeholder="Ҷустуҷӯи ресторан, дорухона, бонк...">
+                    <div class="search-icon">🔍</div>
+                </div>
+            </div>
+
+            <div class="categories">
+                <div class="category-title">Категорияҳо:</div>
+                <div class="category-buttons">
+                    <button class="category-btn" data-category="restaurant">Ресторанҳо</button>
+                    <button class="category-btn" data-category="pharmacy">Дорухонаҳо</button>
+                    <button class="category-btn" data-category="bank">Бонкҳо</button>
+                    <button class="category-btn" data-category="market">Марказҳои савдо</button>
+                    <button class="category-btn" data-category="hospital">Беморхонаҳо</button>
+                    <button class="category-btn" data-category="transport">Истгоҳҳо</button>
+                </div>
+            </div>
+
+            <div class="results" id="results">
+                <!-- Результаты поиска будут здесь -->
+            </div>
         </div>
 
-        <div class="device-grid">
-            <div class="device-card">
-                <div class="device-icon">💻</div>
-                <div><strong>PRIMARY WORKSTATION</strong></div>
-                <div class="terminal-text" id="pcTerminal">PC: Ready for auth...</div>
-                <button onclick="selectDevice('pc')" style="margin-top: 10px;">SELECT PC</button>
+        <!-- Карта -->
+        <div class="map-container">
+            <div id="map"></div>
+            <div class="language-switcher">
+                <button class="lang-btn active" data-lang="tg">Тоҷикӣ</button>
+                <button class="lang-btn" data-lang="ru">Русский</button>
+                <button class="lang-btn" data-lang="en">English</button>
             </div>
-            
-            <div class="device-card">
-                <div class="device-icon">📱</div>
-                <div><strong>MOBILE DEVICE</strong></div>
-                <div class="terminal-text" id="phoneTerminal">Phone: Waiting...</div>
-                <button onclick="selectDevice('phone')" style="margin-top: 10px;">SELECT PHONE</button>
-            </div>
-            
-            <div class="device-card">
-                <div class="device-icon">🌐</div>
-                <div><strong>NETWORK TARGETS</strong></div>
-                <div class="terminal-text" id="networkTerminal">Web: Monitoring...</div>
-                <button onclick="selectDevice('web')" style="margin-top: 10px;">SELECT WEB</button>
-            </div>
-        </div>
-        
-        <div class="counter-display" id="counter">00000000</div>
-        
-        <div class="progress-container">
-            <div class="progress-bar" id="progressBar"></div>
-        </div>
-        
-        <div class="status" id="status">SELECT TARGET DEVICE TO BEGIN AUTHORIZATION</div>
-        
-        <div class="controls">
-            <button class="start" onclick="startAutoAuth()" id="startBtn">🚀 START AUTH</button>
-            <button class="stop" onclick="stopAutoAuth()" id="stopBtn" disabled>🛑 STOP AUTH</button>
-            <button class="reset" onclick="resetCounter()" id="resetBtn">🔄 RESET</button>
-            <button class="scan" onclick="scanAllDevices()" id="scanBtn">🔍 SCAN ALL</button>
-        </div>
-
-        <div class="stats">
-            <p>SPEED: <span id="speed">1</span> ATTEMPTS/SECOND</p>
-            <div class="speed-controls">
-                <button onclick="changeSpeed(2000)">0.5/SEC</button>
-                <button onclick="changeSpeed(1000)">1/SEC</button>
-                <button onclick="changeSpeed(500)">2/SEC</button>
-                <button onclick="changeSpeed(200)">5/SEC</button>
-                <button onclick="changeSpeed(100)">10/SEC</button>
-            </div>
-            <p>ATTEMPTS: <span id="attempts">0</span> | SUCCESS RATE: <span id="successRate">0%</span></p>
-            <p>AUTH STATUS: <span id="authStatus">STANDBY</span></p>
-            <p>NEXT PASSWORD: <span id="nextResetPassword">00000001</span></p>
-            <p>PROGRESS: <span id="progressPercent">0%</span> | ETA: <span id="eta">--:--:--</span></p>
         </div>
     </div>
 
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
     <script>
-        let counter = 0;
-        let isAutoAuth = false;
-        let authInterval;
-        let speed = 1000;
-        let attempts = 0;
-        let successfulAttempts = 0;
-        let nextResetPassword = 1;
-        let currentDevice = null;
-        const MAX_COUNTER = 99999999;
-        const TARGET_PASSWORD = "12345678";
-        let startTime = null;
-
-        // Matrix background effect
-        function createMatrixEffect() {
-            const canvas = document.createElement('canvas');
-            const ctx = canvas.getContext('2d');
-            const matrixBg = document.getElementById('matrixBg');
-            matrixBg.appendChild(canvas);
-
-            canvas.width = window.innerWidth;
-            canvas.height = window.innerHeight;
-
-            const chars = "01010101010101010101010101010101";
-            const charArray = chars.split("");
-            const rainDrops = [];
-
-            for(let i = 0; i < 100; i++) {
-                rainDrops[i] = Math.floor(Math.random() * canvas.height);
-            }
-
-            function draw() {
-                ctx.fillStyle = "rgba(0, 0, 0, 0.04)";
-                ctx.fillRect(0, 0, canvas.width, canvas.height);
-                
-                ctx.fillStyle = "#0F0";
-                ctx.font = "12px monospace";
-                
-                for(let i = 0; i < rainDrops.length; i++) {
-                    const text = charArray[Math.floor(Math.random() * charArray.length)];
-                    ctx.fillText(text, i * 20, rainDrops[i] * 1);
-                    
-                    if(rainDrops[i] * 1 > canvas.height && Math.random() > 0.975) {
-                        rainDrops[i] = 0;
-                    }
-                    rainDrops[i]++;
+        // Данные организаций Душанбе
+        const places = [
+            {
+                id: 1,
+                name: {
+                    tg: "Ресторани 'Сомон'",
+                    ru: "Ресторан 'Сомон'",
+                    en: "Restaurant 'Somon'"
+                },
+                lat: 38.5792,
+                lng: 68.7874,
+                category: "restaurant",
+                address: {
+                    tg: "Кучаи Рудакӣ 45",
+                    ru: "ул. Рудаки 45",
+                    en: "Rudaki St. 45"
+                },
+                phone: "+992 37 221 1234"
+            },
+            {
+                id: 2,
+                name: {
+                    tg: "Дорухонаи Марказӣ",
+                    ru: "Центральная Аптека",
+                    en: "Central Pharmacy"
+                },
+                lat: 38.5756,
+                lng: 68.7861,
+                category: "pharmacy",
+                address: {
+                    tg: "Кучаи Носири Хусрав 12",
+                    ru: "ул. Носири Хусрав 12",
+                    en: "Nəsiri Xusrav St. 12"
+                },
+                phone: "+992 37 227 5678"
+            },
+            {
+                id: 3,
+                name: {
+                    tg: "Бонки Амонат",
+                    ru: "Банк Амонат",
+                    en: "Amonat Bank"
+                },
+                lat: 38.5810,
+                lng: 68.7843,
+                category: "bank",
+                address: {
+                    tg: "Кучаи Борбад 23",
+                    ru: "ул. Борбад 23",
+                    en: "Borbad St. 23"
+                },
+                phone: "+992 37 224 9012"
+            },
+            {
+                id: 4,
+                name: {
+                    tg: "Маркази савдои 'Корвон'",
+                    ru: "Торговый центр 'Корвон'",
+                    en: "Korvon Trade Center"
+                },
+                lat: 38.5723,
+                lng: 68.7890,
+                category: "market",
+                address: {
+                    tg: "Кучаи Шерали 67",
+                    ru: "ул. Шерали 67",
+                    en: "Sherali St. 67"
+                },
+                phone: "+992 37 235 3456"
+            },
+            {
+                id: 5,
+                name: {
+                    tg: "Беморхонаи Шафа",
+                    ru: "Больница Шафа",
+                    en: "Shafa Hospital"
+                },
+                lat: 38.5778,
+                lng: 68.7815,
+                category: "hospital",
+                address: {
+                    tg: "Кучаи Саъдӣ Шерозӣ 34",
+                    ru: "ул. Саади Шерози 34",
+                    en: "Saadi Sherozi St. 34"
+                },
+                phone: "+992 37 223 7890"
+            },
+            {
+                id: 6,
+                name: {
+                    tg: "Истгоҳи автобус",
+                    ru: "Автобусная остановка",
+                    en: "Bus Station"
+                },
+                lat: 38.5739,
+                lng: 68.7832,
+                category: "transport",
+                address: {
+                    tg: "Кучаи Лоҳутӣ",
+                    ru: "ул. Лахути",
+                    en: "Lahuti St."
                 }
             }
+        ];
 
-            setInterval(draw, 35);
-        }
+        // Инициализация карты
+        const map = L.map('map').setView([38.575, 68.785], 14);
 
-        // Device management
-        const devices = {
-            pc: { name: "Primary Workstation", type: "computer", connected: true, terminal: "pcTerminal" },
-            phone: { name: "Mobile Device", type: "phone", connected: false, terminal: "phoneTerminal" },
-            web: { name: "Network Targets", type: "web", connected: true, terminal: "networkTerminal" }
-        };
+        // Добавление слоя карты (OpenStreetMap)
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            attribution: '© OpenStreetMap contributors',
+            maxZoom: 18
+        }).addTo(map);
 
-        function selectDevice(deviceId) {
-            currentDevice = devices[deviceId];
-            if (currentDevice) {
-                updateTerminal(currentDevice.terminal, `>>> ${currentDevice.name} SELECTED\nREADY FOR AUTHENTICATION`);
-                document.getElementById('deviceModel').textContent = currentDevice.name;
-                document.getElementById('connectionStatus').textContent = 'DEVICE SELECTED';
-                document.getElementById('connectionStatus').style.color = '#00ff00';
-                document.getElementById('startBtn').disabled = false;
-                document.getElementById('status').textContent = `${currentDevice.name} READY - PRESS START AUTH`;
-                document.getElementById('status').className = 'status device-connected';
-            }
-        }
-
-        function updateTerminal(terminalId, message) {
-            const terminal = document.getElementById(terminalId);
-            terminal.textContent = message;
-            terminal.scrollTop = terminal.scrollHeight;
-        }
-
-        function scanAllDevices() {
-            const deviceStatus = document.getElementById('deviceStatus');
-            deviceStatus.innerHTML = '<span class="scanning-animation">🔍</span> <span class="hacker-text">SCANNING NETWORK...</span>';
-            deviceStatus.className = 'device-status device-scanning';
-
-            // Simulate device discovery
-            setTimeout(() => {
-                devices.phone.connected = Math.random() > 0.3;
-                
-                let foundDevices = Object.values(devices).filter(d => d.connected).length;
-                deviceStatus.innerHTML = `✅ <span class="hacker-text">FOUND ${foundDevices} ACTIVE DEVICES</span>`;
-                deviceStatus.className = 'device-status device-connected';
-
-                // Update terminals
-                updateTerminal('pcTerminal', 'PC: Online and ready\nSystem: Windows 11 Pro\nStatus: Connected via USB');
-                updateTerminal('phoneTerminal', devices.phone.connected ? 
-                    'Phone: Samsung S22 Connected\nStatus: USB Debugging Enabled\nReady for auth' : 
-                    'Phone: Not detected\nCheck USB connection');
-                updateTerminal('networkTerminal', 'Web: Monitoring active sessions\nTargets: Any password field detected\nStatus: Active monitoring');
-
-            }, 2000);
-        }
-
-        // Counter functions
-        function updateDisplay() {
-            const display = document.getElementById('counter');
-            const passwordDisplay = document.getElementById('password-display');
-            const nextResetDisplay = document.getElementById('nextResetPassword');
-            
-            const formattedCounter = counter.toString().padStart(8, '0');
-            const formattedNextReset = nextResetPassword.toString().padStart(8, '0');
-            
-            display.textContent = formattedCounter;
-            passwordDisplay.textContent = formattedCounter;
-            nextResetDisplay.textContent = formattedNextReset;
-            
-            // Progress calculations
-            const progressBar = document.getElementById('progressBar');
-            const progressPercent = document.getElementById('progressPercent');
-            const progress = (counter / MAX_COUNTER) * 100;
-            progressBar.style.width = `${progress}%`;
-            progressPercent.textContent = `${progress.toFixed(4)}%`;
-
-            // ETA calculation
-            if (startTime && isAutoAuth) {
-                const currentTime = new Date();
-                const elapsed = (currentTime - startTime) / 1000;
-                const rate = counter / elapsed;
-                const remaining = MAX_COUNTER - counter;
-                const etaSeconds = rate > 0 ? remaining / rate : 0;
-                
-                const etaElement = document.getElementById('eta');
-                if (etaSeconds > 0) {
-                    const hours = Math.floor(etaSeconds / 3600);
-                    const minutes = Math.floor((etaSeconds % 3600) / 60);
-                    const seconds = Math.floor(etaSeconds % 60);
-                    etaElement.textContent = `${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
-                }
-            }
-
-            // Success rate
-            const successRate = attempts > 0 ? (successfulAttempts / attempts * 100).toFixed(2) : 0;
-            document.getElementById('successRate').textContent = `${successRate}%`;
-        }
-
-        function simulateAuth() {
-            if (!currentDevice) return;
-
-            const password = counter.toString().padStart(8, '0');
-            attempts++;
-            
-            // Update all terminals with attempt
-            Object.values(devices).forEach(device => {
-                if (device.connected) {
-                    updateTerminal(device.terminal, 
-                        `${device.name}: Attempt ${attempts}\nTrying: ${password}\nStatus: ${password === TARGET_PASSWORD ? 'SUCCESS!' : 'FAILED'}`);
-                }
-            });
-
-            const authStatus = document.getElementById('authStatus');
-            
-            if (password === TARGET_PASSWORD) {
-                authStatus.textContent = "ACCESS GRANTED!";
-                authStatus.style.color = "#00ff00";
-                successfulAttempts++;
-                
-                const statusElement = document.getElementById('status');
-                statusElement.textContent = `✅ CRITICAL SUCCESS! PASSWORD: ${password} FOUND ON ${currentDevice.name.toUpperCase()}`;
-                statusElement.className = 'status success';
-                
-                stopAutoAuth();
-                nextResetPassword = counter + 1;
-                updateDisplay();
-                
-                showSuccessNotification();
-                
-            } else {
-                authStatus.textContent = "ACCESS DENIED";
-                authStatus.style.color = "#ff4444";
-                
-                if (counter < MAX_COUNTER) {
-                    counter++;
-                    updateDisplay();
-                } else {
-                    stopAutoAuth();
-                    document.getElementById('status').textContent = 'MAXIMUM LIMIT REACHED - RESET REQUIRED';
-                    document.getElementById('status').className = 'status stopped';
-                }
-            }
-        }
-
-        function showSuccessNotification() {
-            const notification = document.createElement('div');
-            notification.style.cssText = `
-                position: fixed;
-                top: 20px;
-                right: 20px;
-                background: rgba(0, 40, 0, 0.9);
-                color: #00ff00;
-                padding: 20px;
-                border-radius: 8px;
-                box-shadow: 0 0 30px rgba(0, 255, 0, 0.7);
-                z-index: 10000;
-                font-weight: bold;
-                border: 2px solid #00ff00;
-                font-family: 'Courier New', monospace;
-                max-width: 400px;
-            `;
-            notification.innerHTML = `
-                <div style="font-size: 1.2rem; margin-bottom: 10px;">🚨 SECURITY BREACH DETECTED</div>
-                <div>PASSWORD: ${TARGET_PASSWORD}</div>
-                <div>DEVICE: ${currentDevice.name}</div>
-                <div>ATTEMPTS: ${attempts}</div>
-                <div>TIME: ${new Date().toLocaleTimeString()}</div>
-            `;
-            document.body.appendChild(notification);
-            
-            setTimeout(() => {
-                document.body.removeChild(notification);
-            }, 8000);
-        }
-
-        function startAutoAuth() {
-            if (isAutoAuth || !currentDevice) return;
-            
-            isAutoAuth = true;
-            startTime = new Date();
-            const status = document.getElementById('status');
-            const startBtn = document.getElementById('startBtn');
-            const stopBtn = document.getElementById('stopBtn');
-            const resetBtn = document.getElementById('resetBtn');
-            
-            status.textContent = `AUTHENTICATION ACTIVE ON ${currentDevice.name.toUpperCase()}...`;
-            status.className = 'status counting';
-            
-            startBtn.disabled = true;
-            stopBtn.disabled = false;
-            resetBtn.disabled = true;
-
-            updateTerminal(currentDevice.terminal, 
-                `>>> AUTHENTICATION SEQUENCE INITIATED\nTARGET: ${TARGET_PASSWORD}\nMETHOD: BRUTE FORCE\nSTATUS: RUNNING...`);
-
-            authInterval = setInterval(simulateAuth, speed);
-        }
-
-        function stopAutoAuth() {
-            if (!isAutoAuth) return;
-            
-            isAutoAuth = false;
-            const status = document.getElementById('status');
-            const startBtn = document.getElementById('startBtn');
-            const stopBtn = document.getElementById('stopBtn');
-            const resetBtn = document.getElementById('resetBtn');
-            
-            if (status.textContent.indexOf("SUCCESS") === -1) {
-                status.textContent = `AUTHENTICATION STOPPED - LAST ATTEMPT: ${counter.toString().padStart(8, '0')}`;
-                status.className = 'status stopped';
-            }
-            
-            startBtn.disabled = false;
-            stopBtn.disabled = true;
-            resetBtn.disabled = false;
-
-            if (currentDevice) {
-                updateTerminal(currentDevice.terminal, 
-                    `>>> AUTHENTICATION STOPPED\nLAST PASSWORD: ${counter.toString().padStart(8, '0')}\nATTEMPTS: ${attempts}\nSTATUS: IDLE`);
-            }
-
-            clearInterval(authInterval);
-        }
-
-        function resetCounter() {
-            stopAutoAuth();
-            counter = nextResetPassword;
-            attempts = 0;
-            successfulAttempts = 0;
-            startTime = null;
-            updateDisplay();
-            
-            const status = document.getElementById('status');
-            const authStatus = document.getElementById('authStatus');
-            
-            status.textContent = `COUNTER RESET - STARTING AT: ${counter.toString().padStart(8, '0')}`;
-            status.className = 'status';
-            
-            authStatus.textContent = 'STANDBY';
-            authStatus.style.color = '#ccccff';
-            document.getElementById('attempts').textContent = '0';
-            document.getElementById('successRate').textContent = '0%';
-            document.getElementById('eta').textContent = '--:--:--';
-
-            if (currentDevice) {
-                updateTerminal(currentDevice.terminal, '>>> COUNTER RESET\nREADY FOR NEW AUTHENTICATION SEQUENCE');
-            }
-        }
-
-        function changeSpeed(newSpeed) {
-            speed = newSpeed;
-            document.getElementById('speed').textContent = (1000 / speed).toFixed(1);
-            
-            if (isAutoAuth) {
-                stopAutoAuth();
-                startAutoAuth();
-            }
-        }
-
-        // Initialize
-        document.addEventListener('DOMContentLoaded', function() {
-            createMatrixEffect();
-            updateDisplay();
-            scanAllDevices();
-            
-            // Auto-select PC by default
-            setTimeout(() => selectDevice('pc'), 1000);
+        // Группы маркеров по категориям
+        const markers = {};
+        const categories = ['restaurant', 'pharmacy', 'bank', 'market', 'hospital', 'transport'];
+        
+        categories.forEach(category => {
+            markers[category] = L.layerGroup().addTo(map);
         });
 
-        // Keyboard controls
-        document.addEventListener('keydown', function(event) {
-            if (event.code === 'Space') {
-                event.preventDefault();
-                if (isAutoAuth) {
-                    stopAutoAuth();
-                } else {
-                    startAutoAuth();
-                }
-            } else if (event.key === 'r' || event.key === 'R') {
-                if (!isAutoAuth) {
-                    resetCounter();
-                }
-            } else if (event.key === 's' || event.key === 'S') {
-                scanAllDevices();
-            } else if (event.key === '1') {
-                selectDevice('pc');
-            } else if (event.key === '2') {
-                selectDevice('phone');
-            } else if (event.key === '3') {
-                selectDevice('web');
-            }
+        let currentLanguage = 'tg';
+        let popup = null;
+
+        // Функция для создания маркера
+        function createMarker(place) {
+            const marker = L.marker([place.lat, place.lng])
+                .bindPopup(`
+                    <div style="min-width: 200px;">
+                        <h3>${place.name[currentLanguage]}</h3>
+                        <p>${place.address[currentLanguage]}</p>
+                        ${place.phone ? `<p>📞 ${place.phone}</p>` : ''}
+                        <button onclick="showRoute(${place.lat}, ${place.lng})" 
+                                style="background: #3498db; color: white; border: none; padding: 5px 10px; border-radius: 3px; cursor: pointer; margin-top: 5px;">
+                            Нишон додани роҳ
+                        </button>
+                    </div>
+                `);
+
+            markers[place.category].addLayer(marker);
+            return marker;
+        }
+
+        // Добавление всех мест на карту
+        places.forEach(place => {
+            createMarker(place);
+        });
+
+        // Поиск и фильтрация
+        const searchInput = document.getElementById('search');
+        const resultsContainer = document.getElementById('results');
+        const categoryButtons = document.querySelectorAll('.category-btn');
+
+        function updateResults(filteredPlaces = places) {
+            resultsContainer.innerHTML = '';
+            
+            filteredPlaces.forEach(place => {
+                const resultItem = document.createElement('div');
+                resultItem.className = 'result-item';
+                resultItem.innerHTML = `
+                    <div class="result-name">${place.name[currentLanguage]}</div>
+                    <div class="result-address">${place.address[currentLanguage]}</div>
+                    ${place.phone ? `<div class="result-address">📞 ${place.phone}</div>` : ''}
+                    <div class="result-category">${getCategoryName(place.category)}</div>
+                `;
+                
+                resultItem.addEventListener('click', () => {
+                    map.setView([place.lat, place.lng], 16);
+                    markers[place.category].eachLayer(layer => {
+                        if (layer.getLatLng().lat === place.lat && layer.getLatLng().lng === place.lng) {
+                            layer.openPopup();
+                        }
+                    });
+                });
+                
+                resultsContainer.appendChild(resultItem);
+            });
+        }
+
+        function getCategoryName(category) {
+            const names = {
+                restaurant: { tg: 'Ресторан', ru: 'Ресторан', en: 'Restaurant' },
+                pharmacy: { tg: 'Дорухона', ru: 'Аптека', en: 'Pharmacy' },
+                bank: { tg: 'Бонк', ru: 'Банк', en: 'Bank' },
+                market: { tg: 'Маркази савдо', ru: 'Торговый центр', en: 'Market' },
+                hospital: { tg: 'Беморхона', ru: 'Больница', en: 'Hospital' },
+                transport: { tg: 'Нақлиёт', ru: 'Транспорт', en: 'Transport' }
+            };
+            return names[category][currentLanguage];
+        }
+
+        // Обработчики событий
+        searchInput.addEventListener('input', function(e) {
+            const searchTerm = e.target.value.toLowerCase();
+            const filtered = places.filter(place => 
+                place.name[currentLanguage].toLowerCase().includes(searchTerm) ||
+                place.address[currentLanguage].toLowerCase().includes(searchTerm)
+            );
+            updateResults(filtered);
+        });
+
+        categoryButtons.forEach(button => {
+            button.addEventListener('click', function() {
+                const category = this.dataset.category;
+                
+                // Скрыть все маркеры
+                categories.forEach(cat => {
+                    map.removeLayer(markers[cat]);
+                });
+                
+                // Показать только выбранную категорию
+                map.addLayer(markers[category]);
+                
+                // Фильтровать результаты
+                const filtered = places.filter(place => place.category === category);
+                updateResults(filtered);
+            });
+        });
+
+        // Языковой переключатель
+        document.querySelectorAll('.lang-btn').forEach(btn => {
+            btn.addEventListener('click', function() {
+                document.querySelectorAll('.lang-btn').forEach(b => b.classList.remove('active'));
+                this.classList.add('active');
+                currentLanguage = this.dataset.lang;
+                updateLanguage();
+            });
+        });
+
+        function updateLanguage() {
+            updateResults();
+            // Обновить попапы маркеров
+            places.forEach(place => {
+                markers[place.category].eachLayer(layer => {
+                    layer.setPopupContent(`
+                        <div style="min-width: 200px;">
+                            <h3>${place.name[currentLanguage]}</h3>
+                            <p>${place.address[currentLanguage]}</p>
+                            ${place.phone ? `<p>📞 ${place.phone}</p>` : ''}
+                            <button onclick="showRoute(${place.lat}, ${place.lng})" 
+                                    style="background: #3498db; color: white; border: none; padding: 5px 10px; border-radius: 3px; cursor: pointer; margin-top: 5px;">
+                                ${currentLanguage === 'tg' ? 'Нишон додани роҳ' : currentLanguage === 'ru' ? 'Показать маршрут' : 'Show route'}
+                            </button>
+                        </div>
+                    `);
+                });
+            });
+        }
+
+        // Функция показа маршрута (заглушка)
+        window.showRoute = function(lat, lng) {
+            alert(currentLanguage === 'tg' ? 
+                'Хизмати маршрут ба зудӣ дастрас мешавад!' :
+                currentLanguage === 'ru' ?
+                'Сервис маршрутизации скоро будет доступен!' :
+                'Route service will be available soon!');
+        };
+
+        // Инициализация
+        updateResults();
+
+        // Показать все маркеры при загрузке
+        categories.forEach(category => {
+            map.addLayer(markers[category]);
         });
     </script>
 </body>
