@@ -34,23 +34,23 @@
         }
 
         [data-theme="dark"] {
-            /* Улучшенная тёмная тема - не полностью чёрная */
-            --bg-primary: #121212;
-            --bg-secondary: #1e1e1e;
-            --bg-tertiary: #2d2d2d;
-            --text-primary: #e0e0e0;
-            --text-secondary: #a0a0a0;
-            --text-tertiary: #707070;
-            --accent-primary: #0A84FF;
-            --accent-secondary: #5E5CE6;
-            --accent-success: #30D158;
-            --accent-warning: #FF9F0A;
-            --accent-danger: #FF453A;
-            --border-color: #333333;
+            /* Тёмная тема в стиле документа */
+            --bg-primary: #0d1b2a;
+            --bg-secondary: #1b263b;
+            --bg-tertiary: #415a77;
+            --text-primary: #e0e1dd;
+            --text-secondary: #a0a4b0;
+            --text-tertiary: #778da9;
+            --accent-primary: #4ea8de;
+            --accent-secondary: #5e60ce;
+            --accent-success: #4cc9f0;
+            --accent-warning: #f8961e;
+            --accent-danger: #f94144;
+            --border-color: #415a77;
             --shadow: 0 4px 12px rgba(0,0,0,0.4);
-            --shadow-large: 0 8px 25px rgba(0,0,0,0.5);
-            --card-bg: rgba(30,30,30,0.95);
-            --overlay: rgba(0,0,0,0.6);
+            --shadow-large: 0 8px 25px rgba(0,0,0,0.6);
+            --card-bg: rgba(27,38,59,0.95);
+            --overlay: rgba(13,27,42,0.7);
         }
 
         body {
@@ -134,7 +134,7 @@
 
         /* Стили для карты в тёмной теме */
         [data-theme="dark"] #map {
-            filter: brightness(0.8) contrast(1.1);
+            filter: brightness(0.7) contrast(1.2) hue-rotate(180deg) saturate(0.8);
         }
 
         /* Нижняя навигационная панель */
@@ -1037,15 +1037,15 @@
             statusBar.style.display = 'block';
             
             if (type === 'error') {
-                statusBar.style.background = 'linear-gradient(180deg, rgba(255,59,48,0.8) 0%, transparent 100%)';
+                statusBar.style.background = 'linear-gradient(180deg, rgba(249,65,68,0.8) 0%, transparent 100%)';
             } else if (type === 'success') {
-                statusBar.style.background = 'linear-gradient(180deg, rgba(52,199,89,0.8) 0%, transparent 100%)';
+                statusBar.style.background = 'linear-gradient(180deg, rgba(76,201,240,0.8) 0%, transparent 100%)';
             } else if (type === 'warning') {
-                statusBar.style.background = 'linear-gradient(180deg, rgba(255,149,0,0.8) 0%, transparent 100%)';
+                statusBar.style.background = 'linear-gradient(180deg, rgba(248,150,30,0.8) 0%, transparent 100%)';
             } else if (type === 'loading') {
-                statusBar.style.background = 'linear-gradient(180deg, rgba(0,122,255,0.8) 0%, transparent 100%)';
+                statusBar.style.background = 'linear-gradient(180deg, rgba(78,168,222,0.8) 0%, transparent 100%)';
             } else {
-                statusBar.style.background = 'linear-gradient(180deg, rgba(0,0,0,0.8) 0%, transparent 100%)';
+                statusBar.style.background = 'linear-gradient(180deg, rgba(27,38,59,0.8) 0%, transparent 100%)';
             }
             
             setTimeout(() => {
