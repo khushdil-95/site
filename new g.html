@@ -240,21 +240,186 @@
 
         /* Кнопка текущего местоположения */
         .location-fab {
-            position: absolute;
-            bottom: 140px;
-            right: 15px;
-            z-index: 1000;
-            width: 50px;
-            height: 50px;
-            background: white;
-            border-radius: 25px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.2);
-            border: none;
-            font-size: 20px;
+    position: absolute;
+    bottom: 140px;
+    right: 15px;
+    z-index: 1000;
+    width: 50px;
+    height: 50px;
+    background: white;
+    border-radius: 25px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+    border: none;
+    font-size: 20px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.location-fab.active {
+    background: #4CAF50;
+    color: white;
+    box-shadow: 0 4px 20px rgba(76, 175, 80, 0.4);
+}
+
+.location-fab.loading {
+    background: #FF9800;
+    color: white;
+    animation: pulse 1.5s infinite;
+}
+
+@keyframes pulse {
+    0% { transform: scale(1); }
+    50% { transform: scale(1.1); }
+    100% { transform: scale(1); }
+}
+        // Добавляем кнопку в HTML
+const locationFab = document.createElement('button');
+locationFab.className = 'location-fab';
+locationFab.innerHTML = '📍';
+document.body.appendChild(locationFab);
+
+let watchId = null;
+let currentMarker = null;
+
+// Функция для создания/обновления маркера на карте
+function updateLocationMarker(position) {
+    const { latitude, longitude } = position.coords;
+    
+    // Если маркер уже существует - обновляем его позицию
+    if (currentMarker) {
+        currentMarker.setLatLng([latitude, longitude]);
+    } else {
+        // Создаем новый маркер
+        currentMarker = L.marker([latitude, longitude])
+            .addTo(map)
+            .bindPopup('Ваше текущее местоположение')
+            .openPopup();
+        
+        // Центрируем карту на местоположении
+        map.setView([latitude, longitude], 16);
+    }
+    
+    // Добавляем круг точности (опционально)
+    if (window.accuracyCircle) {
+        map.removeLayer(window.accuracyCircle);
+    }
+    
+    window.accuracyCircle = L.circle([latitude, longitude], {
+        radius: position.coords.accuracy,
+        color: 'blue',
+        fillColor: '#007cff',
+        fillOpacity: 0.1
+    }).addTo(map);
+}
+
+// Функция для обработки ошибок
+function handleLocationError(error) {
+    console.error('Ошибка определения местоположения:', error);
+    locationFab.classList.remove('loading', 'active');
+    
+    let message = 'Не удалось определить местоположение';
+    switch(error.code) {
+        case error.PERMISSION_DENIED:
+            message = 'Доступ к геолокации запрещен';
+            break;
+        case error.POSITION_UNAVAILABLE:
+            message = 'Информация о местоположении недоступна';
+            break;
+        case error.TIMEOUT:
+            message = 'Время ожидания истекло';
+            break;
+    }
+    
+    alert(message);
+}
+
+// Обработчик клика по кнопке
+locationFab.addEventListener('click', function() {
+    if (watchId) {
+        // Останавливаем отслеживание
+        stopTracking();
+    } else {
+        // Начинаем отслеживание
+        startTracking();
+    }
+});
+
+// Функция начала отслеживания
+function startTracking() {
+    if (!navigator.geolocation) {
+        alert('Геолокация не поддерживается вашим браузером');
+        return;
+    }
+    
+    locationFab.classList.add('loading');
+    
+    // Запрашиваем текущее положение
+    navigator.geolocation.getCurrentPosition(
+        (position) => {
+            locationFab.classList.remove('loading');
+            locationFab.classList.add('active');
+            updateLocationMarker(position);
+            
+            // Начинаем отслеживание движения
+            watchId = navigator.geolocation.watchPosition(
+                updateLocationMarker,
+                handleLocationError,
+                {
+                    enableHighAccuracy: true,
+                    timeout: 10000,
+                    maximumAge: 0
+                }
+            );
+        },
+        handleLocationError,
+        {
+            enableHighAccuracy: true,
+            timeout: 10000,
+            maximumAge: 60000
         }
+    );
+}
+
+// Функция остановки отслеживания
+function stopTracking() {
+    if (watchId) {
+        navigator.geolocation.clearWatch(watchId);
+        watchId = null;
+    }
+    
+    locationFab.classList.remove('active', 'loading');
+    
+    // Убираем маркер и круг точности
+    if (currentMarker) {
+        map.removeLayer(currentMarker);
+        currentMarker = null;
+    }
+    
+    if (window.accuracyCircle) {
+        map.removeLayer(window.accuracyCircle);
+        window.accuracyCircle = null;
+    }
+}
+
+// Автоматически начинаем отслеживание при загрузке (опционально)
+// startTracking();
+            <div id="location-status" style="
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    background: white;
+    padding: 10px;
+    border-radius: 5px;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+    z-index: 1000;
+    display: none;
+">
+    <div>📍 Отслеживание местоположения</div>
+    <div id="location-coords" style="font-size: 12px; color: #666;"></div>
+</div>
 
         /* Панель управления картой */
         .map-controls {
