@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>TajNav - Душанбе</title>
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <link rel="stylesheet" href="https://unpkg.com/leaflet-rotate@0.1.0/dist/leaflet-rotate.css" />
     <style>
         * {
             margin: 0;
@@ -86,6 +87,11 @@
             flex: 1;
             width: 100%;
             z-index: 1;
+            cursor: grab;
+        }
+
+        #map:active {
+            cursor: grabbing;
         }
 
         /* Нижняя навигационная панель */
@@ -240,186 +246,41 @@
 
         /* Кнопка текущего местоположения */
         .location-fab {
-    position: absolute;
-    bottom: 140px;
-    right: 15px;
-    z-index: 1000;
-    width: 50px;
-    height: 50px;
-    background: white;
-    border-radius: 25px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    box-shadow: 0 4px 15px rgba(0,0,0,0.2);
-    border: none;
-    font-size: 20px;
-    cursor: pointer;
-    transition: all 0.3s ease;
-}
-
-.location-fab.active {
-    background: #4CAF50;
-    color: white;
-    box-shadow: 0 4px 20px rgba(76, 175, 80, 0.4);
-}
-
-.location-fab.loading {
-    background: #FF9800;
-    color: white;
-    animation: pulse 1.5s infinite;
-}
-
-@keyframes pulse {
-    0% { transform: scale(1); }
-    50% { transform: scale(1.1); }
-    100% { transform: scale(1); }
-}
-        // Добавляем кнопку в HTML
-const locationFab = document.createElement('button');
-locationFab.className = 'location-fab';
-locationFab.innerHTML = '📍';
-document.body.appendChild(locationFab);
-
-let watchId = null;
-let currentMarker = null;
-
-// Функция для создания/обновления маркера на карте
-function updateLocationMarker(position) {
-    const { latitude, longitude } = position.coords;
-    
-    // Если маркер уже существует - обновляем его позицию
-    if (currentMarker) {
-        currentMarker.setLatLng([latitude, longitude]);
-    } else {
-        // Создаем новый маркер
-        currentMarker = L.marker([latitude, longitude])
-            .addTo(map)
-            .bindPopup('Ваше текущее местоположение')
-            .openPopup();
-        
-        // Центрируем карту на местоположении
-        map.setView([latitude, longitude], 16);
-    }
-    
-    // Добавляем круг точности (опционально)
-    if (window.accuracyCircle) {
-        map.removeLayer(window.accuracyCircle);
-    }
-    
-    window.accuracyCircle = L.circle([latitude, longitude], {
-        radius: position.coords.accuracy,
-        color: 'blue',
-        fillColor: '#007cff',
-        fillOpacity: 0.1
-    }).addTo(map);
-}
-
-// Функция для обработки ошибок
-function handleLocationError(error) {
-    console.error('Ошибка определения местоположения:', error);
-    locationFab.classList.remove('loading', 'active');
-    
-    let message = 'Не удалось определить местоположение';
-    switch(error.code) {
-        case error.PERMISSION_DENIED:
-            message = 'Доступ к геолокации запрещен';
-            break;
-        case error.POSITION_UNAVAILABLE:
-            message = 'Информация о местоположении недоступна';
-            break;
-        case error.TIMEOUT:
-            message = 'Время ожидания истекло';
-            break;
-    }
-    
-    alert(message);
-}
-
-// Обработчик клика по кнопке
-locationFab.addEventListener('click', function() {
-    if (watchId) {
-        // Останавливаем отслеживание
-        stopTracking();
-    } else {
-        // Начинаем отслеживание
-        startTracking();
-    }
-});
-
-// Функция начала отслеживания
-function startTracking() {
-    if (!navigator.geolocation) {
-        alert('Геолокация не поддерживается вашим браузером');
-        return;
-    }
-    
-    locationFab.classList.add('loading');
-    
-    // Запрашиваем текущее положение
-    navigator.geolocation.getCurrentPosition(
-        (position) => {
-            locationFab.classList.remove('loading');
-            locationFab.classList.add('active');
-            updateLocationMarker(position);
-            
-            // Начинаем отслеживание движения
-            watchId = navigator.geolocation.watchPosition(
-                updateLocationMarker,
-                handleLocationError,
-                {
-                    enableHighAccuracy: true,
-                    timeout: 10000,
-                    maximumAge: 0
-                }
-            );
-        },
-        handleLocationError,
-        {
-            enableHighAccuracy: true,
-            timeout: 10000,
-            maximumAge: 60000
+            position: absolute;
+            bottom: 140px;
+            right: 15px;
+            z-index: 1000;
+            width: 50px;
+            height: 50px;
+            background: white;
+            border-radius: 25px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+            border: none;
+            font-size: 20px;
+            cursor: pointer;
+            transition: all 0.3s ease;
         }
-    );
-}
 
-// Функция остановки отслеживания
-function stopTracking() {
-    if (watchId) {
-        navigator.geolocation.clearWatch(watchId);
-        watchId = null;
-    }
-    
-    locationFab.classList.remove('active', 'loading');
-    
-    // Убираем маркер и круг точности
-    if (currentMarker) {
-        map.removeLayer(currentMarker);
-        currentMarker = null;
-    }
-    
-    if (window.accuracyCircle) {
-        map.removeLayer(window.accuracyCircle);
-        window.accuracyCircle = null;
-    }
-}
+        .location-fab.active {
+            background: #4CAF50;
+            color: white;
+            box-shadow: 0 4px 20px rgba(76, 175, 80, 0.4);
+        }
 
-// Автоматически начинаем отслеживание при загрузке (опционально)
-// startTracking();
-            <div id="location-status" style="
-    position: absolute;
-    top: 10px;
-    right: 10px;
-    background: white;
-    padding: 10px;
-    border-radius: 5px;
-    box-shadow: 0 2px 10px rgba(0,0,0,0.1);
-    z-index: 1000;
-    display: none;
-">
-    <div>📍 Отслеживание местоположения</div>
-    <div id="location-coords" style="font-size: 12px; color: #666;"></div>
-</div>
+        .location-fab.loading {
+            background: #FF9800;
+            color: white;
+            animation: pulse 1.5s infinite;
+        }
+
+        @keyframes pulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.1); }
+            100% { transform: scale(1); }
+        }
 
         /* Панель управления картой */
         .map-controls {
@@ -443,6 +304,77 @@ function stopTracking() {
             box-shadow: 0 4px 15px rgba(0,0,0,0.2);
             border: none;
             font-size: 18px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .control-btn:active {
+            transform: scale(0.95);
+        }
+
+        /* Управление поворотом */
+        .rotation-controls {
+            position: absolute;
+            top: 180px;
+            right: 15px;
+            z-index: 1000;
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .rotation-btn {
+            width: 40px;
+            height: 40px;
+            background: white;
+            border-radius: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+            border: none;
+            font-size: 16px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .rotation-btn:active {
+            transform: scale(0.95);
+            background: #007AFF;
+            color: white;
+        }
+
+        .rotation-indicator {
+            position: absolute;
+            top: 80px;
+            right: 20px;
+            z-index: 1000;
+            background: rgba(0, 0, 0, 0.7);
+            color: white;
+            padding: 8px 12px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 600;
+            display: none;
+        }
+
+        /* Компас */
+        .compass {
+            position: absolute;
+            top: 120px;
+            left: 15px;
+            z-index: 1000;
+            width: 44px;
+            height: 44px;
+            background: white;
+            border-radius: 22px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+            font-size: 18px;
+            transition: transform 0.3s ease;
+            cursor: pointer;
         }
 
         /* Попап */
@@ -678,6 +610,16 @@ function stopTracking() {
             font-weight: bold;
             white-space: nowrap;
         }
+
+        /* Стили для повернутой карты */
+        .leaflet-container.leaflet-touch-drag.leaflet-touch-zoom {
+            -ms-touch-action: auto;
+            touch-action: auto;
+        }
+
+        .leaflet-marker-icon {
+            transition: transform 0.3s ease;
+        }
     </style>
 </head>
 <body>
@@ -700,6 +642,12 @@ function stopTracking() {
 
         <!-- Карта -->
         <div id="map"></div>
+
+        <!-- Компас -->
+        <div class="compass" id="compass">🧭</div>
+
+        <!-- Индикатор поворота -->
+        <div class="rotation-indicator" id="rotation-indicator">0°</div>
 
         <!-- Панель результатов -->
         <div class="results-panel" id="results-panel">
@@ -727,6 +675,13 @@ function stopTracking() {
         <div class="map-controls">
             <button class="control-btn" id="map-type-btn" title="Карта/Спутник">🌍</button>
             <button class="control-btn" id="filter-btn" title="Филтр">🔧</button>
+            <button class="control-btn" id="reset-rotation-btn" title="Сбросить поворот">🔄</button>
+        </div>
+
+        <!-- Управление поворотом -->
+        <div class="rotation-controls">
+            <button class="rotation-btn" id="rotate-left-btn" title="Повернуть налево">↶</button>
+            <button class="rotation-btn" id="rotate-right-btn" title="Повернуть направо">↷</button>
         </div>
 
         <!-- Нижняя навигация -->
@@ -771,6 +726,7 @@ function stopTracking() {
     </div>
 
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <script src="https://unpkg.com/leaflet-rotate@0.1.0/dist/leaflet-rotate.js"></script>
     <script>
         // Устанавливаем ограничения для всего Душанбе
         const dushanbeBounds = [
@@ -778,12 +734,17 @@ function stopTracking() {
             [38.65, 68.85]
         ];
 
-        // Инициализация карты для всего Душанбе
+        // Инициализация карты с поддержкой поворота
         const map = L.map('map', {
             zoomControl: false,
             attributionControl: false,
             maxBounds: dushanbeBounds,
-            maxBoundsViscosity: 0.9
+            maxBoundsViscosity: 0.9,
+            rotate: true,
+            rotateControl: true,
+            bearing: 0,
+            touchRotate: true,
+            shiftKeyRotate: true
         }).setView([38.575, 68.785], 13);
 
         map.setMaxBounds(dushanbeBounds);
@@ -802,6 +763,87 @@ function stopTracking() {
         };
 
         mapLayers.street.addTo(map);
+
+        // Переменные для управления поворотом
+        let currentRotation = 0;
+        let isRotating = false;
+
+        // Функция для обновления поворота карты
+        function rotateMap(degrees) {
+            currentRotation = (degrees + 360) % 360;
+            map.setBearing(currentRotation);
+            updateRotationIndicator();
+            updateCompass();
+        }
+
+        // Функция для сброса поворота
+        function resetRotation() {
+            rotateMap(0);
+            showStatus('Поворот сброшен', 'success');
+        }
+
+        // Функция для обновления индикатора поворота
+        function updateRotationIndicator() {
+            const indicator = document.getElementById('rotation-indicator');
+            indicator.textContent = `${Math.round(currentRotation)}°`;
+            indicator.style.display = 'block';
+            
+            clearTimeout(window.rotationTimeout);
+            window.rotationTimeout = setTimeout(() => {
+                indicator.style.display = 'none';
+            }, 2000);
+        }
+
+        // Функция для обновления компаса
+        function updateCompass() {
+            const compass = document.getElementById('compass');
+            compass.style.transform = `rotate(${-currentRotation}deg)`;
+        }
+
+        // Обработчики для кнопок поворота
+        document.getElementById('rotate-left-btn').addEventListener('click', function() {
+            rotateMap(currentRotation - 15);
+            showStatus(`Поворот: ${Math.round(currentRotation)}°`, 'info');
+        });
+
+        document.getElementById('rotate-right-btn').addEventListener('click', function() {
+            rotateMap(currentRotation + 15);
+            showStatus(`Поворот: ${Math.round(currentRotation)}°`, 'info');
+        });
+
+        document.getElementById('reset-rotation-btn').addEventListener('click', resetRotation);
+
+        // Обработчик для компаса
+        document.getElementById('compass').addEventListener('click', resetRotation);
+
+        // Обработчики жестов для поворота (для тач-устройств)
+        let touchStartAngle = 0;
+        let touchStartBearing = 0;
+
+        map.on('rotatestart', function(e) {
+            isRotating = true;
+            touchStartAngle = e.angle;
+            touchStartBearing = map.getBearing();
+        });
+
+        map.on('rotate', function(e) {
+            if (isRotating) {
+                const angleDiff = e.angle - touchStartAngle;
+                rotateMap(touchStartBearing + angleDiff);
+            }
+        });
+
+        map.on('rotateend', function() {
+            isRotating = false;
+        });
+
+        // Обновляем компас при изменении ориентации карты
+        map.on('move', function() {
+            updateCompass();
+        });
+
+        // Остальной код остается таким же как в вашем оригинале...
+        // [Здесь должен быть весь остальной JavaScript код из вашего файла]
 
         // Расширенная база мест Душанбе (100+ мест)
         const places = [
@@ -968,7 +1010,10 @@ function stopTracking() {
                 operatingHours: "Соатҳои корӣ",
                 showOnMap: "Нишон дар карта",
                 hideBuses: "Пинҳон кардан",
-                liveTracking: "Паёгизи зинда"
+                liveTracking: "Паёгизи зинда",
+                resetRotation: "Поворотро барқарор кунед",
+                rotateLeft: "Ба чап гардонед",
+                rotateRight: "Ба рост гардонед"
             },
             ru: {
                 searchPlaceholder: "Поиск в Душанбе...",
@@ -1005,7 +1050,10 @@ function stopTracking() {
                 operatingHours: "Часы работы",
                 showOnMap: "Показать на карте",
                 hideBuses: "Скрыть",
-                liveTracking: "Отслеживание в реальном времени"
+                liveTracking: "Отслеживание в реальном времени",
+                resetRotation: "Сбросить поворот",
+                rotateLeft: "Повернуть налево",
+                rotateRight: "Повернуть направо"
             },
             en: {
                 searchPlaceholder: "Search in Dushanbe...",
@@ -1042,7 +1090,10 @@ function stopTracking() {
                 operatingHours: "Operating Hours",
                 showOnMap: "Show on Map",
                 hideBuses: "Hide",
-                liveTracking: "Live Tracking"
+                liveTracking: "Live Tracking",
+                resetRotation: "Reset Rotation",
+                rotateLeft: "Rotate Left",
+                rotateRight: "Rotate Right"
             }
         };
 
@@ -1090,6 +1141,11 @@ function stopTracking() {
                 const action = btn.dataset.action;
                 btn.querySelector('span').textContent = texts[action];
             });
+            
+            // Обновление кнопок поворота
+            document.getElementById('reset-rotation-btn').title = texts.resetRotation;
+            document.getElementById('rotate-left-btn').title = texts.rotateLeft;
+            document.getElementById('rotate-right-btn').title = texts.rotateRight;
             
             // Перерисовка маркеров
             updateMarkersLanguage();
