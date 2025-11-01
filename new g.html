@@ -34,22 +34,22 @@
         }
 
         [data-theme="dark"] {
-            /* Тёмная тема */
-            --bg-primary: #1c1c1e;
-            --bg-secondary: #2c2c2e;
-            --bg-tertiary: #3a3a3c;
-            --text-primary: #ffffff;
-            --text-secondary: #8e8e93;
-            --text-tertiary: #636366;
+            /* Улучшенная тёмная тема - не полностью чёрная */
+            --bg-primary: #121212;
+            --bg-secondary: #1e1e1e;
+            --bg-tertiary: #2d2d2d;
+            --text-primary: #e0e0e0;
+            --text-secondary: #a0a0a0;
+            --text-tertiary: #707070;
             --accent-primary: #0A84FF;
             --accent-secondary: #5E5CE6;
             --accent-success: #30D158;
             --accent-warning: #FF9F0A;
             --accent-danger: #FF453A;
-            --border-color: #38383a;
-            --shadow: 0 4px 12px rgba(0,0,0,0.3);
-            --shadow-large: 0 8px 25px rgba(0,0,0,0.4);
-            --card-bg: rgba(44,44,46,0.95);
+            --border-color: #333333;
+            --shadow: 0 4px 12px rgba(0,0,0,0.4);
+            --shadow-large: 0 8px 25px rgba(0,0,0,0.5);
+            --card-bg: rgba(30,30,30,0.95);
             --overlay: rgba(0,0,0,0.6);
         }
 
@@ -761,7 +761,6 @@
             const texts = uiTexts[currentLanguage];
             
             document.getElementById('search').placeholder = texts.searchPlaceholder;
-            document.getElementById('loader').textContent = texts.loading;
             
             document.querySelectorAll('.category-btn').forEach(btn => {
                 const category = btn.dataset.category;
@@ -794,13 +793,13 @@
                                 <div style="font-weight: 600; font-size: 16px;">${place.name[currentLanguage]}</div>
                                 <div style="font-size: 12px; opacity: 0.9;">${place.address[currentLanguage]}</div>
                             </div>
-                            <div style="padding: 12px; background: white;">
+                            <div style="padding: 12px; background: var(--bg-secondary); color: var(--text-primary);">
                                 ${place.phone ? `<div style="margin-bottom: 8px;">📞 ${place.phone}</div>` : ''}
                                 <button onclick="window.showRoute(${place.lat}, ${place.lng})" style="width: 100%; padding: 8px; background: var(--accent-primary); color: white; border: none; border-radius: 6px; cursor: pointer;">
                                     ${uiTexts[currentLanguage].showRoute}
                                 </button>
                                 ${place.phone ? `
-                                <button onclick="window.callNumber('${place.phone}')" style="width: 100%; padding: 8px; background: var(--bg-secondary); color: var(--text-primary); border: 1px solid var(--border-color); border-radius: 6px; cursor: pointer; margin-top: 8px;">
+                                <button onclick="window.callNumber('${place.phone}')" style="width: 100%; padding: 8px; background: var(--bg-tertiary); color: var(--text-primary); border: 1px solid var(--border-color); border-radius: 6px; cursor: pointer; margin-top: 8px;">
                                     ${uiTexts[currentLanguage].call}
                                 </button>
                                 ` : ''}
