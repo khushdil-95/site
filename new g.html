@@ -5,7 +5,6 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>TajNav - Душанбе</title>
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
-    <link rel="stylesheet" href="https://unpkg.com/leaflet-rotate@0.1.0/dist/leaflet-rotate.css" />
     <style>
         * {
             margin: 0;
@@ -87,11 +86,6 @@
             flex: 1;
             width: 100%;
             z-index: 1;
-            cursor: grab;
-        }
-
-        #map:active {
-            cursor: grabbing;
         }
 
         /* Нижняя навигационная панель */
@@ -134,6 +128,7 @@
             white-space: nowrap;
             flex-shrink: 0;
             transition: all 0.2s;
+            cursor: pointer;
         }
 
         .category-btn.active {
@@ -159,6 +154,7 @@
             color: #333;
             font-size: 12px;
             padding: 8px 12px;
+            cursor: pointer;
         }
 
         .action-icon {
@@ -305,76 +301,6 @@
             border: none;
             font-size: 18px;
             cursor: pointer;
-            transition: all 0.2s ease;
-        }
-
-        .control-btn:active {
-            transform: scale(0.95);
-        }
-
-        /* Управление поворотом */
-        .rotation-controls {
-            position: absolute;
-            top: 180px;
-            right: 15px;
-            z-index: 1000;
-            display: flex;
-            flex-direction: column;
-            gap: 8px;
-        }
-
-        .rotation-btn {
-            width: 40px;
-            height: 40px;
-            background: white;
-            border-radius: 20px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.2);
-            border: none;
-            font-size: 16px;
-            cursor: pointer;
-            transition: all 0.2s ease;
-        }
-
-        .rotation-btn:active {
-            transform: scale(0.95);
-            background: #007AFF;
-            color: white;
-        }
-
-        .rotation-indicator {
-            position: absolute;
-            top: 80px;
-            right: 20px;
-            z-index: 1000;
-            background: rgba(0, 0, 0, 0.7);
-            color: white;
-            padding: 8px 12px;
-            border-radius: 20px;
-            font-size: 12px;
-            font-weight: 600;
-            display: none;
-        }
-
-        /* Компас */
-        .compass {
-            position: absolute;
-            top: 120px;
-            left: 15px;
-            z-index: 1000;
-            width: 44px;
-            height: 44px;
-            background: white;
-            border-radius: 22px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.2);
-            font-size: 18px;
-            transition: transform 0.3s ease;
-            cursor: pointer;
         }
 
         /* Попап */
@@ -419,6 +345,7 @@
             border-radius: 10px;
             font-weight: 600;
             font-size: 14px;
+            cursor: pointer;
         }
 
         .popup-btn.primary {
@@ -480,6 +407,7 @@
             padding: 15px;
             margin-bottom: 10px;
             border-left: 4px solid #007AFF;
+            cursor: pointer;
         }
 
         .bus-route-header {
@@ -532,6 +460,7 @@
             border: none;
             font-size: 20px;
             color: white;
+            cursor: pointer;
         }
 
         /* Анимации */
@@ -557,6 +486,25 @@
             font-size: 14px;
             text-align: center;
             display: none;
+        }
+
+        /* Загрузчик */
+        .loader {
+            display: none;
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            z-index: 1002;
+            background: rgba(0, 0, 0, 0.7);
+            color: white;
+            padding: 12px 20px;
+            border-radius: 20px;
+            font-size: 14px;
+        }
+
+        .loader.show {
+            display: block;
         }
 
         /* Адаптация для разных размеров экрана */
@@ -611,33 +559,176 @@
             white-space: nowrap;
         }
 
-        /* Стили для повернутой карты */
-        .leaflet-container.leaflet-touch-drag.leaflet-touch-zoom {
-            -ms-touch-action: auto;
-            touch-action: auto;
+        /* Дополнительные стили для улучшений */
+        .details-panel {
+            padding: 20px;
         }
 
-        .leaflet-marker-icon {
-            transition: transform 0.3s ease;
+        .details-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            border-bottom: 1px solid #eee;
+            padding-bottom: 15px;
         }
 
-        /* Загрузчик */
-        .loader {
-            display: none;
-            position: absolute;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            z-index: 1002;
-            background: rgba(0, 0, 0, 0.7);
+        .details-section {
+            margin-bottom: 20px;
+        }
+
+        .details-section h3 {
+            margin-bottom: 10px;
+            color: #333;
+        }
+
+        .amenities-list {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+        }
+
+        .amenity-tag {
+            background: #f8f9fa;
+            padding: 5px 10px;
+            border-radius: 15px;
+            font-size: 12px;
+            border: 1px solid #e9ecef;
+        }
+
+        .working-day {
+            display: flex;
+            justify-content: space-between;
+            padding: 5px 0;
+            border-bottom: 1px solid #f8f9fa;
+        }
+
+        .contacts-list div {
+            padding: 5px 0;
+        }
+
+        /* Стили для расписания */
+        .schedule-panel {
+            padding: 20px;
+        }
+
+        .schedule-header {
+            text-align: center;
+            margin-bottom: 15px;
+            border-bottom: 1px solid #eee;
+            padding-bottom: 15px;
+        }
+
+        .next-trips {
+            margin: 15px 0;
+        }
+
+        .trip-time {
+            background: #007AFF;
             color: white;
-            padding: 12px 20px;
-            border-radius: 20px;
-            font-size: 14px;
+            padding: 8px 12px;
+            border-radius: 8px;
+            margin: 5px;
+            display: inline-block;
         }
 
-        .loader.show {
+        .stops-list {
+            margin-top: 15px;
+        }
+
+        .stop-item {
+            display: flex;
+            justify-content: space-between;
+            padding: 8px 0;
+            border-bottom: 1px solid #f8f9fa;
+        }
+
+        /* Стили для поэтажных планов */
+        .floor-plan-panel {
+            position: absolute;
+            bottom: 120px;
+            left: 15px;
+            right: 15px;
+            background: white;
+            border-radius: 20px;
+            max-height: 60vh;
+            overflow-y: auto;
+            display: none;
+            z-index: 1002;
+            box-shadow: 0 8px 25px rgba(0,0,0,0.2);
+        }
+
+        .floor-plan-panel.show {
             display: block;
+        }
+
+        .floor-plan-header {
+            padding: 15px;
+            border-bottom: 1px solid #eee;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .floor-plan-title {
+            font-size: 18px;
+            font-weight: 600;
+        }
+
+        .floor-tabs {
+            display: flex;
+            gap: 5px;
+            padding: 10px;
+            border-bottom: 1px solid #eee;
+        }
+
+        .floor-tab {
+            padding: 8px 15px;
+            background: #f8f9fa;
+            border: none;
+            border-radius: 15px;
+            font-size: 14px;
+            cursor: pointer;
+        }
+
+        .floor-tab.active {
+            background: #007AFF;
+            color: white;
+        }
+
+        .floor-content {
+            padding: 15px;
+            text-align: center;
+        }
+
+        .floor-image {
+            max-width: 100%;
+            border-radius: 10px;
+            margin-bottom: 15px;
+        }
+
+        .facility-list {
+            text-align: left;
+        }
+
+        .facility-item {
+            padding: 10px;
+            border-bottom: 1px solid #f0f0f0;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .facility-icon {
+            width: 24px;
+            height: 24px;
+            background: #007AFF;
+            border-radius: 6px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 12px;
         }
     </style>
 </head>
@@ -665,12 +756,6 @@
         <!-- Карта -->
         <div id="map"></div>
 
-        <!-- Компас -->
-        <div class="compass" id="compass">🧭</div>
-
-        <!-- Индикатор поворота -->
-        <div class="rotation-indicator" id="rotation-indicator">0°</div>
-
         <!-- Панель результатов -->
         <div class="results-panel" id="results-panel">
             <!-- Результаты будут здесь -->
@@ -687,23 +772,33 @@
             </div>
         </div>
 
+        <!-- Панель поэтажных планов -->
+        <div class="floor-plan-panel" id="floor-plan-panel">
+            <div class="floor-plan-header">
+                <div class="floor-plan-title" id="floor-plan-building-name">Название здания</div>
+                <button class="close-panel" onclick="hideFloorPlan()">✕</button>
+            </div>
+            <div class="floor-tabs" id="floor-tabs">
+                <!-- Вкладки этажей будут здесь -->
+            </div>
+            <div class="floor-content" id="floor-content">
+                <!-- Контент этажа будет здесь -->
+            </div>
+        </div>
+
         <!-- Кнопка местоположения -->
         <button class="location-fab" id="location-btn">📍</button>
 
         <!-- Кнопка отслеживания автобусов -->
         <button class="bus-toggle" id="bus-toggle" title="Автобусҳо">🚌</button>
 
+        <!-- Кнопка поэтажных планов -->
+        <button class="control-btn" id="floor-plan-btn" title="Поэтажные планы" style="position: absolute; top: 230px; right: 15px; z-index: 1000;">🏢</button>
+
         <!-- Панель управления картой -->
         <div class="map-controls">
             <button class="control-btn" id="map-type-btn" title="Карта/Спутник">🌍</button>
             <button class="control-btn" id="filter-btn" title="Филтр">🔧</button>
-            <button class="control-btn" id="reset-rotation-btn" title="Сбросить поворот">🔄</button>
-        </div>
-
-        <!-- Управление поворотом -->
-        <div class="rotation-controls">
-            <button class="rotation-btn" id="rotate-left-btn" title="Повернуть налево">↶</button>
-            <button class="rotation-btn" id="rotate-right-btn" title="Повернуть направо">↷</button>
         </div>
 
         <!-- Нижняя навигация -->
@@ -748,7 +843,6 @@
     </div>
 
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
-    <script src="https://unpkg.com/leaflet-rotate@0.1.0/dist/leaflet-rotate.js"></script>
     <script>
         // Устанавливаем ограничения для всего Душанбе
         const dushanbeBounds = [
@@ -756,17 +850,12 @@
             [38.65, 68.85]
         ];
 
-        // Инициализация карты с поддержкой поворота
+        // Инициализация карты для всего Душанбе
         const map = L.map('map', {
             zoomControl: false,
             attributionControl: false,
             maxBounds: dushanbeBounds,
-            maxBoundsViscosity: 0.9,
-            rotate: true,
-            rotateControl: true,
-            bearing: 0,
-            touchRotate: true,
-            shiftKeyRotate: true
+            maxBoundsViscosity: 0.9
         }).setView([38.575, 68.785], 13);
 
         map.setMaxBounds(dushanbeBounds);
@@ -786,87 +875,8 @@
 
         mapLayers.street.addTo(map);
 
-        // Переменные для управления поворотом
-        let currentRotation = 0;
-        let isRotating = false;
-
-        // Функция для обновления поворота карты
-        function rotateMap(degrees) {
-            currentRotation = (degrees + 360) % 360;
-            map.setBearing(currentRotation);
-            updateRotationIndicator();
-            updateCompass();
-        }
-
-        // Функция для сброса поворота
-        function resetRotation() {
-            rotateMap(0);
-            showStatus('Поворот сброшен', 'success');
-        }
-
-        // Функция для обновления индикатора поворота
-        function updateRotationIndicator() {
-            const indicator = document.getElementById('rotation-indicator');
-            indicator.textContent = `${Math.round(currentRotation)}°`;
-            indicator.style.display = 'block';
-            
-            clearTimeout(window.rotationTimeout);
-            window.rotationTimeout = setTimeout(() => {
-                indicator.style.display = 'none';
-            }, 2000);
-        }
-
-        // Функция для обновления компаса
-        function updateCompass() {
-            const compass = document.getElementById('compass');
-            compass.style.transform = `rotate(${-currentRotation}deg)`;
-        }
-
-        // Обработчики для кнопок поворота
-        document.getElementById('rotate-left-btn').addEventListener('click', function() {
-            rotateMap(currentRotation - 15);
-            showStatus(`Поворот: ${Math.round(currentRotation)}°`, 'info');
-        });
-
-        document.getElementById('rotate-right-btn').addEventListener('click', function() {
-            rotateMap(currentRotation + 15);
-            showStatus(`Поворот: ${Math.round(currentRotation)}°`, 'info');
-        });
-
-        document.getElementById('reset-rotation-btn').addEventListener('click', resetRotation);
-
-        // Обработчик для компаса
-        document.getElementById('compass').addEventListener('click', resetRotation);
-
-        // Обработчики жестов для поворота (для тач-устройств)
-        let touchStartAngle = 0;
-        let touchStartBearing = 0;
-
-        map.on('rotatestart', function(e) {
-            isRotating = true;
-            touchStartAngle = e.angle;
-            touchStartBearing = map.getBearing();
-        });
-
-        map.on('rotate', function(e) {
-            if (isRotating) {
-                const angleDiff = e.angle - touchStartAngle;
-                rotateMap(touchStartBearing + angleDiff);
-            }
-        });
-
-        map.on('rotateend', function() {
-            isRotating = false;
-        });
-
-        // Обновляем компас при изменении ориентации карты
-        map.on('move', function() {
-            updateCompass();
-        });
-
-        // Расширенная база мест Душанбе (100+ мест)
+        // Расширенная база мест Душанбе
         const places = [
-            // Рестораны (15)
             {
                 id: 1,
                 name: {
@@ -883,7 +893,28 @@
                     en: "Rudaki St. 45"
                 },
                 phone: "+992 37 221 1234",
-                icon: "🍽"
+                icon: "🍽",
+                details: {
+                    description: {
+                        tg: "Ресторани миллию фароғатӣ бо хӯрокҳои тоҷикӣ",
+                        ru: "Национальный ресторан с таджикской кухней",
+                        en: "National restaurant with Tajik cuisine"
+                    },
+                    amenities: ["Wi-Fi", "Парковка", "Терраса", "Кальян"],
+                    cuisines: ["Тоҷикӣ", "Узбекӣ", "Европӣ"],
+                    priceRange: "$$$",
+                    capacity: 120,
+                    rating: 4.5
+                },
+                workingHours: {
+                    monday: { open: "10:00", close: "23:00" },
+                    tuesday: { open: "10:00", close: "23:00" },
+                    wednesday: { open: "10:00", close: "23:00" },
+                    thursday: { open: "10:00", close: "23:00" },
+                    friday: { open: "10:00", close: "00:00" },
+                    saturday: { open: "10:00", close: "00:00" },
+                    sunday: { open: "10:00", close: "23:00" }
+                }
             },
             {
                 id: 2,
@@ -903,7 +934,6 @@
                 phone: "+992 37 227 5678",
                 icon: "🍽"
             },
-            // Добавим еще несколько мест для демонстрации
             {
                 id: 3,
                 name: {
@@ -940,114 +970,23 @@
                 phone: "+992 37 227 3456",
                 icon: "🏦"
             },
-            // Добавим больше мест для полноты
             {
                 id: 5,
                 name: {
-                    tg: "Мактаби №1",
-                    ru: "Школа №1",
-                    en: "School №1"
+                    tg: "Маркази савдои 'Корвон'",
+                    ru: "Торговый центр 'Корвон'",
+                    en: "Shopping mall 'Corvon'"
                 },
-                lat: 38.5778,
-                lng: 68.7889,
-                category: "school",
-                address: {
-                    tg: "Кучаи Лоҳутӣ 15",
-                    ru: "ул. Лахути 15",
-                    en: "Lahuti St. 15"
-                },
-                phone: "+992 37 221 4567",
-                icon: "🎓"
-            },
-            {
-                id: 6,
-                name: {
-                    tg: "Боғи Фирдавсӣ",
-                    ru: "Парк Фирдавси",
-                    en: "Firdausi Park"
-                },
-                lat: 38.5876,
-                lng: 68.7812,
-                category: "park",
-                address: {
-                    tg: "Кучаи Фирдавсӣ 10",
-                    ru: "ул. Фирдавси 10",
-                    en: "Firdausi St. 10"
-                },
-                phone: "",
-                icon: "🌳"
-            },
-            {
-                id: 7,
-                name: {
-                    tg: "Осорхонаи Миллии Тоҷикистон",
-                    ru: "Национальный музей Таджикистана",
-                    en: "National Museum of Tajikistan"
-                },
-                lat: 38.5732,
-                lng: 68.7898,
-                category: "museum",
-                address: {
-                    tg: "Кучаи Айни 31",
-                    ru: "ул. Айни 31",
-                    en: "Ayni St. 31"
-                },
-                phone: "+992 37 221 6061",
-                icon: "🏛"
-            },
-            {
-                id: 8,
-                name: {
-                    tg: "Беморхонаи Шафа",
-                    ru: "Больница Шафа",
-                    en: "Shafa Hospital"
-                },
-                lat: 38.5823,
-                lng: 68.7798,
-                category: "hospital",
-                address: {
-                    tg: "Кучаи Садриддин Айнӣ 45",
-                    ru: "ул. Садриддина Айни 45",
-                    en: "Sadriddin Ayni St. 45"
-                },
-                phone: "+992 37 224 7890",
-                icon: "🏥"
-            },
-            {
-                id: 9,
-                name: {
-                    tg: "Кафе 'Норак'",
-                    ru: "Кафе 'Норак'",
-                    en: "Cafe 'Norak'"
-                },
-                lat: 38.5789,
-                lng: 68.7834,
-                category: "cafe",
-                address: {
-                    tg: "Кучаи Борбад 56",
-                    ru: "ул. Борбада 56",
-                    en: "Borbad St. 56"
-                },
-                phone: "+992 37 227 1122",
-                icon: "☕"
-            },
-            {
-                id: 10,
-                name: {
-                    tg: "Меҳмонхонаи 'Хайат'",
-                    ru: "Отель 'Хайат'",
-                    en: "Hotel 'Hyatt'"
-                },
-                lat: 38.5845,
+                lat: 38.5723,
                 lng: 68.7890,
-                category: "hotel",
+                category: "market",
                 address: {
-                    tg: "Кучаи Исмоили Сомонӣ 22",
-                    ru: "ул. Исмоили Сомони 22",
-                    en: "Ismoili Somoni St. 22"
+                    tg: "Проспекти Рудакӣ 95",
+                    ru: "Проспект Рудаки 95",
+                    en: "Rudaki Avenue 95"
                 },
-                phone: "+992 37 229 0000",
-                icon: "🏨"
+                phone: "+992 37 227 8899",
+                icon: "🛒"
             }
         ];
 
@@ -1069,12 +1008,17 @@
                 operatingHours: "06:00 - 23:00",
                 color: "#FF3B30",
                 path: [
-                    [38.5889, 68.7734], // Вокзал
-                    [38.5876, 68.7812], // Парк Фирдавси
-                    [38.5792, 68.7874], // Центр
-                    [38.5756, 68.7861], // Площадь Дусти
-                    [38.5723, 68.7890]  // ТЦ Корвон
-                ]
+                    [38.5889, 68.7734],
+                    [38.5876, 68.7812],
+                    [38.5792, 68.7874],
+                    [38.5756, 68.7861],
+                    [38.5723, 68.7890]
+                ],
+                schedule: {
+                    weekdays: ["06:00", "06:15", "06:30", "06:45", "07:00", "07:15"],
+                    weekends: ["07:00", "07:30", "08:00", "08:30", "09:00"]
+                },
+                fare: "3 сомони"
             },
             {
                 number: "2",
@@ -1092,37 +1036,61 @@
                 operatingHours: "06:30 - 22:30",
                 color: "#34C759",
                 path: [
-                    [38.5845, 68.7890], // Парк Рудаки
-                    [38.5801, 68.7803], // МИД
-                    [38.5789, 68.7789], // Минфин
-                    [38.5834, 68.7756], // Больница Боло
-                    [38.5889, 68.7734]  // Вокзал
-                ]
-            },
-            {
-                number: "3",
-                name: {
-                    tg: "Боғи 800-солагии Москва - Истгоҳ",
-                    ru: "Парк 800-летия Москвы - Вокзал",
-                    en: "800th Anniversary of Moscow Park - Station"
+                    [38.5845, 68.7890],
+                    [38.5801, 68.7803],
+                    [38.5789, 68.7789],
+                    [38.5834, 68.7756],
+                    [38.5889, 68.7734]
+                ],
+                schedule: {
+                    weekdays: ["06:30", "06:45", "07:00", "07:15", "07:30"],
+                    weekends: ["07:00", "07:30", "08:00", "08:30"]
                 },
-                stops: {
-                    tg: "Боғи 800-солагии Москва → Донишгоҳ → Истгоҳ",
-                    ru: "Парк 800-летия Москвы → Университет → Вокзал",
-                    en: "800th Anniversary of Moscow Park → University → Station"
-                },
-                interval: "15-20 мин",
-                operatingHours: "06:00 - 22:00",
-                color: "#007AFF",
-                path: [
-                    [38.5901, 68.7912], // Парк 800-летия Москвы
-                    [38.5867, 68.7856], // Университет
-                    [38.5832, 68.7801], // Мэрия
-                    [38.5805, 68.7767], // Площадь Айни
-                    [38.5889, 68.7734]  // Вокзал
-                ]
+                fare: "3 сомони"
             }
         ];
+
+        // База данных зданий с поэтажными планами
+        const buildingsDB = {
+            "corvon": {
+                name: {
+                    tg: "Маркази савдои 'Корвон'",
+                    ru: "Торговый центр 'Корвон'",
+                    en: "Shopping mall 'Corvon'"
+                },
+                address: "Проспект Рудаки 95",
+                floors: {
+                    "1": {
+                        name: "1-й этаж",
+                        facilities: [
+                            { name: "Супермаркет", type: "market", icon: "🛒" },
+                            { name: "Кафе", type: "cafe", icon: "☕" },
+                            { name: "Банк", type: "bank", icon: "🏦" },
+                            { name: "Аптека", type: "pharmacy", icon: "💊" }
+                        ],
+                        image: "https://via.placeholder.com/300x200/007AFF/white?text=1-й+этаж"
+                    },
+                    "2": {
+                        name: "2-й этаж",
+                        facilities: [
+                            { name: "Одежда", type: "fashion", icon: "👕" },
+                            { name: "Обувь", type: "shoes", icon: "👟" },
+                            { name: "Электроника", type: "electronics", icon: "📱" }
+                        ],
+                        image: "https://via.placeholder.com/300x200/34C759/white?text=2-й+этаж"
+                    },
+                    "3": {
+                        name: "3-й этаж",
+                        facilities: [
+                            { name: "Кинотеатр", type: "cinema", icon: "🎬" },
+                            { name: "Фудкорт", type: "food", icon: "🍔" },
+                            { name: "Детская зона", type: "kids", icon: "🧸" }
+                        ],
+                        image: "https://via.placeholder.com/300x200/FF9500/white?text=3-й+этаж"
+                    }
+                }
+            }
+        };
 
         // Тексты интерфейса на разных языках
         const uiTexts = {
@@ -1162,10 +1130,10 @@
                 showOnMap: "Нишон дар карта",
                 hideBuses: "Пинҳон кардан",
                 liveTracking: "Паёгизи зинда",
-                resetRotation: "Поворотро барқарор кунед",
-                rotateLeft: "Ба чап гардонед",
-                rotateRight: "Ба рост гардонед",
-                loading: "Дар ҳоли кор..."
+                loading: "Дар ҳоли кор...",
+                floorPlans: "Нақшаҳои ошёна",
+                details: "Тафсилот",
+                schedule: "Ҷадвали замонбандӣ"
             },
             ru: {
                 searchPlaceholder: "Поиск в Душанбе...",
@@ -1203,10 +1171,10 @@
                 showOnMap: "Показать на карте",
                 hideBuses: "Скрыть",
                 liveTracking: "Отслеживание в реальном времени",
-                resetRotation: "Сбросить поворот",
-                rotateLeft: "Повернуть налево",
-                rotateRight: "Повернуть направо",
-                loading: "Загрузка..."
+                loading: "Загрузка...",
+                floorPlans: "Поэтажные планы",
+                details: "Подробности",
+                schedule: "Расписание"
             },
             en: {
                 searchPlaceholder: "Search in Dushanbe...",
@@ -1244,10 +1212,10 @@
                 showOnMap: "Show on Map",
                 hideBuses: "Hide",
                 liveTracking: "Live Tracking",
-                resetRotation: "Reset Rotation",
-                rotateLeft: "Rotate Left",
-                rotateRight: "Rotate Right",
-                loading: "Loading..."
+                loading: "Loading...",
+                floorPlans: "Floor Plans",
+                details: "Details",
+                schedule: "Schedule"
             }
         };
 
@@ -1262,6 +1230,7 @@
         let busRoutesLayer = null;
         let isBusTrackingActive = false;
         let busUpdateInterval = null;
+        let locationWatchId = null;
 
         // Инициализация языка
         function initLanguage() {
@@ -1277,10 +1246,9 @@
         function updateLanguage() {
             const texts = uiTexts[currentLanguage];
             
-            // Обновление поиска
             document.getElementById('search').placeholder = texts.searchPlaceholder;
+            document.getElementById('loader').textContent = texts.loading;
             
-            // Обновление категорий
             document.querySelectorAll('.category-btn').forEach(btn => {
                 const category = btn.dataset.category;
                 if (category === 'all') {
@@ -1290,30 +1258,21 @@
                 }
             });
             
-            // Обновление быстрых действий
             document.querySelectorAll('.action-btn').forEach(btn => {
                 const action = btn.dataset.action;
                 btn.querySelector('span').textContent = texts[action];
             });
+
+            document.getElementById('floor-plan-btn').title = texts.floorPlans;
             
-            // Обновление кнопок поворота
-            document.getElementById('reset-rotation-btn').title = texts.resetRotation;
-            document.getElementById('rotate-left-btn').title = texts.rotateLeft;
-            document.getElementById('rotate-right-btn').title = texts.rotateRight;
-            
-            // Обновление панели автобусов
-            document.querySelector('.bus-panel-title').textContent = texts.busRoutes;
-            document.getElementById('loader').textContent = texts.loading;
-            
-            // Перерисовка маркеров
             updateMarkersLanguage();
+            updateBusRoutesList();
             
             localStorage.setItem('tajnav-language', currentLanguage);
         }
 
         // Создание маркеров
         function createMarkers() {
-            // Удаляем старые маркеры
             allMarkers.forEach(marker => map.removeLayer(marker));
             allMarkers = [];
 
@@ -1326,6 +1285,8 @@
         }
 
         function createPopupContent(place) {
+            const hasDetails = place.details && place.workingHours;
+            
             return `
                 <div class="custom-popup">
                     <div class="popup-header">
@@ -1334,6 +1295,13 @@
                     </div>
                     <div class="popup-content">
                         ${place.phone ? `<div style="margin-bottom: 12px;">📞 ${place.phone}</div>` : ''}
+                        ${hasDetails ? `
+                            <div style="margin-bottom: 12px;">
+                                <button class="popup-btn secondary" onclick="showPlaceDetails(${place.id})">
+                                    ${uiTexts[currentLanguage].details}
+                                </button>
+                            </div>
+                        ` : ''}
                         <div class="popup-actions">
                             <button class="popup-btn secondary" onclick="showRoute(${place.lat}, ${place.lng})">
                                 ${uiTexts[currentLanguage].showRoute}
@@ -1425,6 +1393,7 @@
 
                 routeElement.addEventListener('click', () => {
                     showRouteOnMap(route);
+                    showTransportSchedule(route.number);
                 });
 
                 routesList.appendChild(routeElement);
@@ -1432,13 +1401,9 @@
         }
 
         function showBusRoutesOnMap() {
-            // Очищаем предыдущие маршруты
             clearBusRoutesFromMap();
-
-            // Создаем слой для маршрутов
             busRoutesLayer = L.layerGroup().addTo(map);
 
-            // Добавляем маршруты на карту
             busRoutes.forEach(route => {
                 const routeLine = L.polyline(route.path, {
                     color: route.color,
@@ -1447,7 +1412,6 @@
                     smoothFactor: 1
                 }).addTo(busRoutesLayer);
 
-                // Добавляем маркеры остановок
                 route.path.forEach((stop, index) => {
                     L.circleMarker(stop, {
                         radius: 6,
@@ -1467,17 +1431,14 @@
                 busRoutesLayer = null;
             }
             
-            // Удаляем маркеры автобусов
             busMarkers.forEach(marker => map.removeLayer(marker));
             busMarkers = [];
         }
 
         function showRouteOnMap(route) {
-            // Увеличиваем масштаб и показываем маршрут
             const bounds = L.latLngBounds(route.path);
             map.fitBounds(bounds, { padding: [20, 20] });
             
-            // Подсвечиваем выбранный маршрут
             if (busRoutesLayer) {
                 map.removeLayer(busRoutesLayer);
             }
@@ -1490,7 +1451,6 @@
                 smoothFactor: 1
             }).addTo(busRoutesLayer);
 
-            // Добавляем остановки
             route.path.forEach((stop, index) => {
                 L.circleMarker(stop, {
                     radius: 8,
@@ -1504,9 +1464,7 @@
         }
 
         function simulateBusMovement() {
-            // Создаем начальные позиции автобусов
             busRoutes.forEach(route => {
-                // Создаем 2-3 автобуса на каждом маршруте
                 const busCount = Math.floor(Math.random() * 2) + 2;
                 
                 for (let i = 0; i < busCount; i++) {
@@ -1529,7 +1487,6 @@
                 }
             });
 
-            // Запускаем обновление позиций
             busUpdateInterval = setInterval(updateBusPositions, 2000);
         }
 
@@ -1538,7 +1495,6 @@
                 const route = bus.route;
                 let nextIndex = bus.currentIndex + bus.direction;
                 
-                // Если достигли конца маршрута, меняем направление
                 if (nextIndex >= route.path.length || nextIndex < 0) {
                     bus.direction *= -1;
                     nextIndex = bus.currentIndex + bus.direction;
@@ -1547,13 +1503,11 @@
                 const currentPos = route.path[bus.currentIndex];
                 const nextPos = route.path[nextIndex];
                 
-                // Интерполируем позицию
                 const lat = currentPos[0] + (nextPos[0] - currentPos[0]) * bus.speed;
                 const lng = currentPos[1] + (nextPos[1] - currentPos[1]) * bus.speed;
                 
                 bus.setLatLng([lat, lng]);
                 
-                // Если достаточно приблизились к следующей точке, переходим к ней
                 const distance = Math.sqrt(
                     Math.pow(lat - nextPos[0], 2) + 
                     Math.pow(lng - nextPos[1], 2)
@@ -1563,6 +1517,218 @@
                     bus.currentIndex = nextIndex;
                 }
             });
+        }
+
+        // Функции для поэтажных планов
+        function showFloorPlan(buildingId) {
+            const building = buildingsDB[buildingId];
+            if (!building) return;
+
+            document.getElementById('floor-plan-building-name').textContent = 
+                building.name[currentLanguage];
+
+            const floorTabs = document.getElementById('floor-tabs');
+            floorTabs.innerHTML = '';
+            
+            Object.keys(building.floors).forEach(floorKey => {
+                const floor = building.floors[floorKey];
+                const tab = document.createElement('button');
+                tab.className = 'floor-tab';
+                tab.textContent = floor.name;
+                tab.onclick = () => showFloorContent(buildingId, floorKey);
+                floorTabs.appendChild(tab);
+            });
+
+            const firstTab = floorTabs.querySelector('.floor-tab');
+            if (firstTab) {
+                firstTab.classList.add('active');
+                showFloorContent(buildingId, Object.keys(building.floors)[0]);
+            }
+
+            document.getElementById('floor-plan-panel').classList.add('show');
+        }
+
+        function showFloorContent(buildingId, floorKey) {
+            const building = buildingsDB[buildingId];
+            const floor = building.floors[floorKey];
+            
+            document.querySelectorAll('.floor-tab').forEach(tab => {
+                tab.classList.remove('active');
+            });
+            event.target.classList.add('active');
+
+            const floorContent = document.getElementById('floor-content');
+            floorContent.innerHTML = `
+                <img src="${floor.image}" alt="${floor.name}" class="floor-image">
+                <div class="facility-list">
+                    ${floor.facilities.map(facility => `
+                        <div class="facility-item">
+                            <div class="facility-icon">${facility.icon}</div>
+                            <div>${facility.name}</div>
+                        </div>
+                    `).join('')}
+                </div>
+            `;
+        }
+
+        function hideFloorPlan() {
+            document.getElementById('floor-plan-panel').classList.remove('show');
+        }
+
+        function showBuildingSelection() {
+            const buildingList = Object.keys(buildingsDB).map(key => {
+                const building = buildingsDB[key];
+                return `<div class="result-item" onclick="showFloorPlan('${key}')">
+                    <div class="result-icon">🏢</div>
+                    <div class="result-info">
+                        <div class="result-name">${building.name[currentLanguage]}</div>
+                        <div class="result-address">${building.address}</div>
+                    </div>
+                </div>`;
+            }).join('');
+
+            document.getElementById('results-panel').innerHTML = buildingList;
+            document.getElementById('results-panel').classList.add('show');
+        }
+
+        // Функция для показа детального расписания транспорта
+        function showTransportSchedule(routeNumber) {
+            const route = busRoutes.find(r => r.number === routeNumber);
+            if (!route) return;
+
+            const now = new Date();
+            const isWeekend = now.getDay() === 0 || now.getDay() === 6;
+            const schedule = isWeekend ? route.schedule.weekends : route.schedule.weekdays;
+            
+            const nextTrips = schedule.filter(time => {
+                const [hours, minutes] = time.split(':');
+                const tripTime = new Date();
+                tripTime.setHours(parseInt(hours), parseInt(minutes), 0);
+                return tripTime > now;
+            }).slice(0, 5);
+
+            const scheduleHTML = `
+                <div class="schedule-panel">
+                    <div class="schedule-header">
+                        <h3>🚌 Маршрут ${route.number}</h3>
+                        <div>${route.name[currentLanguage]}</div>
+                    </div>
+                    <div class="schedule-info">
+                        <div><strong>${uiTexts[currentLanguage].interval}:</strong> ${route.interval}</div>
+                        <div><strong>Стоимость:</strong> ${route.fare}</div>
+                    </div>
+                    <div class="next-trips">
+                        <h4>Ближайшие рейсы:</h4>
+                        ${nextTrips.length > 0 ? nextTrips.map(time => `
+                            <div class="trip-time">${time}</div>
+                        `).join('') : '<div>Рейсов на сегодня нет</div>'}
+                    </div>
+                </div>
+            `;
+
+            document.getElementById('results-panel').innerHTML = scheduleHTML;
+            document.getElementById('results-panel').classList.add('show');
+        }
+
+        // Функция показа детальной информации о месте
+        function showPlaceDetails(placeId) {
+            const place = places.find(p => p.id === placeId);
+            if (!place || !place.details) return;
+
+            const detailsHTML = `
+                <div class="details-panel">
+                    <div class="details-header">
+                        <h2>${place.name[currentLanguage]}</h2>
+                        ${place.details.rating ? `<div class="place-rating">⭐ ${place.details.rating}</div>` : ''}
+                    </div>
+                    
+                    ${place.details.description ? `
+                    <div class="details-section">
+                        <h3>📝 ${currentLanguage === 'tg' ? 'Тавсиф' : currentLanguage === 'ru' ? 'Описание' : 'Description'}</h3>
+                        <p>${place.details.description[currentLanguage]}</p>
+                    </div>
+                    ` : ''}
+
+                    ${place.workingHours ? `
+                    <div class="details-section">
+                        <h3>🕒 ${currentLanguage === 'tg' ? 'Соатҳои кор' : currentLanguage === 'ru' ? 'Режим работы' : 'Working Hours'}</h3>
+                        ${Object.entries(place.workingHours).map(([day, hours]) => `
+                            <div class="working-day">
+                                <span class="day-name">${getDayName(day, currentLanguage)}</span>
+                                <span class="day-hours">${hours.open} - ${hours.close}</span>
+                            </div>
+                        `).join('')}
+                    </div>
+                    ` : ''}
+
+                    ${place.details.cuisines ? `
+                    <div class="details-section">
+                        <h3>🍽 ${currentLanguage === 'tg' ? 'Хӯрокҳо' : currentLanguage === 'ru' ? 'Кухня' : 'Cuisine'}</h3>
+                        <div class="amenities-list">
+                            ${place.details.cuisines.map(cuisine => `
+                                <span class="amenity-tag">${cuisine}</span>
+                            `).join('')}
+                        </div>
+                    </div>
+                    ` : ''}
+
+                    ${place.details.amenities ? `
+                    <div class="details-section">
+                        <h3>⭐ ${currentLanguage === 'tg' ? 'Хизматҳо' : currentLanguage === 'ru' ? 'Услуги' : 'Amenities'}</h3>
+                        <div class="amenities-list">
+                            ${place.details.amenities.map(amenity => `
+                                <span class="amenity-tag">${amenity}</span>
+                            `).join('')}
+                        </div>
+                    </div>
+                    ` : ''}
+
+                    ${place.phone ? `
+                    <div class="details-section">
+                        <h3>📞 ${currentLanguage === 'tg' ? 'Рақамҳо' : currentLanguage === 'ru' ? 'Контакты' : 'Contacts'}</h3>
+                        <div class="contacts-list">
+                            <div>📞 ${place.phone}</div>
+                        </div>
+                    </div>
+                    ` : ''}
+                </div>
+            `;
+
+            document.getElementById('results-panel').innerHTML = detailsHTML;
+            document.getElementById('results-panel').classList.add('show');
+        }
+
+        function getDayName(day, lang) {
+            const days = {
+                tg: {
+                    monday: "Душанбе",
+                    tuesday: "Сешанбе", 
+                    wednesday: "Чоршанбе",
+                    thursday: "Панҷшанбе",
+                    friday: "Ҷумъа",
+                    saturday: "Шанбе", 
+                    sunday: "Якшанбе"
+                },
+                ru: {
+                    monday: "Понедельник",
+                    tuesday: "Вторник",
+                    wednesday: "Среда", 
+                    thursday: "Четверг",
+                    friday: "Пятница",
+                    saturday: "Суббота",
+                    sunday: "Воскресенье"
+                },
+                en: {
+                    monday: "Monday",
+                    tuesday: "Tuesday",
+                    wednesday: "Wednesday",
+                    thursday: "Thursday", 
+                    friday: "Friday",
+                    saturday: "Saturday",
+                    sunday: "Sunday"
+                }
+            };
+            return days[lang][day];
         }
 
         // Поиск
@@ -1608,7 +1774,6 @@
                 const resultItem = document.createElement('div');
                 resultItem.className = 'result-item';
                 
-                // Рассчитываем расстояние, если известно местоположение пользователя
                 let distanceText = '';
                 if (userLocation) {
                     const distance = calculateDistance(
@@ -1669,45 +1834,45 @@
         }
 
         // Определение местоположения
-        document.getElementById('location-btn').addEventListener('click', locateUser);
+        document.getElementById('location-btn').addEventListener('click', toggleLocationTracking);
 
-        function locateUser() {
+        function toggleLocationTracking() {
+            if (locationWatchId) {
+                stopLocationTracking();
+            } else {
+                startLocationTracking();
+            }
+        }
+
+        function startLocationTracking() {
             if (!navigator.geolocation) {
                 showStatus(uiTexts[currentLanguage].locationError, 'error');
                 return;
             }
 
+            document.getElementById('location-btn').classList.add('loading');
             showLoader(uiTexts[currentLanguage].routeBuilding);
 
             navigator.geolocation.getCurrentPosition(
                 function(position) {
-                    const lat = position.coords.latitude;
-                    const lng = position.coords.longitude;
-                    
-                    userLocation = { lat, lng };
-                    
-                    if (userMarker) {
-                        map.removeLayer(userMarker);
-                    }
-                    
-                    userMarker = L.marker([lat, lng], {
-                        icon: L.divIcon({
-                            className: 'user-location-marker',
-                            html: '<div style="background: #007AFF; border: 3px solid white; border-radius: 50%; width: 20px; height: 20px; box-shadow: 0 2px 10px rgba(0,122,255,0.5);"></div>',
-                            iconSize: [20, 20],
-                            iconAnchor: [10, 10]
-                        })
-                    }).addTo(map);
-                    
-                    map.setView([lat, lng], 16);
+                    updateLocationMarker(position);
+                    document.getElementById('location-btn').classList.remove('loading');
+                    document.getElementById('location-btn').classList.add('active');
                     hideLoader();
                     showStatus(uiTexts[currentLanguage].locationFound, 'success');
+                    
+                    // Начинаем отслеживание движения
+                    locationWatchId = navigator.geolocation.watchPosition(
+                        updateLocationMarker,
+                        handleLocationError,
+                        {
+                            enableHighAccuracy: true,
+                            timeout: 10000,
+                            maximumAge: 0
+                        }
+                    );
                 },
-                function(error) {
-                    let message = uiTexts[currentLanguage].locationError;
-                    hideLoader();
-                    showStatus(message, 'error');
-                },
+                handleLocationError,
                 {
                     enableHighAccuracy: true,
                     timeout: 10000,
@@ -1716,11 +1881,71 @@
             );
         }
 
+        function stopLocationTracking() {
+            if (locationWatchId) {
+                navigator.geolocation.clearWatch(locationWatchId);
+                locationWatchId = null;
+            }
+            
+            document.getElementById('location-btn').classList.remove('active', 'loading');
+            
+            if (userMarker) {
+                map.removeLayer(userMarker);
+                userMarker = null;
+            }
+        }
+
+        function updateLocationMarker(position) {
+            const lat = position.coords.latitude;
+            const lng = position.coords.longitude;
+            
+            userLocation = { lat, lng };
+            
+            if (userMarker) {
+                userMarker.setLatLng([lat, lng]);
+            } else {
+                userMarker = L.marker([lat, lng], {
+                    icon: L.divIcon({
+                        className: 'user-location-marker',
+                        html: '<div style="background: #007AFF; border: 3px solid white; border-radius: 50%; width: 20px; height: 20px; box-shadow: 0 2px 10px rgba(0,122,255,0.5);"></div>',
+                        iconSize: [20, 20],
+                        iconAnchor: [10, 10]
+                    })
+                }).addTo(map).bindPopup('Ваше текущее местоположение').openPopup();
+            }
+            
+            map.setView([lat, lng], 16);
+        }
+
+        function handleLocationError(error) {
+            let message = uiTexts[currentLanguage].locationError;
+            switch(error.code) {
+                case error.PERMISSION_DENIED:
+                    message = currentLanguage === 'tg' ? 'Дастрасӣ ба ҷойгиршавӣ қатъ карда шуд' : 
+                             currentLanguage === 'ru' ? 'Доступ к геолокации запрещен' : 
+                             'Location access denied';
+                    break;
+                case error.POSITION_UNAVAILABLE:
+                    message = currentLanguage === 'tg' ? 'Маълумот дар бораи ҷойгиршавӣ дастрас нест' : 
+                             currentLanguage === 'ru' ? 'Информация о местоположении недоступна' : 
+                             'Location information unavailable';
+                    break;
+                case error.TIMEOUT:
+                    message = currentLanguage === 'tg' ? 'Вақти ҷустуҷӯ ба охир расид' : 
+                             currentLanguage === 'ru' ? 'Время ожидания истекло' : 
+                             'Location request timed out';
+                    break;
+            }
+            
+            document.getElementById('location-btn').classList.remove('loading', 'active');
+            hideLoader();
+            showStatus(message, 'error');
+        }
+
         // Переключение языка
         document.getElementById('language-selector').addEventListener('change', function() {
             currentLanguage = this.value;
             updateLanguage();
-            updateBusRoutesList();
         });
 
         // Переключение типа карты
@@ -1743,6 +1968,9 @@
             showStatus(uiTexts[currentLanguage].filter, 'info');
         });
 
+        // Кнопка поэтажных планов
+        document.getElementById('floor-plan-btn').addEventListener('click', showBuildingSelection);
+
         // Быстрые действия
         document.querySelectorAll('.action-btn').forEach(btn => {
             btn.addEventListener('click', function() {
@@ -1755,7 +1983,9 @@
                                 showStatus(uiTexts[currentLanguage].routeReady, 'success');
                             }, 1500);
                         } else {
-                            showStatus('Аввал ҷойгиршавии худро муайян кунед', 'warning');
+                            showStatus(currentLanguage === 'tg' ? 'Аввал ҷойгиршавии худро муайян кунед' : 
+                                     currentLanguage === 'ru' ? 'Сначала определите свое местоположение' : 
+                                     'First determine your location', 'warning');
                         }
                         break;
                     case 'nearby':
@@ -1773,8 +2003,10 @@
 
         function showNearbyPlaces() {
             if (!userLocation) {
-                showStatus('Аввал ҷойгиршавии худро муайян кунед', 'warning');
-                locateUser();
+                showStatus(currentLanguage === 'tg' ? 'Аввал ҷойгиршавии худро муайян кунед' : 
+                         currentLanguage === 'ru' ? 'Сначала определите свое местоположение' : 
+                         'First determine your location', 'warning');
+                startLocationTracking();
                 return;
             }
             
@@ -1791,7 +2023,9 @@
             
             updateResults(nearbyPlaces);
             showResultsPanel();
-            showStatus('Ҷойҳои дар наздикӣ', 'success');
+            showStatus(currentLanguage === 'tg' ? 'Ҷойҳои дар наздикӣ' : 
+                     currentLanguage === 'ru' ? 'Места рядом' : 
+                     'Nearby places', 'success');
         }
 
         function calculateDistance(lat1, lon1, lat2, lon2) {
@@ -1850,7 +2084,9 @@
                     showStatus(uiTexts[currentLanguage].routeReady, 'success');
                 }, 1500);
             } else {
-                showStatus('Барои роҳ ҷойгиршавии худро муайян кунед', 'warning');
+                showStatus(currentLanguage === 'tg' ? 'Барои роҳ ҷойгиршавии худро муайян кунед' : 
+                         currentLanguage === 'ru' ? 'Для маршрута определите свое местоположение' : 
+                         'For route determine your location', 'warning');
             }
         };
 
@@ -1859,6 +2095,10 @@
                 window.open(`tel:${phone}`);
             }
         };
+
+        window.showPlaceDetails = showPlaceDetails;
+        window.showFloorPlan = showFloorPlan;
+        window.hideFloorPlan = hideFloorPlan;
 
         // Скрытие клавиатуры при клике на карту
         map.on('click', function() {
