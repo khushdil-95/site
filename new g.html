@@ -54,7 +54,7 @@
         }
 
         body {
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'SF Pro Display', sans-serif;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
             background: var(--bg-primary);
             color: var(--text-primary);
             height: 100vh;
@@ -91,7 +91,7 @@
             align-items: center;
             gap: 12px;
             box-shadow: var(--shadow-large);
-            backdrop-filter: blur(20px) saturate(180%);
+            backdrop-filter: blur(20px);
             border: 1px solid var(--border-color);
         }
 
@@ -112,7 +112,6 @@
 
         #search::placeholder {
             color: var(--text-tertiary);
-            font-weight: 400;
         }
 
         .language-selector {
@@ -146,11 +145,11 @@
             right: 0;
             z-index: 1000;
             background: var(--card-bg);
-            backdrop-filter: blur(20px) saturate(180%);
+            backdrop-filter: blur(20px);
             border-top-left-radius: 20px;
             border-top-right-radius: 20px;
             padding: 15px;
-            box-shadow: 0 -5px 25px var(--shadow);
+            box-shadow: 0 -5px 25px rgba(0,0,0,0.1);
             border-top: 1px solid var(--border-color);
         }
 
@@ -178,7 +177,7 @@
             color: var(--text-primary);
             white-space: nowrap;
             flex-shrink: 0;
-            transition: all 0.2s ease;
+            transition: all 0.2s;
             cursor: pointer;
         }
 
@@ -186,13 +185,6 @@
             background: var(--accent-primary);
             color: white;
             border-color: var(--accent-primary);
-            transform: translateY(-1px);
-            box-shadow: var(--shadow);
-        }
-
-        .category-btn:not(.active):hover {
-            background: var(--bg-tertiary);
-            transform: translateY(-1px);
         }
 
         /* Быстрые действия */
@@ -214,31 +206,17 @@
             font-size: 12px;
             padding: 8px 12px;
             cursor: pointer;
-            transition: transform 0.2s ease;
-            border-radius: 10px;
-        }
-
-        .action-btn:active {
-            transform: scale(0.95);
-            background: var(--bg-secondary);
         }
 
         .action-icon {
-            width: 28px;
-            height: 28px;
+            width: 24px;
+            height: 24px;
             background: var(--bg-secondary);
-            border-radius: 14px;
+            border-radius: 12px;
             display: flex;
             align-items: center;
             justify-content: center;
-            font-size: 15px;
-            transition: all 0.2s ease;
-            border: 1px solid var(--border-color);
-        }
-
-        .action-btn:active .action-icon {
-            background: var(--accent-primary);
-            color: white;
+            font-size: 14px;
         }
 
         /* Панель результатов */
@@ -248,7 +226,7 @@
             left: 15px;
             right: 15px;
             background: var(--card-bg);
-            backdrop-filter: blur(20px) saturate(180%);
+            backdrop-filter: blur(20px);
             border-radius: 20px;
             max-height: 40vh;
             overflow-y: auto;
@@ -270,7 +248,6 @@
             align-items: center;
             gap: 12px;
             cursor: pointer;
-            transition: background-color 0.2s ease;
         }
 
         .result-item:last-child {
@@ -282,8 +259,8 @@
         }
 
         .result-icon {
-            width: 44px;
-            height: 44px;
+            width: 40px;
+            height: 40px;
             background: var(--accent-primary);
             border-radius: 12px;
             display: flex;
@@ -291,12 +268,10 @@
             justify-content: center;
             color: white;
             font-size: 18px;
-            flex-shrink: 0;
         }
 
         .result-info {
             flex: 1;
-            min-width: 0;
         }
 
         .result-name {
@@ -304,24 +279,17 @@
             color: var(--text-primary);
             margin-bottom: 4px;
             font-size: 16px;
-            white-space: nowrap;
-            overflow: hidden;
-            text-overflow: ellipsis;
         }
 
         .result-address {
             color: var(--text-secondary);
             font-size: 14px;
-            white-space: nowrap;
-            overflow: hidden;
-            text-overflow: ellipsis;
         }
 
         .result-distance {
             color: var(--accent-primary);
             font-weight: 600;
             font-size: 14px;
-            flex-shrink: 0;
         }
 
         /* Кнопка текущего местоположения */
@@ -330,16 +298,16 @@
             bottom: 140px;
             right: 15px;
             z-index: 1000;
-            width: 52px;
-            height: 52px;
+            width: 50px;
+            height: 50px;
             background: var(--card-bg);
-            border-radius: 26px;
+            border-radius: 25px;
             display: flex;
             align-items: center;
             justify-content: center;
             box-shadow: var(--shadow-large);
             border: 1px solid var(--border-color);
-            font-size: 22px;
+            font-size: 20px;
             cursor: pointer;
             transition: all 0.3s ease;
         }
@@ -348,13 +316,11 @@
             background: var(--accent-success);
             color: white;
             border-color: var(--accent-success);
-            box-shadow: 0 4px 20px rgba(52, 199, 89, 0.4);
         }
 
         .location-fab.loading {
             background: var(--accent-warning);
             color: white;
-            border-color: var(--accent-warning);
             animation: pulse 1.5s infinite;
         }
 
@@ -376,233 +342,36 @@
         }
 
         .control-btn {
-            width: 48px;
-            height: 48px;
+            width: 44px;
+            height: 44px;
             background: var(--card-bg);
-            border-radius: 24px;
+            border-radius: 22px;
             display: flex;
             align-items: center;
             justify-content: center;
             box-shadow: var(--shadow-large);
             border: 1px solid var(--border-color);
-            font-size: 20px;
-            cursor: pointer;
-            transition: all 0.2s ease;
-        }
-
-        .control-btn:active {
-            transform: scale(0.95);
-            background: var(--bg-secondary);
-        }
-
-        .control-btn.active {
-            background: var(--accent-primary);
-            color: white;
-            border-color: var(--accent-primary);
-        }
-
-        /* Попап */
-        .custom-popup {
-            min-width: 280px;
-            padding: 0;
-            border-radius: 14px;
-            overflow: hidden;
-            box-shadow: var(--shadow-large);
-        }
-
-        .popup-header {
-            padding: 16px;
-            background: var(--accent-primary);
-            color: white;
-        }
-
-        .popup-title {
-            font-weight: 600;
             font-size: 18px;
-            margin-bottom: 4px;
-        }
-
-        .popup-address {
-            font-size: 14px;
-            opacity: 0.9;
-        }
-
-        .popup-content {
-            padding: 16px;
-            background: var(--card-bg);
-        }
-
-        .popup-actions {
-            display: flex;
-            gap: 10px;
-            margin-top: 12px;
-        }
-
-        .popup-btn {
-            flex: 1;
-            padding: 12px;
-            border: none;
-            border-radius: 10px;
-            font-weight: 600;
-            font-size: 14px;
             cursor: pointer;
-            transition: all 0.2s ease;
         }
 
-        .popup-btn.primary {
-            background: var(--accent-primary);
-            color: white;
-        }
-
-        .popup-btn.primary:active {
-            background: var(--accent-secondary);
-        }
-
-        .popup-btn.secondary {
-            background: var(--bg-secondary);
-            color: var(--text-primary);
-            border: 1px solid var(--border-color);
-        }
-
-        .popup-btn.secondary:active {
-            background: var(--bg-tertiary);
-        }
-
-        /* Панель автобусов */
-        .bus-panel {
+        /* Переключатель темы */
+        .theme-toggle {
             position: absolute;
             top: 120px;
             left: 15px;
-            right: 15px;
-            background: var(--card-bg);
-            backdrop-filter: blur(20px) saturate(180%);
-            border-radius: 20px;
-            max-height: 60vh;
-            overflow-y: auto;
-            box-shadow: var(--shadow-large);
-            display: none;
-            z-index: 999;
-            -webkit-overflow-scrolling: touch;
-            padding: 20px;
-            border: 1px solid var(--border-color);
-        }
-
-        .bus-panel.show {
-            display: block;
-        }
-
-        .bus-panel-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 15px;
-        }
-
-        .bus-panel-title {
-            font-size: 18px;
-            font-weight: 600;
-            color: var(--text-primary);
-        }
-
-        .close-panel {
-            background: var(--bg-secondary);
-            border: 1px solid var(--border-color);
-            border-radius: 10px;
-            font-size: 20px;
-            color: var(--text-secondary);
-            cursor: pointer;
-            width: 36px;
-            height: 36px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-        }
-
-        .bus-route {
-            background: var(--bg-secondary);
-            border-radius: 14px;
-            padding: 16px;
-            margin-bottom: 12px;
-            border-left: 4px solid var(--accent-primary);
-            cursor: pointer;
-            transition: all 0.2s ease;
-            border: 1px solid var(--border-color);
-        }
-
-        .bus-route:active {
-            background: var(--bg-tertiary);
-            transform: translateY(-1px);
-        }
-
-        .bus-route-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 8px;
-        }
-
-        .bus-number {
-            font-weight: 600;
-            color: var(--accent-primary);
-            font-size: 16px;
-        }
-
-        .bus-status {
-            background: var(--accent-success);
-            color: white;
-            padding: 4px 8px;
-            border-radius: 8px;
-            font-size: 12px;
-            font-weight: 600;
-        }
-
-        .bus-route-stops {
-            color: var(--text-secondary);
-            font-size: 14px;
-            margin-bottom: 8px;
-            line-height: 1.4;
-        }
-
-        .bus-info {
-            display: flex;
-            justify-content: space-between;
-            font-size: 12px;
-            color: var(--text-tertiary);
-        }
-
-        .bus-toggle {
-            position: absolute;
-            bottom: 200px;
-            right: 15px;
             z-index: 1000;
-            width: 52px;
-            height: 52px;
-            background: var(--accent-warning);
-            border-radius: 26px;
+            width: 44px;
+            height: 44px;
+            background: var(--card-bg);
+            border-radius: 22px;
             display: flex;
             align-items: center;
             justify-content: center;
             box-shadow: var(--shadow-large);
-            border: none;
-            font-size: 22px;
-            color: white;
+            border: 1px solid var(--border-color);
+            font-size: 18px;
             cursor: pointer;
-            transition: all 0.3s ease;
-        }
-
-        .bus-toggle.active {
-            background: var(--accent-success);
-            transform: scale(1.05);
-        }
-
-        /* Анимации */
-        @keyframes slideUp {
-            from { transform: translateY(100px); opacity: 0; }
-            to { transform: translateY(0); opacity: 1; }
-        }
-
-        .slide-up {
-            animation: slideUp 0.3s ease-out;
         }
 
         /* Статус бар */
@@ -618,7 +387,6 @@
             font-size: 14px;
             text-align: center;
             display: none;
-            font-weight: 500;
         }
 
         /* Загрузчик */
@@ -631,39 +399,13 @@
             z-index: 1002;
             background: var(--overlay);
             color: white;
-            padding: 16px 24px;
+            padding: 12px 20px;
             border-radius: 20px;
-            font-size: 16px;
-            font-weight: 500;
-            backdrop-filter: blur(20px);
+            font-size: 14px;
         }
 
         .loader.show {
             display: block;
-        }
-
-        /* Переключатель темы */
-        .theme-toggle {
-            position: absolute;
-            top: 120px;
-            left: 15px;
-            z-index: 1000;
-            width: 48px;
-            height: 48px;
-            background: var(--card-bg);
-            border-radius: 24px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            box-shadow: var(--shadow-large);
-            border: 1px solid var(--border-color);
-            font-size: 20px;
-            cursor: pointer;
-            transition: all 0.3s ease;
-        }
-
-        .theme-toggle:active {
-            transform: scale(0.95);
         }
 
         /* Адаптация для разных размеров экрана */
@@ -680,229 +422,6 @@
                 padding: 10px 16px;
                 font-size: 13px;
             }
-
-            .bus-panel {
-                max-height: 50vh;
-            }
-        }
-
-        /* Улучшения для iOS */
-        @supports (-webkit-touch-callout: none) {
-            .search-header {
-                padding-top: 60px;
-            }
-        }
-
-        /* Стили для маркеров автобусов */
-        .bus-marker {
-            background: var(--accent-warning);
-            border: 3px solid white;
-            border-radius: 50%;
-            width: 20px;
-            height: 20px;
-            box-shadow: 0 2px 10px rgba(255,149,0,0.5);
-        }
-
-        .bus-marker::after {
-            content: attr(data-number);
-            position: absolute;
-            top: -25px;
-            left: 50%;
-            transform: translateX(-50%);
-            background: var(--accent-warning);
-            color: white;
-            padding: 2px 6px;
-            border-radius: 8px;
-            font-size: 10px;
-            font-weight: bold;
-            white-space: nowrap;
-        }
-
-        /* Дополнительные стили для улучшений */
-        .details-panel {
-            padding: 20px;
-        }
-
-        .details-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 20px;
-            border-bottom: 1px solid var(--border-color);
-            padding-bottom: 15px;
-        }
-
-        .details-section {
-            margin-bottom: 20px;
-        }
-
-        .details-section h3 {
-            margin-bottom: 10px;
-            color: var(--text-primary);
-            font-size: 16px;
-            font-weight: 600;
-        }
-
-        .amenities-list {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 8px;
-        }
-
-        .amenity-tag {
-            background: var(--bg-secondary);
-            color: var(--text-primary);
-            padding: 6px 12px;
-            border-radius: 15px;
-            font-size: 12px;
-            border: 1px solid var(--border-color);
-            font-weight: 500;
-        }
-
-        .working-day {
-            display: flex;
-            justify-content: space-between;
-            padding: 8px 0;
-            border-bottom: 1px solid var(--border-color);
-        }
-
-        .contacts-list div {
-            padding: 6px 0;
-            color: var(--text-secondary);
-        }
-
-        /* Стили для расписания */
-        .schedule-panel {
-            padding: 20px;
-        }
-
-        .schedule-header {
-            text-align: center;
-            margin-bottom: 15px;
-            border-bottom: 1px solid var(--border-color);
-            padding-bottom: 15px;
-        }
-
-        .next-trips {
-            margin: 15px 0;
-        }
-
-        .trip-time {
-            background: var(--accent-primary);
-            color: white;
-            padding: 8px 12px;
-            border-radius: 8px;
-            margin: 5px;
-            display: inline-block;
-            font-weight: 600;
-        }
-
-        .stops-list {
-            margin-top: 15px;
-        }
-
-        .stop-item {
-            display: flex;
-            justify-content: space-between;
-            padding: 8px 0;
-            border-bottom: 1px solid var(--border-color);
-            color: var(--text-secondary);
-        }
-
-        /* Стили для поэтажных планов */
-        .floor-plan-panel {
-            position: absolute;
-            bottom: 120px;
-            left: 15px;
-            right: 15px;
-            background: var(--card-bg);
-            border-radius: 20px;
-            max-height: 60vh;
-            overflow-y: auto;
-            display: none;
-            z-index: 1002;
-            box-shadow: var(--shadow-large);
-            border: 1px solid var(--border-color);
-        }
-
-        .floor-plan-panel.show {
-            display: block;
-        }
-
-        .floor-plan-header {
-            padding: 15px;
-            border-bottom: 1px solid var(--border-color);
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-
-        .floor-plan-title {
-            font-size: 18px;
-            font-weight: 600;
-            color: var(--text-primary);
-        }
-
-        .floor-tabs {
-            display: flex;
-            gap: 5px;
-            padding: 10px;
-            border-bottom: 1px solid var(--border-color);
-        }
-
-        .floor-tab {
-            padding: 8px 15px;
-            background: var(--bg-secondary);
-            border: 1px solid var(--border-color);
-            border-radius: 15px;
-            font-size: 14px;
-            cursor: pointer;
-            color: var(--text-primary);
-            transition: all 0.2s ease;
-        }
-
-        .floor-tab.active {
-            background: var(--accent-primary);
-            color: white;
-            border-color: var(--accent-primary);
-        }
-
-        .floor-content {
-            padding: 15px;
-            text-align: center;
-        }
-
-        .floor-image {
-            max-width: 100%;
-            border-radius: 12px;
-            margin-bottom: 15px;
-            border: 1px solid var(--border-color);
-        }
-
-        .facility-list {
-            text-align: left;
-        }
-
-        .facility-item {
-            padding: 12px;
-            border-bottom: 1px solid var(--border-color);
-            display: flex;
-            align-items: center;
-            gap: 12px;
-            color: var(--text-primary);
-        }
-
-        .facility-icon {
-            width: 28px;
-            height: 28px;
-            background: var(--accent-primary);
-            border-radius: 8px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            color: white;
-            font-size: 14px;
-            flex-shrink: 0;
         }
     </style>
 </head>
@@ -935,39 +454,8 @@
             <!-- Результаты будут здесь -->
         </div>
 
-        <!-- Панель автобусов -->
-        <div class="bus-panel" id="bus-panel">
-            <div class="bus-panel-header">
-                <div class="bus-panel-title">Автобусҳои Душанбе</div>
-                <button class="close-panel" id="close-bus-panel">✕</button>
-            </div>
-            <div id="bus-routes-list">
-                <!-- Список маршрутов будет здесь -->
-            </div>
-        </div>
-
-        <!-- Панель поэтажных планов -->
-        <div class="floor-plan-panel" id="floor-plan-panel">
-            <div class="floor-plan-header">
-                <div class="floor-plan-title" id="floor-plan-building-name">Название здания</div>
-                <button class="close-panel" onclick="hideFloorPlan()">✕</button>
-            </div>
-            <div class="floor-tabs" id="floor-tabs">
-                <!-- Вкладки этажей будут здесь -->
-            </div>
-            <div class="floor-content" id="floor-content">
-                <!-- Контент этажа будет здесь -->
-            </div>
-        </div>
-
         <!-- Кнопка местоположения -->
         <button class="location-fab" id="location-btn">📍</button>
-
-        <!-- Кнопка отслеживания автобусов -->
-        <button class="bus-toggle" id="bus-toggle" title="Автобусҳо">🚌</button>
-
-        <!-- Кнопка поэтажных планов -->
-        <button class="control-btn" id="floor-plan-btn" title="Поэтажные планы" style="position: absolute; top: 230px; right: 15px; z-index: 1000;">🏢</button>
 
         <!-- Переключатель темы -->
         <button class="theme-toggle" id="theme-toggle" title="Сменить тему">🌙</button>
@@ -975,7 +463,6 @@
         <!-- Панель управления картой -->
         <div class="map-controls">
             <button class="control-btn" id="map-type-btn" title="Карта/Спутник">🌍</button>
-            <button class="control-btn" id="filter-btn" title="Филтр">🔧</button>
         </div>
 
         <!-- Нижняя навигация -->
@@ -988,13 +475,6 @@
                 <button class="category-btn" data-category="bank">🏦 Бонк</button>
                 <button class="category-btn" data-category="market">🛒 Марказ</button>
                 <button class="category-btn" data-category="hospital">🏥 Беморхона</button>
-                <button class="category-btn" data-category="transport">🚌 Истгоҳ</button>
-                <button class="category-btn" data-category="cafe">☕ Кафе</button>
-                <button class="category-btn" data-category="hotel">🏨 Меҳмонхона</button>
-                <button class="category-btn" data-category="school">🎓 Мактаб</button>
-                <button class="category-btn" data-category="government">🏛 Давлатӣ</button>
-                <button class="category-btn" data-category="park">🌳 Боғ</button>
-                <button class="category-btn" data-category="museum">🏛 Осорхона</button>
             </div>
 
             <!-- Быстрые действия -->
@@ -1010,10 +490,6 @@
                 <button class="action-btn" data-action="favorites">
                     <div class="action-icon">⭐</div>
                     <span>Дӯстдошта</span>
-                </button>
-                <button class="action-btn" data-action="menu">
-                    <div class="action-icon">⋮</div>
-                    <span>Бештар</span>
                 </button>
             </div>
         </div>
@@ -1035,51 +511,191 @@
             maxBoundsViscosity: 0.9
         }).setView([38.575, 68.785], 13);
 
-        map.setMaxBounds(dushanbeBounds);
-
         // Слои карты для разных тем
         const mapLayers = {
             light: {
                 street: L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
                     maxZoom: 18,
-                    bounds: dushanbeBounds
+                    bounds: dushanbeBounds,
+                    attribution: '© OpenStreetMap contributors'
                 }),
-                satellite: L.tileLayer('https://{s}.google.com/vt/lyrs=s&x={x}&y={y}&z={z}', {
-                    maxZoom: 20,
-                    subdomains: ['mt0', 'mt1', 'mt2', 'mt3'],
-                    bounds: dushanbeBounds
-                })
-            },
-            dark: {
-                street: L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', {
+                dark: L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', {
                     maxZoom: 18,
                     bounds: dushanbeBounds,
                     attribution: '© OpenStreetMap, © CartoDB'
-                }),
-                satellite: L.tileLayer('https://{s}.google.com/vt/lyrs=s&x={x}&y={y}&z={z}', {
-                    maxZoom: 20,
-                    subdomains: ['mt0', 'mt1', 'mt2', 'mt3'],
-                    bounds: dushanbeBounds
                 })
-            }
+            },
+            satellite: L.tileLayer('https://{s}.google.com/vt/lyrs=s&x={x}&y={y}&z={z}', {
+                maxZoom: 20,
+                subdomains: ['mt0', 'mt1', 'mt2', 'mt3'],
+                bounds: dushanbeBounds,
+                attribution: '© Google'
+            })
         };
 
         // Добавляем светлую карту по умолчанию
         mapLayers.light.street.addTo(map);
 
+        // База данных мест
+        const places = [
+            {
+                id: 1,
+                name: {
+                    tg: "Ресторани 'Сомон'",
+                    ru: "Ресторан 'Сомон'",
+                    en: "Restaurant 'Somon'"
+                },
+                lat: 38.5792,
+                lng: 68.7874,
+                category: "restaurant",
+                address: {
+                    tg: "Кучаи Рудакӣ 45",
+                    ru: "ул. Рудаки 45",
+                    en: "Rudaki St. 45"
+                },
+                phone: "+992 37 221 1234",
+                icon: "🍽"
+            },
+            {
+                id: 2,
+                name: {
+                    tg: "Дорухонаи Марказӣ",
+                    ru: "Центральная Аптека",
+                    en: "Central Pharmacy"
+                },
+                lat: 38.5765,
+                lng: 68.7867,
+                category: "pharmacy",
+                address: {
+                    tg: "Кучаи Шерозӣ 23",
+                    ru: "ул. Шерози 23",
+                    en: "Sherozi St. 23"
+                },
+                phone: "+992 37 224 9012",
+                icon: "💊"
+            },
+            {
+                id: 3,
+                name: {
+                    tg: "Бонки Амонатбонк",
+                    ru: "Банк Амонатбонк",
+                    en: "Amonatbank"
+                },
+                lat: 38.5805,
+                lng: 68.7821,
+                category: "bank",
+                address: {
+                    tg: "Кучаи Борбад 34",
+                    ru: "ул. Борбада 34",
+                    en: "Borbad St. 34"
+                },
+                phone: "+992 37 227 3456",
+                icon: "🏦"
+            },
+            {
+                id: 4,
+                name: {
+                    tg: "Маркази савдои 'Корвон'",
+                    ru: "Торговый центр 'Корвон'",
+                    en: "Shopping mall 'Corvon'"
+                },
+                lat: 38.5723,
+                lng: 68.7890,
+                category: "market",
+                address: {
+                    tg: "Проспекти Рудакӣ 95",
+                    ru: "Проспект Рудаки 95",
+                    en: "Rudaki Avenue 95"
+                },
+                phone: "+992 37 227 8899",
+                icon: "🛒"
+            },
+            {
+                id: 5,
+                name: {
+                    tg: "Беморхонаи Шафа",
+                    ru: "Больница Шафа",
+                    en: "Shafa Hospital"
+                },
+                lat: 38.5823,
+                lng: 68.7798,
+                category: "hospital",
+                address: {
+                    tg: "Кучаи Садриддин Айнӣ 45",
+                    ru: "ул. Садриддина Айни 45",
+                    en: "Sadriddin Ayni St. 45"
+                },
+                phone: "+992 37 224 7890",
+                icon: "🏥"
+            }
+        ];
+
+        // Тексты интерфейса
+        const uiTexts = {
+            tg: {
+                searchPlaceholder: "Ҷустуҷӯ дар Душанбе...",
+                all: "Ҳама",
+                restaurant: "🍽 Ресторан",
+                pharmacy: "💊 Дорухона",
+                bank: "🏦 Бонк",
+                market: "🛒 Марказ",
+                hospital: "🏥 Беморхона",
+                route: "Роҳ",
+                nearby: "Дар наздикӣ",
+                favorites: "Дӯстдошта",
+                welcome: "Хуш омадед ба TajNav!",
+                locationFound: "Ҷойгиршавӣ муайян шуд",
+                locationError: "Хато дар ҷойгиршавӣ",
+                noResults: "Ҳеҷ чиз ёфт нашуд",
+                call: "Занг",
+                showRoute: "Роҳ"
+            },
+            ru: {
+                searchPlaceholder: "Поиск в Душанбе...",
+                all: "Все",
+                restaurant: "🍽 Ресторан",
+                pharmacy: "💊 Аптека",
+                bank: "🏦 Банк",
+                market: "🛒 Торговый центр",
+                hospital: "🏥 Больница",
+                route: "Маршрут",
+                nearby: "Рядом",
+                favorites: "Избранное",
+                welcome: "Добро пожаловать в TajNav!",
+                locationFound: "Местоположение определено",
+                locationError: "Ошибка определения местоположения",
+                noResults: "Ничего не найдено",
+                call: "Звонок",
+                showRoute: "Маршрут"
+            },
+            en: {
+                searchPlaceholder: "Search in Dushanbe...",
+                all: "All",
+                restaurant: "🍽 Restaurant",
+                pharmacy: "💊 Pharmacy",
+                bank: "🏦 Bank",
+                market: "🛒 Market",
+                hospital: "🏥 Hospital",
+                route: "Route",
+                nearby: "Nearby",
+                favorites: "Favorites",
+                welcome: "Welcome to TajNav!",
+                locationFound: "Location found",
+                locationError: "Location error",
+                noResults: "Nothing found",
+                call: "Call",
+                showRoute: "Route"
+            }
+        };
+
         // Переменные
         let currentLanguage = 'tg';
-        let currentMapType = 'street';
         let currentTheme = 'light';
+        let currentMapType = 'street';
         let userLocation = null;
         let userMarker = null;
         let currentCategory = 'all';
         let allMarkers = [];
-        let busMarkers = [];
-        let busRoutesLayer = null;
-        let isBusTrackingActive = false;
-        let busUpdateInterval = null;
-        let locationWatchId = null;
 
         // Инициализация темы
         function initTheme() {
@@ -1111,13 +727,22 @@
 
         // Обновление слоёв карты
         function updateMapLayers() {
-            // Удаляем текущий слой
-            if (currentMapType === 'street') {
-                mapLayers[currentTheme].satellite.remove();
-                mapLayers[currentTheme].street.addTo(map);
+            // Удаляем все слои
+            map.eachLayer(layer => {
+                if (layer instanceof L.TileLayer) {
+                    map.removeLayer(layer);
+                }
+            });
+
+            // Добавляем нужный слой
+            if (currentMapType === 'satellite') {
+                mapLayers.satellite.addTo(map);
             } else {
-                mapLayers[currentTheme].street.remove();
-                mapLayers[currentTheme].satellite.addTo(map);
+                if (currentTheme === 'light') {
+                    mapLayers.light.street.addTo(map);
+                } else {
+                    mapLayers.light.dark.addTo(map);
+                }
             }
         }
 
@@ -1151,25 +776,326 @@
                 const action = btn.dataset.action;
                 btn.querySelector('span').textContent = texts[action];
             });
-
-            document.getElementById('floor-plan-btn').title = texts.floorPlans;
-            
-            updateMarkersLanguage();
-            updateBusRoutesList();
             
             localStorage.setItem('tajnav-language', currentLanguage);
         }
 
-        // Остальной код остается таким же, но с использованием CSS переменных
-        // [Здесь должен быть весь остальной JavaScript код из предыдущей версии]
-        // Для экономии места оставлю основные функции, но уберу дублирующийся код
+        // Создание маркеров
+        function createMarkers() {
+            // Удаляем старые маркеры
+            allMarkers.forEach(marker => map.removeLayer(marker));
+            allMarkers = [];
 
-        // Инициализация приложения
+            places.forEach(place => {
+                const marker = L.marker([place.lat, place.lng])
+                    .bindPopup(`
+                        <div style="min-width: 200px; padding: 0;">
+                            <div style="padding: 12px; background: var(--accent-primary); color: white; border-radius: 8px 8px 0 0;">
+                                <div style="font-weight: 600; font-size: 16px;">${place.name[currentLanguage]}</div>
+                                <div style="font-size: 12px; opacity: 0.9;">${place.address[currentLanguage]}</div>
+                            </div>
+                            <div style="padding: 12px; background: white;">
+                                ${place.phone ? `<div style="margin-bottom: 8px;">📞 ${place.phone}</div>` : ''}
+                                <button onclick="window.showRoute(${place.lat}, ${place.lng})" style="width: 100%; padding: 8px; background: var(--accent-primary); color: white; border: none; border-radius: 6px; cursor: pointer;">
+                                    ${uiTexts[currentLanguage].showRoute}
+                                </button>
+                                ${place.phone ? `
+                                <button onclick="window.callNumber('${place.phone}')" style="width: 100%; padding: 8px; background: var(--bg-secondary); color: var(--text-primary); border: 1px solid var(--border-color); border-radius: 6px; cursor: pointer; margin-top: 8px;">
+                                    ${uiTexts[currentLanguage].call}
+                                </button>
+                                ` : ''}
+                            </div>
+                        </div>
+                    `)
+                    .addTo(map);
+                allMarkers.push(marker);
+            });
+        }
+
+        // Поиск
+        const searchInput = document.getElementById('search');
+        const resultsPanel = document.getElementById('results-panel');
+
+        searchInput.addEventListener('input', function(e) {
+            const searchTerm = e.target.value.toLowerCase().trim();
+            if (searchTerm.length > 0) {
+                showResultsPanel();
+                const filtered = places.filter(place => {
+                    const name = place.name[currentLanguage].toLowerCase();
+                    const address = place.address[currentLanguage].toLowerCase();
+                    return name.includes(searchTerm) || address.includes(searchTerm);
+                });
+                updateResults(filtered);
+            } else {
+                hideResultsPanel();
+            }
+        });
+
+        function showResultsPanel() {
+            resultsPanel.classList.add('show');
+        }
+
+        function hideResultsPanel() {
+            resultsPanel.classList.remove('show');
+        }
+
+        function updateResults(filteredPlaces) {
+            resultsPanel.innerHTML = '';
+            
+            if (filteredPlaces.length === 0) {
+                resultsPanel.innerHTML = `
+                    <div style="padding: 40px 20px; text-align: center; color: var(--text-secondary);">
+                        ${uiTexts[currentLanguage].noResults}
+                    </div>
+                `;
+                return;
+            }
+
+            filteredPlaces.forEach(place => {
+                const resultItem = document.createElement('div');
+                resultItem.className = 'result-item';
+                
+                resultItem.innerHTML = `
+                    <div class="result-icon">${place.icon}</div>
+                    <div class="result-info">
+                        <div class="result-name">${place.name[currentLanguage]}</div>
+                        <div class="result-address">${place.address[currentLanguage]}</div>
+                    </div>
+                `;
+                
+                resultItem.addEventListener('click', () => {
+                    map.setView([place.lat, place.lng], 16);
+                    allMarkers.forEach(marker => {
+                        if (marker.getLatLng().lat === place.lat && marker.getLatLng().lng === place.lng) {
+                            marker.openPopup();
+                        }
+                    });
+                    hideResultsPanel();
+                    searchInput.value = '';
+                    searchInput.blur();
+                });
+                
+                resultsPanel.appendChild(resultItem);
+            });
+        }
+
+        // Категории
+        document.querySelectorAll('.category-btn').forEach(btn => {
+            btn.addEventListener('click', function() {
+                document.querySelectorAll('.category-btn').forEach(b => b.classList.remove('active'));
+                this.classList.add('active');
+                
+                currentCategory = this.dataset.category;
+                filterByCategory(currentCategory);
+            });
+        });
+
+        function filterByCategory(category) {
+            allMarkers.forEach(marker => marker.removeFrom(map));
+            
+            if (category === 'all') {
+                allMarkers.forEach(marker => marker.addTo(map));
+            } else {
+                places.forEach((place, index) => {
+                    if (place.category === category) {
+                        allMarkers[index].addTo(map);
+                    }
+                });
+            }
+        }
+
+        // Определение местоположения
+        document.getElementById('location-btn').addEventListener('click', locateUser);
+
+        function locateUser() {
+            if (!navigator.geolocation) {
+                showStatus(uiTexts[currentLanguage].locationError, 'error');
+                return;
+            }
+
+            document.getElementById('location-btn').classList.add('loading');
+            showLoader('Ҷустуҷӯи ҷойгиршавӣ...');
+
+            navigator.geolocation.getCurrentPosition(
+                function(position) {
+                    const lat = position.coords.latitude;
+                    const lng = position.coords.longitude;
+                    
+                    userLocation = { lat, lng };
+                    
+                    if (userMarker) {
+                        map.removeLayer(userMarker);
+                    }
+                    
+                    userMarker = L.marker([lat, lng], {
+                        icon: L.divIcon({
+                            className: 'user-location-marker',
+                            html: '<div style="background: var(--accent-success); border: 3px solid white; border-radius: 50%; width: 20px; height: 20px; box-shadow: 0 2px 10px rgba(52,199,89,0.5);"></div>',
+                            iconSize: [20, 20],
+                            iconAnchor: [10, 10]
+                        })
+                    }).addTo(map).bindPopup('Ҷойгиршавии шумо').openPopup();
+                    
+                    map.setView([lat, lng], 16);
+                    document.getElementById('location-btn').classList.remove('loading');
+                    document.getElementById('location-btn').classList.add('active');
+                    hideLoader();
+                    showStatus(uiTexts[currentLanguage].locationFound, 'success');
+                },
+                function(error) {
+                    let message = uiTexts[currentLanguage].locationError;
+                    document.getElementById('location-btn').classList.remove('loading', 'active');
+                    hideLoader();
+                    showStatus(message, 'error');
+                },
+                {
+                    enableHighAccuracy: true,
+                    timeout: 10000,
+                    maximumAge: 60000
+                }
+            );
+        }
+
+        // Переключение языка
+        document.getElementById('language-selector').addEventListener('change', function() {
+            currentLanguage = this.value;
+            updateLanguage();
+            createMarkers();
+        });
+
+        // Переключение типа карты
+        document.getElementById('map-type-btn').addEventListener('click', function() {
+            currentMapType = currentMapType === 'street' ? 'satellite' : 'street';
+            this.textContent = currentMapType === 'street' ? '🌍' : '🗺';
+            updateMapLayers();
+            showStatus(currentMapType === 'street' ? 'Карта' : 'Спутник', 'info');
+        });
+
+        // Быстрые действия
+        document.querySelectorAll('.action-btn').forEach(btn => {
+            btn.addEventListener('click', function() {
+                const action = this.dataset.action;
+                switch(action) {
+                    case 'route':
+                        if (userLocation) {
+                            showStatus('Создание маршрута...', 'loading');
+                            setTimeout(() => {
+                                showStatus('Маршрут готов', 'success');
+                            }, 1500);
+                        } else {
+                            showStatus('Сначала определите свое местоположение', 'warning');
+                        }
+                        break;
+                    case 'nearby':
+                        showNearbyPlaces();
+                        break;
+                    case 'favorites':
+                        showStatus('Избранное', 'info');
+                        break;
+                }
+            });
+        });
+
+        function showNearbyPlaces() {
+            if (!userLocation) {
+                showStatus('Сначала определите свое местоположение', 'warning');
+                locateUser();
+                return;
+            }
+            
+            const nearbyPlaces = places
+                .map(place => {
+                    const distance = calculateDistance(
+                        userLocation.lat, userLocation.lng,
+                        place.lat, place.lng
+                    );
+                    return { ...place, distance };
+                })
+                .sort((a, b) => a.distance - b.distance)
+                .slice(0, 5);
+            
+            updateResults(nearbyPlaces);
+            showResultsPanel();
+            showStatus('Места рядом', 'success');
+        }
+
+        function calculateDistance(lat1, lon1, lat2, lon2) {
+            const R = 6371;
+            const dLat = (lat2 - lat1) * Math.PI / 180;
+            const dLon = (lon2 - lon1) * Math.PI / 180;
+            const a = 
+                Math.sin(dLat/2) * Math.sin(dLat/2) +
+                Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) * 
+                Math.sin(dLon/2) * Math.sin(dLon/2);
+            const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+            return R * c;
+        }
+
+        // Статус бар
+        function showStatus(message, type = 'info') {
+            const statusBar = document.getElementById('status-bar');
+            statusBar.textContent = message;
+            statusBar.style.display = 'block';
+            
+            if (type === 'error') {
+                statusBar.style.background = 'linear-gradient(180deg, rgba(255,59,48,0.8) 0%, transparent 100%)';
+            } else if (type === 'success') {
+                statusBar.style.background = 'linear-gradient(180deg, rgba(52,199,89,0.8) 0%, transparent 100%)';
+            } else if (type === 'warning') {
+                statusBar.style.background = 'linear-gradient(180deg, rgba(255,149,0,0.8) 0%, transparent 100%)';
+            } else if (type === 'loading') {
+                statusBar.style.background = 'linear-gradient(180deg, rgba(0,122,255,0.8) 0%, transparent 100%)';
+            } else {
+                statusBar.style.background = 'linear-gradient(180deg, rgba(0,0,0,0.8) 0%, transparent 100%)';
+            }
+            
+            setTimeout(() => {
+                statusBar.style.display = 'none';
+            }, 3000);
+        }
+
+        // Загрузчик
+        function showLoader(message = '') {
+            const loader = document.getElementById('loader');
+            if (message) {
+                loader.textContent = message;
+            }
+            loader.classList.add('show');
+        }
+
+        function hideLoader() {
+            document.getElementById('loader').classList.remove('show');
+        }
+
+        // Вспомогательные функции
+        window.showRoute = function(lat, lng) {
+            if (userLocation) {
+                showStatus('Создание маршрута...', 'loading');
+                setTimeout(() => {
+                    showStatus('Маршрут готов', 'success');
+                }, 1500);
+            } else {
+                showStatus('Для маршрута определите свое местоположение', 'warning');
+            }
+        };
+
+        window.callNumber = function(phone) {
+            if (phone) {
+                window.open(`tel:${phone}`);
+            }
+        };
+
+        // Скрытие клавиатуры при клике на карту
+        map.on('click', function() {
+            searchInput.blur();
+            hideResultsPanel();
+        });
+
+        // Инициализация
         function initApp() {
             initTheme();
             initLanguage();
             createMarkers();
-            initBusTracking();
             
             // Добавляем обработчик переключения темы
             document.getElementById('theme-toggle').addEventListener('click', toggleTheme);
@@ -1179,9 +1105,6 @@
 
         // Запуск приложения
         initApp();
-
-        // Остальные функции (createMarkers, initBusTracking, и т.д.) остаются без изменений
-        // но теперь они используют CSS переменные для цветов
     </script>
 </body>
 </html>
