@@ -1,386 +1,69 @@
-<!doctype html>
-<html lang="ru">
-<head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>TjMaps — локальный 2GIS для Таджикистана (HTML-прототип)</title>
-
-  <!-- Tailwind Play CDN (для прототипа) -->
-  <script src="https://cdn.tailwindcss.com"></script>
-
-  <!-- Leaflet CSS & JS -->
-  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
-    integrity="sha256-sA+e2Yd3YpXxgGm3k8o4bH1y0k0hNw3w9fDk6b3uS4E=" crossorigin=""/>
-  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
-    integrity="sha256-o9N1j7k2fB0q7Vv0k6QfZt2g2z1Zrj2rT9q1h3qk6bM=" crossorigin=""></script>
-
-  <style>
-    /* Небольшие правки для Leaflet в Tailwind-окружении */
-    #map { height: 72vh; width: 100%; }
-    .leaflet-container { background: #fff; }
-  </style>
-</head>
-<body class="bg-slate-50 text-slate-900">
-
-  <header class="p-4 bg-white shadow-md flex items-center gap-4">
-    <div class="flex items-center gap-3">
-      <div class="w-10 h-10 rounded-full bg-gradient-to-br from-indigo-500 to-pink-500 flex items-center justify-center text-white font-bold">TJ</div>
-      <div>
-        <h1 class="text-lg font-semibold">TjMaps — локальный 2GIS для Таджикистана</h1>
-        <div class="text-xs text-slate-500">поиск организаций, афиши, отзывы и маршруты (прототип)</div>
-      </div>
-    </div>
-
-    <div class="ml-auto flex items-center gap-2">
-      <input id="inputQuery" placeholder="Поиск: кафе, сервис, адрес..." class="border rounded px-3 py-2 w-64 focus:outline-none" />
-      <select id="selectCity" class="border rounded px-2 py-2">
-        <option value="">Все города</option>
-      </select>
-      <select id="selectCategory" class="border rounded px-2 py-2">
-        <option value="">Все категории</option>
-      </select>
-      <button id="btnToggleAdd" class="px-3 py-2 rounded bg-green-500 text-white">Добавить место</button>
-      <button id="btnReset" class="px-3 py-2 rounded border">Сброс</button>
-    </div>
-  </header>
-
-  <main class="grid grid-cols-3 gap-4 p-4">
-    <aside class="col-span-1 bg-white shadow rounded p-3 max-h-[72vh] overflow-auto">
-      <div class="mb-2 text-sm text-slate-600">Результаты: <span id="resultsCount">0</span></div>
-
-      <div id="listContainer" class="space-y-2"></div>
-
-      <div class="mt-4">
-        <h3 class="font-semibold mb-2">Добавить место</h3>
-        <form id="formAdd" class="flex flex-col gap-2">
-          <input id="inpName" required placeholder="Название" class="border rounded px-2 py-1" />
-          <input id="inpCategory" placeholder="Категория" class="border rounded px-2 py-1" />
-          <input id="inpCity" placeholder="Город" class="border rounded px-2 py-1" />
-          <input id="inpAddress" placeholder="Адрес" class="border rounded px-2 py-1" />
-          <input id="inpPhone" placeholder="Телефон" class="border rounded px-2 py-1" />
-          <div class="text-xs text-slate-500">Координаты: <span id="coordsText">—</span></div>
-          <div class="flex gap-2">
-            <button type="submit" class="px-3 py-1 bg-indigo-600 text-white rounded">Сохранить</button>
-            <button type="button" id="btnClear" class="px-3 py-1 border rounded">Очистить</button>
-          </div>
-          <div class="text-xs text-slate-400 mt-1">Чтобы выбрать точку — включите режим добавления и кликните на карте.</div>
-        </form>
-      </div>
-    </aside>
-
-    <section class="col-span-2 bg-white shadow rounded p-2">
-      <div id="map"></div>
-      <div class="text-xs text-slate-500 mt-2">Прототип сохраняет данные в localStorage. Для продакшена нужен сервер и БД.</div>
-    </section>
-  </main>
-
-  <footer class="p-3 text-sm text-slate-600 text-center">Прототип © TjMaps — данные в примере сохраняются в localStorage. Для продакшена: Postgres/PostGIS, API, индекс поиска.</footer>
-
-  <script>
-    // ========== Seed-данные ==========
-    const SEED = [
-      { id: 'p1', name: 'Кофейня «Сомони»', category: 'Кафе', city: 'Душанбе', coords: [38.559772, 68.787038], address: 'ул. Рудаки, 45', phone: '+992 37 123-45-67', hours: '08:00–23:00' },
-      { id: 'p2', name: 'Театр оперы и балета', category: 'Культура', city: 'Душанбе', coords: [38.5560, 68.7875], address: 'пр. Рудаки, 10', phone: '', hours: '09:00–20:00' },
-      { id: 'p3', name: 'Супермаркет «Ашан»', category: 'Супермаркет', city: 'Худжанд', coords: [40.2865, 69.6178], address: 'ул. Мирзо, 5', phone: '+992 92 765-43-21', hours: '08:00–22:00' },
-      { id: 'p4', name: 'Автосервис «Тахти-Толё»', category: 'Услуги', city: 'Куляб', coords: [37.8511, 69.7831], address: 'ул. Советская, 12', phone: '+992 36 234-11-99', hours: '09:00–18:00' }
-    ];
-
-    // ========== LocalStorage helpers ==========
-    const STORAGE_KEY = 'tj_places_v1';
-    function loadPlaces() {
-      try {
-        const raw = localStorage.getItem(STORAGE_KEY);
-        return raw ? JSON.parse(raw) : SEED.slice();
-      } catch (e) { return SEED.slice(); }
-    }
-    function savePlaces(pl) { localStorage.setItem(STORAGE_KEY, JSON.stringify(pl)); }
-
-    // ========== State ==========
-    let places = loadPlaces();
-    let addingMode = false;
-    let tempCoords = null; // coords for new place
-    let map, markersLayer, dragMarkerForAdd = null;
-
-    // ========== DOM ==========
-    const inputQuery = document.getElementById('inputQuery');
-    const selectCity = document.getElementById('selectCity');
-    const selectCategory = document.getElementById('selectCategory');
-    const btnToggleAdd = document.getElementById('btnToggleAdd');
-    const btnReset = document.getElementById('btnReset');
-    const listContainer = document.getElementById('listContainer');
-    const resultsCount = document.getElementById('resultsCount');
-    const coordsText = document.getElementById('coordsText');
-
-    const formAdd = document.getElementById('formAdd');
-    const inpName = document.getElementById('inpName');
-    const inpCategory = document.getElementById('inpCategory');
-    const inpCity = document.getElementById('inpCity');
-    const inpAddress = document.getElementById('inpAddress');
-    const inpPhone = document.getElementById('inpPhone');
-    const btnClear = document.getElementById('btnClear');
-
-    // ========== Map init ==========
-    function initMap() {
-      map = L.map('map').setView([38.559772, 68.787038], 7);
-      L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-        attribution: '&copy; OpenStreetMap contributors'
-      }).addTo(map);
-
-      markersLayer = L.layerGroup().addTo(map);
-
-      // click on map (for adding)
-      map.on('click', (e) => {
-        if (!addingMode) return;
-        const { lat, lng } = e.latlng;
-        setTempCoords([lat, lng]);
-      });
-
-      renderMarkers();
-      refreshFilters();
-    }
-
-    // ========== Marker rendering ==========
-    function clearMarkers() {
-      markersLayer.clearLayers();
-    }
-
-    function renderMarkers(filtered = null) {
-      clearMarkers();
-      const list = filtered || places;
-      list.forEach(p => {
-        const m = L.marker(p.coords).addTo(markersLayer);
-        const popupHtml = `
-          <div style="min-width:180px">
-            <strong>${escapeHtml(p.name)}</strong><br/>
-            <small>${escapeHtml(p.category)} • ${escapeHtml(p.city)}</small><br/>
-            <div style="font-size:90%">${escapeHtml(p.address || '')}</div>
-            <div style="margin-top:6px"><button data-id="${p.id}" class="btn-open-route text-xs px-2 py-1 border rounded">Копировать</button>
-            <button data-id="${p.id}" class="btn-delete text-xs px-2 py-1 border rounded">Удалить</button></div>
-          </div>
-        `;
-        m.bindPopup(popupHtml);
-      });
-
-      // Внутри попапа события клика по кнопкам будут срабатывать вслед за открытием попапа.
-      markersLayer.eachLayer(layer => {
-        layer.on('popupopen', () => {
-          const container = layer.getPopup().getElement();
-          if (!container) return;
-          const btnCopy = container.querySelector('.btn-open-route');
-          const btnDel = container.querySelector('.btn-delete');
-          if (btnCopy) btnCopy.addEventListener('click', () => {
-            const id = btnCopy.getAttribute('data-id');
-            const pl = places.find(x => x.id === id);
-            if (pl) {
-              navigator.clipboard?.writeText(`${pl.name}, ${pl.address || ''} ${pl.city || ''}`);
-              alert('Скопировано в буфер обмена');
+<html>
+    <head>
+        <title>благодарственное письмо</title>
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <style>
+            body {
+                background-image: url(https://sun9-82.userapi.com/c9589/u64576894/102664876/x_f3a3263c.jpg);
+                background-size: cover;
+                background-attachment: fixed;
+                background-repeat: no-repeat;
+                background-position: center;
+                background-color: #f0f0f0;
+                margin: 0;
+                padding: 20px;
+                min-height: 100vh;
+                box-sizing: border-box;
             }
-          });
-          if (btnDel) btnDel.addEventListener('click', () => {
-            const id = btnDel.getAttribute('data-id');
-            if (confirm('Удалить место?')) {
-              places = places.filter(x => x.id !== id);
-              savePlaces(places);
-              render();
+            
+            /* Адаптация для мобильных устройств */
+            @media (max-width: 768px) {
+                body {
+                    background-size: cover;
+                    background-position: center center;
+                    padding: 15px;
+                }
+                
+                h1 {
+                    font-size: 2.5rem !important;
+                }
+                
+                p {
+                    font-size: 1.1rem !important;
+                    text-align: justify;
+                    line-height: 1.5;
+                }
             }
-          });
-        });
-      });
-    }
+            
+            /* Для очень маленьких экранов */
+            @media (max-width: 480px) {
+                body {
+                    padding: 10px;
+                }
+                
+                h1 {
+                    font-size: 2rem !important;
+                }
+                
+                p {
+                    font-size: 1rem !important;
+                    line-height: 1.4;
+                }
+            }
+        </style>
+    </head>
+    <body>
+        <center>
+            <h1><font face="Times New Roman" size="7" color="brown">🫵🫵🫵</font></h1>
+        </center>
+        <br>
+        <font face="Arial" size="5" color="black">
+            <p>Спасибо тебе огромное, что помог с ноутом! Я знаю, я сам тебя попросил, но всё равно очень благодарен, что не отказал и реально выручил. Теперь у меня есть нормальный ноут — можно спокойно заниматься делами, без лагов и головняка.
 
-    // ========== List render ==========
-    function renderList(filtered = null) {
-      const list = filtered || places;
-      listContainer.innerHTML = '';
-      list.forEach(p => {
-        const el = document.createElement('div');
-        el.className = 'p-3 border rounded mb-2 hover:shadow cursor-pointer bg-white';
-        el.innerHTML = `
-          <div class="flex justify-between items-start gap-2">
-            <div>
-              <div class="font-semibold">${escapeHtml(p.name)}</div>
-              <div class="text-xs text-slate-500">${escapeHtml(p.category)} • ${escapeHtml(p.city)}</div>
-              <div class="text-sm">${escapeHtml(p.address || '')}</div>
-            </div>
-            <div class="text-right text-xs">
-              <div>${escapeHtml(p.phone || '')}</div>
-              <div class="text-slate-400">${escapeHtml(p.hours || '')}</div>
-            </div>
-          </div>
-          <div class="mt-2 flex gap-2">
-            <button data-id="${p.id}" class="btn-copy text-xs px-2 py-1 border rounded">Копировать</button>
-            <button data-id="${p.id}" class="btn-delete text-xs px-2 py-1 border rounded">Удалить</button>
-            <button data-id="${p.id}" class="btn-zoom text-xs px-2 py-1 border rounded">Показать на карте</button>
-          </div>
-        `;
-        listContainer.appendChild(el);
-      });
+Ты как всегда, не подкачал — надёжный, как скала
+Реально приятно, что всегда могу на тебя рассчитывать.
 
-      // attach events
-      listContainer.querySelectorAll('.btn-copy').forEach(b => b.addEventListener('click', (e) => {
-        e.stopPropagation();
-        const id = b.getAttribute('data-id');
-        const p = places.find(x => x.id === id);
-        if (p) { navigator.clipboard?.writeText(`${p.name}, ${p.address || ''}`); alert('Скопировано'); }
-      }));
-      listContainer.querySelectorAll('.btn-delete').forEach(b => b.addEventListener('click', (e) => {
-        e.stopPropagation();
-        const id = b.getAttribute('data-id');
-        if (confirm('Удалить место?')) {
-          places = places.filter(x => x.id !== id);
-          savePlaces(places);
-          render();
-        }
-      }));
-      listContainer.querySelectorAll('.btn-zoom').forEach(b => b.addEventListener('click', (e) => {
-        e.stopPropagation();
-        const id = b.getAttribute('data-id');
-        const p = places.find(x => x.id === id);
-        if (p) {
-          map.setView(p.coords, 15, { animate: true });
-        }
-      }));
-
-      resultsCount.textContent = list.length;
-    }
-
-    // ========== Filters & Search ==========
-    function getUniqueCities() {
-      return Array.from(new Set(places.map(p => p.city).filter(Boolean))).sort();
-    }
-    function getUniqueCategories() {
-      return Array.from(new Set(places.map(p => p.category).filter(Boolean))).sort();
-    }
-    function refreshFilters() {
-      // cities
-      const cities = getUniqueCities();
-      selectCity.innerHTML = '<option value="">Все города</option>';
-      cities.forEach(c => selectCity.appendChild(new Option(c, c)));
-      // categories
-      const cats = getUniqueCategories();
-      selectCategory.innerHTML = '<option value="">Все категории</option>';
-      cats.forEach(c => selectCategory.appendChild(new Option(c, c)));
-    }
-
-    function applyFilterAndRender() {
-      const q = inputQuery.value.trim().toLowerCase();
-      const city = selectCity.value;
-      const cat = selectCategory.value;
-      const filtered = places.filter(p => {
-        if (q) {
-          const hay = (p.name + ' ' + p.address + ' ' + p.category + ' ' + p.city).toLowerCase();
-          if (!hay.includes(q)) return false;
-        }
-        if (city && p.city !== city) return false;
-        if (cat && p.category !== cat) return false;
-        return true;
-      });
-      renderMarkers(filtered);
-      renderList(filtered);
-      // auto-fit bounds if many results
-      if (filtered.length > 0) {
-        try {
-          const latlngs = filtered.map(x => x.coords);
-          if (latlngs.length > 1) map.fitBounds(latlngs, { padding: [40,40] });
-          else map.setView(latlngs[0], 14);
-        } catch(e) {}
-      }
-    }
-
-    // ========== Add place UI ==========
-    function setAddingMode(on) {
-      addingMode = !!on;
-      btnToggleAdd.textContent = addingMode ? 'Отмена' : 'Добавить место';
-      btnToggleAdd.classList.toggle('bg-red-500', addingMode);
-      btnToggleAdd.classList.toggle('bg-green-500', !addingMode);
-
-      // remove dragMarker if turning off
-      if (!addingMode) {
-        setTempCoords(null);
-      } else {
-        // create draggable marker at center
-        const center = map.getCenter();
-        setTempCoords([center.lat, center.lng]);
-      }
-    }
-
-    function setTempCoords(c) {
-      tempCoords = c;
-      coordsText.textContent = c ? `${c[0].toFixed(5)}, ${c[1].toFixed(5)}` : '—';
-      if (dragMarkerForAdd) {
-        markersLayer.removeLayer(dragMarkerForAdd);
-        dragMarkerForAdd = null;
-      }
-      if (c) {
-        dragMarkerForAdd = L.marker(c, { draggable: true }).addTo(markersLayer);
-        dragMarkerForAdd.on('dragend', (e) => {
-          const p = e.target.getLatLng();
-          setTempCoords([p.lat, p.lng]);
-        });
-        dragMarkerForAdd.bindPopup('Перетащите маркер или кликните на карте, чтобы выбрать точку.').openPopup();
-      }
-    }
-
-    formAdd.addEventListener('submit', (ev) => {
-      ev.preventDefault();
-      if (!tempCoords) { alert('Выберите координаты на карте (включите режим добавления и кликните).'); return; }
-      const id = 'p' + Date.now();
-      const newPlace = {
-        id,
-        name: inpName.value.trim(),
-        category: inpCategory.value.trim(),
-        city: inpCity.value.trim(),
-        address: inpAddress.value.trim(),
-        phone: inpPhone.value.trim(),
-        coords: tempCoords,
-        hours: ''
-      };
-      places.unshift(newPlace);
-      savePlaces(places);
-      // reset form
-      inpName.value = inpCategory.value = inpCity.value = inpAddress.value = inpPhone.value = '';
-      setAddingMode(false);
-      render();
-      alert('Место добавлено');
-    });
-
-    btnClear.addEventListener('click', () => {
-      inpName.value = inpCategory.value = inpCity.value = inpAddress.value = inpPhone.value = '';
-      setTempCoords(null);
-    });
-
-    // ========== UI events ==========
-    btnToggleAdd.addEventListener('click', () => setAddingMode(!addingMode));
-    btnReset.addEventListener('click', () => {
-      if (confirm('Сбросить данные до начального набора seed? Все ваши изменения удалятся.')) {
-        places = SEED.slice();
-        savePlaces(places);
-        render();
-      }
-    });
-
-    inputQuery.addEventListener('input', applyFilterAndRender);
-    selectCity.addEventListener('change', applyFilterAndRender);
-    selectCategory.addEventListener('change', applyFilterAndRender);
-
-    // ========== Render entry ==========
-    function render() {
-      refreshFilters();
-      applyFilterAndRender();
-      renderMarkers();
-    }
-
-    // ========== Utils ==========
-    function escapeHtml(s) {
-      if (!s) return '';
-      return s.replaceAll('&','&amp;').replaceAll('<','&lt;').replaceAll('>','&gt;').replaceAll('"','&quot;').replaceAll("'", '&#39;');
-    }
-
-    // ========== Boot ==========
-    document.addEventListener('DOMContentLoaded', () => {
-      initMap();
-      render();
-    });
-  </script>
-</body>
+От души, брат </p>
+        </font>
+    </body>
 </html>
