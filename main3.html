@@ -3,64 +3,59 @@
         <title>благодарственное письмо</title>
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
         <style>
+            * {
+                margin: 0;
+                padding: 0;
+                box-sizing: border-box;
+            }
+            
             body {
                 background-image: url(https://sun9-82.userapi.com/c9589/u64576894/102664876/x_f3a3263c.jpg);
-                background-size: cover;
+                background-size: 100% 100%;
                 background-repeat: no-repeat;
-                background-position: center center;
-                background-attachment: scroll;
-                background-color: #f0f0f0;
-                margin: 0;
-                padding: 20px;
+                background-position: center;
+                background-attachment: fixed;
                 min-height: 100vh;
                 display: flex;
-                flex-direction: column;
                 justify-content: center;
                 align-items: center;
-            }
-
-            .content {
-                background-color: rgba(255, 255, 255, 0.8);
                 padding: 20px;
-                border-radius: 10px;
-                max-width: 90%;
-                text-align: center;
             }
-
-            @media (max-width: 768px) {
+            
+            .container {
+                background-color: rgba(255, 255, 255, 0.85);
+                padding: 30px;
+                border-radius: 15px;
+                text-align: center;
+                max-width: 500px;
+                width: 100%;
+            }
+            
+            @media (max-width: 480px) {
                 body {
                     background-size: cover;
-                    background-position: center;
+                    padding: 10px;
                 }
                 
-                .content {
-                    padding: 15px;
-                    max-width: 95%;
-                }
-                
-                h1 {
-                    font-size: 2rem !important;
-                }
-                
-                p {
-                    font-size: 1rem !important;
-                    line-height: 1.4;
+                .container {
+                    padding: 20px;
+                    max-width: 100%;
                 }
             }
         </style>
     </head>
     <body>
-        <div class="content">
-            <h1><font face="Times New Roman" color="brown">🫵🫵🫵</font></h1>
+        <div class="container">
+            <h1 style="font-family: 'Times New Roman', serif; color: brown; font-size: 2.5em;">🫵🫵🫵</h1>
             <br>
-            <font face="Arial" color="black">
-                <p>Спасибо тебе огромное, что помог с ноутом! Я знаю, я сам тебя попросил, но всё равно очень благодарен, что не отказал и реально выручил. Теперь у меня есть нормальный ноут — можно спокойно заниматься делами, без лагов и головняка.
+            <p style="font-family: Arial, sans-serif; color: black; font-size: 1.1em; line-height: 1.5;">
+                Спасибо тебе огромное, что помог с ноутом! Я знаю, я сам тебя попросил, но всё равно очень благодарен, что не отказал и реально выручил. Теперь у меня есть нормальный ноут — можно спокойно заниматься делами, без лагов и головняка.
 
 Ты как всегда, не подкачал — надёжный, как скала
 Реально приятно, что всегда могу на тебя рассчитывать.
 
-От души, брат </p>
-            </font>
+От души, брат
+            </p>
         </div>
     </body>
 </html>
