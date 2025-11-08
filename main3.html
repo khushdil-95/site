@@ -3,14 +3,20 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>KMD</title>
+    <title>KMD - Ввод данных</title>
     <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+        
         body {
             background-image: url(https://forum.manjaro.org/uploads/default/optimized/3X/5/6/56ad9f46a03c915aba8a01952b818544f9b94412_2_730x750.jpeg);
             background-size: cover;
             background-repeat: no-repeat;
             background-position: center center;
-            background-attachment: scroll;
+            background-attachment: fixed;
             background-color: #f0f0f0;
             margin: 0;
             padding: 20px;
@@ -23,60 +29,136 @@
         }
 
         .content {
-            background-color: rgba(255, 255, 255, 0.85);
-            padding: 30px;
+            background-color: rgba(255, 255, 255, 0.92);
+            padding: 40px;
             border-radius: 15px;
-            max-width: 90%;
+            max-width: 600px;
+            width: 90%;
             text-align: center;
-            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.3);
+            backdrop-filter: blur(5px);
         }
 
         h1 {
-            font-size: 3rem;
+            font-size: 2.8rem;
             color: #8B4513;
-            margin-bottom: 20px;
+            margin-bottom: 30px;
             text-shadow: 1px 1px 2px rgba(0,0,0,0.1);
         }
 
-        .info-list {
-            font-family: Arial, sans-serif;
-            font-size: 1.4rem;
-            color: #333;
+        .form-container {
             text-align: left;
-            display: inline-block;
             margin-top: 20px;
         }
 
-        .info-list li {
-            margin-bottom: 15px;
-            padding: 8px 15px;
-            background-color: rgba(139, 69, 19, 0.1);
-            border-radius: 5px;
+        .form-group {
+            margin-bottom: 25px;
+        }
+
+        label {
+            display: block;
+            font-family: Arial, sans-serif;
+            font-size: 1.2rem;
+            color: #333;
+            margin-bottom: 8px;
+            font-weight: bold;
+        }
+
+        input {
+            width: 100%;
+            padding: 12px 15px;
+            font-size: 1.1rem;
+            border: 2px solid #8B4513;
+            border-radius: 8px;
+            background-color: rgba(255, 255, 255, 0.9);
             transition: all 0.3s ease;
         }
 
-        .info-list li:hover {
-            background-color: rgba(139, 69, 19, 0.2);
-            transform: translateX(5px);
+        input:focus {
+            outline: none;
+            border-color: #5D2F0A;
+            box-shadow: 0 0 8px rgba(139, 69, 19, 0.4);
+            background-color: #fff;
+        }
+
+        .submit-btn {
+            background-color: #8B4513;
+            color: white;
+            border: none;
+            padding: 14px 25px;
+            font-size: 1.2rem;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            width: 100%;
+            margin-top: 10px;
+            font-weight: bold;
+            letter-spacing: 1px;
+        }
+
+        .submit-btn:hover {
+            background-color: #5D2F0A;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+        }
+
+        .submit-btn:active {
+            transform: translateY(0);
+        }
+
+        .result {
+            margin-top: 30px;
+            padding: 20px;
+            background-color: rgba(139, 69, 19, 0.1);
+            border-radius: 8px;
+            font-family: Arial, sans-serif;
+            text-align: left;
+            display: none;
+        }
+
+        .result h3 {
+            color: #8B4513;
+            margin-bottom: 15px;
+            font-size: 1.4rem;
+        }
+
+        .result p {
+            margin-bottom: 10px;
+            font-size: 1.1rem;
+            line-height: 1.5;
         }
 
         @media (max-width: 768px) {
             body {
-                background-size: cover;
-                background-position: center;
+                padding: 10px;
+            }
+            
+            .content {
+                padding: 25px;
+            }
+            
+            h1 {
+                font-size: 2.2rem;
+            }
+            
+            input {
+                font-size: 1rem;
+                padding: 10px 12px;
+            }
+            
+            .submit-btn {
+                padding: 12px 20px;
+                font-size: 1.1rem;
+            }
+        }
+
+        @media (max-width: 480px) {
+            h1 {
+                font-size: 1.8rem;
             }
             
             .content {
                 padding: 20px;
-                max-width: 95%;
-            }
-            
-            h1 {
-                font-size: 2rem !important;
-            }
-            
-            .info-list {
-                font-size: 1.1rem;
             }
         }
     </style>
@@ -84,11 +166,48 @@
 <body>
     <div class="content">
         <h1>Добро пожаловать</h1>
-        <ol class="info-list">
-            <li><strong>ФИМ</strong></li>
-            <li><strong>Соли таваллуд</strong></li>
-            <li><strong>Соли таваллуд</strong></li>
-        </ol>
+        
+        <div class="form-container">
+            <div class="form-group">
+                <label for="fio">ФИО:</label>
+                <input type="text" id="fio" placeholder="Введите ваше ФИО">
+            </div>
+            
+            <div class="form-group">
+                <label for="birthYear">Соли таваллуд:</label>
+                <input type="number" id="birthYear" placeholder="Введите год рождения" min="1900" max="2023">
+            </div>
+            
+            <button class="submit-btn" id="submitBtn">Отправить данные</button>
+        </div>
+        
+        <div class="result" id="result">
+            <h3>Введённые данные:</h3>
+            <p id="fioResult"></p>
+            <p id="birthYearResult"></p>
+        </div>
     </div>
+
+    <script>
+        document.getElementById('submitBtn').addEventListener('click', function() {
+            const fio = document.getElementById('fio').value;
+            const birthYear = document.getElementById('birthYear').value;
+            
+            if (fio.trim() === '' || birthYear.trim() === '') {
+                alert('Пожалуйста, заполните все поля!');
+                return;
+            }
+            
+            if (birthYear < 1900 || birthYear > 2023) {
+                alert('Пожалуйста, введите корректный год рождения (1900-2023)');
+                return;
+            }
+            
+            document.getElementById('fioResult').textContent = 'ФИО: ' + fio;
+            document.getElementById('birthYearResult').textContent = 'Соли таваллуд: ' + birthYear;
+            
+            document.getElementById('result').style.display = 'block';
+        });
+    </script>
 </body>
 </html>
