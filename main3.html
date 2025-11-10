@@ -241,6 +241,9 @@
             border-radius: 10px;
             box-shadow: 0 5px 15px rgba(0, 0, 0, 0.05);
             transition: all 0.3s;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
         }
 
         .culture-item:hover {
@@ -264,6 +267,26 @@
         .culture-item h3 {
             margin-bottom: 15px;
             color: #006600;
+        }
+
+        /* Исправления для изображений в разделе культуры */
+        .culture-image-container {
+            width: 100%;
+            height: 180px;
+            overflow: hidden;
+            border-radius: 8px;
+            margin-bottom: 15px;
+        }
+
+        .culture-image {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            transition: transform 0.5s;
+        }
+
+        .culture-item:hover .culture-image {
+            transform: scale(1.05);
         }
 
         .gallery {
@@ -413,6 +436,22 @@
             .section-title {
                 font-size: 28px;
             }
+            
+            /* Адаптация изображений культуры для мобильных устройств */
+            .culture-image-container {
+                height: 150px;
+            }
+            
+            .culture-grid {
+                grid-template-columns: 1fr;
+                gap: 20px;
+            }
+        }
+        
+        @media (max-width: 480px) {
+            .culture-image-container {
+                height: 120px;
+            }
         }
     </style>
 </head>
@@ -449,7 +488,7 @@
             <div class="features">
                 <div class="feature-card">
                     <div class="feature-img">
-                        <img src="https://avatars.mds.yandex.net/i?id=ab763f02299ab0d02182945ed4325c37_l-3591326-images-thumbs&n=13">
+                        <img src="https://avatars.mds.yandex.net/i?id=ab763f02299ab0d02182945ed4325c37_l-3591326-images-thumbs&n=13" alt="Горы Таджикистана">
                     </div>
                     <div class="feature-content">
                         <h3>Величественные горы</h3>
@@ -481,50 +520,32 @@
     <section id="culture" class="section culture-section">
         <div class="container">
             <h2 class="section-title">Культура и традиции</h2>
-            <div class="feature-card">
-                    <div class="feature-img">
-                        <img src="https://avatars.mds.yandex.net/i?id=12306d82bb123d53e662441448875017_l-5865987-images-thumbs&n=13" alt="кулььура и традиции">
-                    </div>
-                    <div class="feature-content">
             <div class="culture-grid">
                 <div class="culture-item">
-                    <div class="culture-icon">Н</div>
-                    <div class="feature-card">
-                    <div class="feature-img">
-                        <img src="https://avatars.mds.yandex.net/i?id=12fb7d0d1104511d95beac09b7fd177475b57de8-4395422-images-thumbs&n=13" alt="Навруз">
+                    <div class="culture-image-container">
+                        <img src="https://avatars.mds.yandex.net/i?id=12fb7d0d1104511d95beac09b7fd177475b57de8-4395422-images-thumbs&n=13" alt="Навруз" class="culture-image">
                     </div>
-                    <div class="feature-content">
                     <h3>Навруз</h3>
                     <p>Главный праздник таджикского народа, символизирующий приход весны и обновление природы.</p>
                 </div>
                 <div class="culture-item">
-                    <div class="culture-icon">П</div>
-                    <div class="feature-card">
-                    <div class="feature-img">
-                        <img src="https://frankfurt2.apollo.olxcdn.com/v1/files/o3acmvyh378c2-KZ/image" alt="Плов">
+                    <div class="culture-image-container">
+                        <img src="https://frankfurt2.apollo.olxcdn.com/v1/files/o3acmvyh378c2-KZ/image" alt="Плов" class="culture-image">
                     </div>
-                    <div class="feature-content">
                     <h3>Плов</h3>
                     <p>Традиционное блюдо, которое готовят на все праздники и важные события.</p>
                 </div>
-                    <div class="feature-content">
                 <div class="culture-item">
-                    <div class="culture-icon">С</div>
-                    <div class="feature-card">
-                    <div class="feature-img">
-                        <img src="https://cdn.regnum.ru/uploads/pictures/news/2019/10/04/regnum_picture_1570206033148209_social.jpg" alt="Сузани">
+                    <div class="culture-image-container">
+                        <img src="https://cdn.regnum.ru/uploads/pictures/news/2019/10/04/regnum_picture_1570206033148209_social.jpg" alt="Сузани" class="culture-image">
                     </div>
-                    <div class="feature-content">
                     <h3>Сузани</h3>
                     <p>Искусство вышивки, передающееся из поколения в поколение.</p>
                 </div>
                 <div class="culture-item">
-                    <div class="culture-icon">М</div>
-                    <div class="feature-card">
-                    <div class="feature-img">
-                        <img src="https://avatars.mds.yandex.net/i?id=0e1c9e0d59fd502803274eff8666c8fc_l-5293527-images-thumbs&n=13" alt="Музыка">
+                    <div class="culture-image-container">
+                        <img src="https://avatars.mds.yandex.net/i?id=0e1c9e0d59fd502803274eff8666c8fc_l-5293527-images-thumbs&n=13" alt="Музыка" class="culture-image">
                     </div>
-                    <div class="feature-content">
                     <h3>Музыка</h3>
                     <p>Традиционная музыка маком и фалак является неотъемлемой частью культуры.</p>
                 </div>
