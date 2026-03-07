@@ -1,548 +1,409 @@
 <!DOCTYPE html>
 <html lang="ru">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Таджикистан - Страна гор</title>
-    <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-        }
+  <meta charset="UTF-8" />
+  <title>Весеннее поздравление</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=yes" />
+  <style>
+    :root {
+      --bg-overlay: rgba(5, 10, 25, 0.4); /* Уменьшил непрозрачность */
+      --accent: #ff7bb0;
+      --accent-soft: rgba(255, 123, 176, 0.24);
+      --text-main: #fdfbff;
+      --text-muted: #d8d0e5;
+      --card-bg: rgba(10, 14, 35, 0.75); /* Более прозрачный фон */
+      --card-bg-light: rgba(255, 255, 255, 0.95);
+      --shadow-soft: 0 24px 60px rgba(0, 0, 0, 0.55);
+      --radius-lg: 22px;
+      --radius-pill: 999px;
+      --font-main: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    }
 
-        body {
-            background: linear-gradient(135deg, #1a2a6c, #b21f1f, #fdbb2d);
-            color: #333;
-            line-height: 1.6;
-            min-height: 100vh;
-            display: flex;
-            flex-direction: column;
-        }
+    *,
+    *::before,
+    *::after {
+      box-sizing: border-box;
+    }
 
-        .container {
-            max-width: 1200px;
-            margin: 0 auto;
-            padding: 20px;
-        }
+    html,
+    body {
+      margin: 0;
+      padding: 0;
+      height: 100%;
+      width: 100%;
+      overflow-x: hidden; /* Запрещаем горизонтальный скролл */
+    }
 
-        header {
-            background: rgba(255, 255, 255, 0.95);
-            box-shadow: 0 2px 15px rgba(0, 0, 0, 0.1);
-            padding: 20px 0;
-            position: sticky;
-            top: 0;
-            z-index: 100;
-        }
+    body {
+      font-family: var(--font-main);
+      color: var(--text-main);
+    }
 
-        .header-content {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
+    .page {
+      min-height: 100vh;
+      width: 100%;
+      display: flex;
+      position: relative;
+    }
 
-        .logo {
-            display: flex;
-            align-items: center;
-            gap: 15px;
-        }
+    /* Лендинг страница */
+    .page--landing {
+      position: relative;
+      justify-content: center;
+      align-items: center;
+      background-image: url("https://i.pinimg.com/originals/08/87/97/088797a00c0e8348f1e0c635c123b3ca.jpg");
+      background-size: cover;
+      background-position: center;
+      background-repeat: no-repeat;
+      background-attachment: fixed; /* Фиксируем фон для лучшего отображения */
+    }
 
-        .logo-icon {
-            width: 50px;
-            height: 50px;
-            background: linear-gradient(45deg, #006600, #FF0000, #FFFFFF);
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            color: white;
-            font-weight: bold;
-            font-size: 24px;
-        }
+    .overlay {
+      position: fixed;
+      inset: 0;
+      /* Более легкое затемнение, чтобы фото было видно */
+      background: radial-gradient(circle at top, rgba(255, 255, 255, 0.15), transparent 60%),
+                  linear-gradient(to bottom, rgba(4, 7, 26, 0.3), rgba(2, 4, 12, 0.4));
+      pointer-events: none;
+      z-index: 1;
+    }
 
-        .logo-text {
-            font-size: 24px;
-            font-weight: 700;
-            color: #006600;
-        }
+    .landing-content {
+      position: relative;
+      z-index: 2;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      width: 100%;
+      padding: 16px;
+    }
 
-        nav ul {
-            display: flex;
-            list-style: none;
-            gap: 30px;
-        }
+    .landing-card {
+      background: linear-gradient(135deg, rgba(10, 14, 35, 0.7), rgba(26, 18, 51, 0.75));
+      border-radius: var(--radius-lg);
+      padding: clamp(24px, 6vw, 36px); /* Адаптивные отступы */
+      box-shadow: var(--shadow-soft);
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      backdrop-filter: blur(8px); /* Легкое размытие фона */
+      text-align: center;
+      max-width: 400px;
+      width: 100%;
+      margin: 0 auto;
+    }
 
-        nav a {
-            text-decoration: none;
-            color: #333;
-            font-weight: 600;
-            transition: color 0.3s;
-            position: relative;
-        }
+    .landing-title {
+      margin: 0 0 20px;
+      font-size: clamp(22px, 5vw, 28px); /* Адаптивный размер */
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+      text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3); /* Тень для читаемости */
+    }
 
-        nav a:hover {
-            color: #006600;
-        }
+    .btn-primary {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      padding: clamp(12px, 3vw, 16px) clamp(24px, 8vw, 40px);
+      border-radius: var(--radius-pill);
+      border: none;
+      background: linear-gradient(135deg, var(--accent), #ffafc7);
+      color: #1a0f25;
+      font-weight: 600;
+      font-size: clamp(16px, 4vw, 18px);
+      text-decoration: none;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      box-shadow: 0 18px 38px rgba(255, 123, 176, 0.55);
+      cursor: pointer;
+      transition: transform 0.15s ease-out, box-shadow 0.15s ease-out, filter 0.15s ease-out;
+      width: fit-content;
+      min-width: 200px; /* Минимальная ширина */
+      border: 1px solid rgba(255, 255, 255, 0.3);
+      -webkit-tap-highlight-color: transparent; /* Убираем серый фон при тапе на iOS */
+    }
 
-        nav a::after {
-            content: '';
-            position: absolute;
-            bottom: -5px;
-            left: 0;
-            width: 0;
-            height: 2px;
-            background: #006600;
-            transition: width 0.3s;
-        }
+    .btn-primary:hover {
+      transform: translateY(-2px) scale(1.02);
+      box-shadow: 0 22px 46px rgba(255, 123, 176, 0.7);
+      filter: brightness(1.05);
+    }
 
-        nav a:hover::after {
-            width: 100%;
-        }
+    .btn-primary:active {
+      transform: translateY(1px) scale(0.98);
+      box-shadow: 0 12px 28px rgba(255, 123, 176, 0.5);
+    }
 
-        .hero {
-            background: url('https://images.unsplash.com/photo-1594736797933-d0f289d09671?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=2070&q=80') no-repeat center center/cover;
-            height: 70vh;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            text-align: center;
-            color: white;
-            position: relative;
-        }
+    /* Страница с поздравлением */
+    .page--greeting {
+      background: radial-gradient(circle at top left, #ffe2f1 0, #fef1ff 28%, #f4f1ff 55%, #e7ecff 100%);
+      color: #2a1535;
+      justify-content: center;
+      align-items: flex-start; /* Выравнивание сверху для скролла */
+      padding: 16px;
+      display: none; /* Скрыта по умолчанию */
+      overflow-y: auto; /* Включаем скролл если контент не помещается */
+    }
 
-        .hero::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: rgba(0, 0, 0, 0.5);
-        }
+    .greeting-content {
+      width: 100%;
+      max-width: 720px;
+      margin: auto; /* Центрируем по вертикали */
+    }
 
-        .hero-content {
-            position: relative;
-            z-index: 1;
-            max-width: 800px;
-            padding: 0 20px;
-        }
+    .greeting-card {
+      background: var(--card-bg-light);
+      border-radius: clamp(20px, 5vw, 28px);
+      padding: clamp(24px, 5vw, 40px) clamp(20px, 4vw, 36px);
+      box-shadow: 0 28px 70px rgba(88, 56, 116, 0.35);
+      border: 1px solid rgba(255, 182, 214, 0.8);
+      position: relative;
+      overflow: hidden;
+    }
 
-        .hero h1 {
-            font-size: 48px;
-            margin-bottom: 20px;
-            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
-        }
+    .greeting-card::before {
+      content: "";
+      position: absolute;
+      inset: -60px;
+      background:
+        radial-gradient(circle at top right, rgba(255, 182, 214, 0.45), transparent 55%),
+        radial-gradient(circle at bottom left, rgba(182, 198, 255, 0.45), transparent 55%);
+      opacity: 0.9;
+      z-index: -1;
+    }
 
-        .hero p {
-            font-size: 20px;
-            margin-bottom: 30px;
-        }
+    .greeting-title {
+      margin: 0 0 16px;
+      font-size: clamp(26px, 6vw, 34px);
+      color: #2a1535;
+      line-height: 1.2;
+      word-break: break-word; /* Перенос длинных слов */
+    }
 
-        .btn {
-            display: inline-block;
-            background: #006600;
-            color: white;
-            padding: 12px 30px;
-            border-radius: 30px;
-            text-decoration: none;
-            font-weight: 600;
-            transition: all 0.3s;
-            border: 2px solid #006600;
-        }
+    .greeting-card p {
+      margin: 12px 0;
+      line-height: 1.6;
+      font-size: clamp(16px, 4vw, 18px);
+      color: #3b2445;
+      word-break: break-word;
+    }
 
-        .btn:hover {
-            background: transparent;
-            color: #006600;
-        }
+    .greeting-sign {
+      margin-top: 24px;
+      font-weight: 600;
+      color: #9b3971;
+      font-size: clamp(18px, 4.5vw, 20px);
+    }
 
-        .section {
-            padding: 80px 0;
-            background: white;
-        }
+    .link-back {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      margin-top: 24px;
+      font-size: clamp(14px, 3.5vw, 16px);
+      text-decoration: none;
+      color: #7b3a7f;
+      padding: 12px 24px;
+      border-radius: 999px;
+      background: var(--accent-soft);
+      border: 1px solid rgba(255, 123, 176, 0.4);
+      backdrop-filter: blur(6px);
+      transition: background 0.15s ease-out, transform 0.15s ease-out, box-shadow 0.15s ease-out;
+      cursor: pointer;
+      width: fit-content;
+      -webkit-tap-highlight-color: transparent;
+    }
 
-        .section-title {
-            text-align: center;
-            margin-bottom: 50px;
-            font-size: 36px;
-            color: #006600;
-            position: relative;
-        }
+    .link-back:hover {
+      background: rgba(255, 123, 176, 0.32);
+      transform: translateY(-2px);
+      box-shadow: 0 10px 22px rgba(177, 130, 204, 0.45);
+    }
 
-        .section-title::after {
-            content: '';
-            position: absolute;
-            bottom: -10px;
-            left: 50%;
-            transform: translateX(-50%);
-            width: 80px;
-            height: 4px;
-            background: #006600;
-        }
+    .link-back:active {
+      transform: translateY(1px);
+    }
 
-        .features {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-            gap: 30px;
-            margin-top: 40px;
-        }
+    /* Классы для переключения страниц */
+    .page--greeting.show {
+      display: flex;
+    }
 
-        .feature-card {
-            background: #f9f9f9;
-            border-radius: 10px;
-            overflow: hidden;
-            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
-            transition: transform 0.3s;
-        }
+    .page--landing.hide {
+      display: none;
+    }
 
-        .feature-card:hover {
-            transform: translateY(-10px);
-        }
+    /* Специальные стили для маленьких экранов */
+    @media (max-width: 480px) {
+      .landing-card {
+        backdrop-filter: blur(12px); /* Усиливаем размытие на маленьких экранах */
+        background: linear-gradient(135deg, rgba(10, 14, 35, 0.8), rgba(26, 18, 51, 0.85));
+      }
+      
+      .btn-primary {
+        width: 100%; /* Кнопка на всю ширину на телефонах */
+        min-width: unset;
+      }
+      
+      .greeting-card {
+        padding: 20px 16px;
+      }
+      
+      .greeting-card p {
+        margin: 10px 0;
+      }
+      
+      .link-back {
+        width: 100%; /* Кнопка назад на всю ширину */
+        justify-content: center;
+      }
+    }
 
-        .feature-img {
-            height: 200px;
-            overflow: hidden;
-        }
+    /* Для очень маленьких экранов */
+    @media (max-width: 360px) {
+      .landing-title {
+        font-size: 20px;
+      }
+      
+      .btn-primary {
+        font-size: 14px;
+        padding: 10px 16px;
+      }
+      
+      .greeting-title {
+        font-size: 22px;
+      }
+      
+      .greeting-card p {
+        font-size: 14px;
+      }
+    }
 
-        .feature-img img {
-            width: 100%;
-            height: 100%;
-            object-fit: cover;
-            transition: transform 0.5s;
-        }
+    /* Для устройств с высоким разрешением */
+    @media (min-width: 1920px) {
+      .landing-card {
+        max-width: 500px;
+      }
+      
+      .landing-title {
+        font-size: 32px;
+      }
+      
+      .btn-primary {
+        font-size: 20px;
+        padding: 16px 48px;
+      }
+    }
 
-        .feature-card:hover .feature-img img {
-            transform: scale(1.1);
-        }
-
-        .feature-content {
-            padding: 20px;
-        }
-
-        .feature-content h3 {
-            margin-bottom: 10px;
-            color: #006600;
-        }
-
-        .culture-section {
-            background: #f5f5f5;
-        }
-
-        .culture-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-            gap: 30px;
-        }
-
-        .culture-item {
-            text-align: center;
-            padding: 30px 20px;
-            background: white;
-            border-radius: 10px;
-            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.05);
-            transition: all 0.3s;
-        }
-
-        .culture-item:hover {
-            transform: translateY(-5px);
-            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
-        }
-
-        .culture-icon {
-            width: 80px;
-            height: 80px;
-            margin: 0 auto 20px;
-            background: #006600;
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            color: white;
-            font-size: 30px;
-        }
-
-        .culture-item h3 {
-            margin-bottom: 15px;
-            color: #006600;
-        }
-
-        .gallery {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-            gap: 20px;
-            margin-top: 40px;
-        }
-
-        .gallery-item {
-            border-radius: 10px;
-            overflow: hidden;
-            height: 250px;
-            position: relative;
-            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
-        }
-
-        .gallery-item img {
-            width: 100%;
-            height: 100%;
-            object-fit: cover;
-            transition: transform 0.5s;
-        }
-
-        .gallery-item:hover img {
-            transform: scale(1.1);
-        }
-
-        .gallery-overlay {
-            position: absolute;
-            bottom: 0;
-            left: 0;
-            width: 100%;
-            background: rgba(0, 0, 0, 0.7);
-            color: white;
-            padding: 15px;
-            transform: translateY(100%);
-            transition: transform 0.3s;
-        }
-
-        .gallery-item:hover .gallery-overlay {
-            transform: translateY(0);
-        }
-
-        footer {
-            background: #1a1a1a;
-            color: white;
-            padding: 50px 0 20px;
-            margin-top: auto;
-        }
-
-        .footer-content {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-            gap: 40px;
-            margin-bottom: 40px;
-        }
-
-        .footer-column h3 {
-            margin-bottom: 20px;
-            color: #006600;
-            position: relative;
-            padding-bottom: 10px;
-        }
-
-        .footer-column h3::after {
-            content: '';
-            position: absolute;
-            bottom: 0;
-            left: 0;
-            width: 50px;
-            height: 2px;
-            background: #006600;
-        }
-
-        .footer-column p {
-            margin-bottom: 15px;
-        }
-
-        .footer-column ul {
-            list-style: none;
-        }
-
-        .footer-column ul li {
-            margin-bottom: 10px;
-        }
-
-        .footer-column ul li a {
-            color: #ccc;
-            text-decoration: none;
-            transition: color 0.3s;
-        }
-
-        .footer-column ul li a:hover {
-            color: #006600;
-        }
-
-        .social-links {
-            display: flex;
-            gap: 15px;
-            margin-top: 20px;
-        }
-
-        .social-links a {
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            width: 40px;
-            height: 40px;
-            background: #333;
-            border-radius: 50%;
-            color: white;
-            transition: all 0.3s;
-        }
-
-        .social-links a:hover {
-            background: #006600;
-            transform: translateY(-5px);
-        }
-
-        .copyright {
-            text-align: center;
-            padding-top: 20px;
-            border-top: 1px solid #333;
-            font-size: 14px;
-            color: #999;
-        }
-
-        @media (max-width: 768px) {
-            .header-content {
-                flex-direction: column;
-                gap: 20px;
-            }
-            
-            nav ul {
-                gap: 15px;
-            }
-            
-            .hero h1 {
-                font-size: 36px;
-            }
-            
-            .hero p {
-                font-size: 18px;
-            }
-            
-            .section-title {
-                font-size: 28px;
-            }
-        }
-    </style>
+    /* Улучшаем сенсорное взаимодействие */
+    @media (hover: none) and (pointer: coarse) {
+      .btn-primary, .link-back {
+        /* Убираем hover эффекты на touch-устройствах */
+        transition: transform 0.1s ease-out, box-shadow 0.1s ease-out;
+      }
+      
+      .btn-primary:active {
+        transform: scale(0.97);
+      }
+      
+      .link-back:active {
+        transform: scale(0.97);
+      }
+    }
+  </style>
 </head>
 <body>
-    <header>
-        <div class="container">
-            <div class="header-content">
-                <div class="logo">
-                    <div class="logo-icon">Т</div>
-                    <div class="logo-text">Таджикистан</div>
-                </div>
-                <nav>
-                    <ul>
-                        <li><a href="#about">О стране</a></li>
-                        <li><a href="#culture">Культура</a></li>
-                        <li><a href="#nature">Природа</a></li>
-                    </ul>
-                </nav>
-            </div>
-        </div>
-    </header>
+  <!-- Лендинг страница -->
+  <div id="landingPage" class="page page--landing">
+    <div class="overlay"></div>
+    <main class="landing-content">
+      <div class="landing-card">
+        <h1 class="landing-title">Нажми на кнопку</h1>
+        <button id="showGreeting" class="btn-primary">Posh</button>
+      </div>
+    </main>
+  </div>
 
-    <section class="hero">
-        <div class="hero-content">
-            <h1>Таджикистан - Страна горных вершин</h1>
-            <p>Откройте для себя удивительную природу, богатую культуру и гостеприимство таджикского народа</p>
-            <a href="#about" class="btn">Узнать больше</a>
-        </div>
-    </section>
+  <!-- Страница с поздравлением -->
+  <div id="greetingPage" class="page page--greeting">
+    <main class="greeting-content">
+      <section class="greeting-card">
+        <h1 class="greeting-title">Моя дорогая!</h1>
+        <p>С праздником весны! Хочу пожелать тебе, чтобы твоя жизнь была похожа на самый лучший фанфик, который ты когда-либо читала: только хэппи-энд, никаких драм, только сладость и нежность — ну, может, чуть-чуть пикантности, как ты любишь.</p>
+        <p>Спасибо, что делишься со мной своими увлечениями.</p>
+        <p>Ведь твои увлечения делают тебя той самой удивительной, какой я тебя знаю. И мне безумно приятно, что ты открываешь мне двери в свои миры.</p>
+        <p>Пусть в нашем общем будущем будет не меньше тепла, уюта и радости, чем в твоих самых любимых историях.</p>
+        <p class="greeting-sign">С праздником, моя прекрасная!</p>
+        <button id="showLanding" class="link-back">← Назад</button>
+      </section>
+    </main>
+  </div>
 
-    <section id="about" class="section">
-        <div class="container">
-            <h2 class="section-title">О Таджикистане</h2>
-            <div class="features">
-                <div class="feature-card">
-                    <div class="feature-img">
-                        <img src="https://avatars.mds.yandex.net/i?id=ab763f02299ab0d02182945ed4325c37_l-3591326-images-thumbs&n=13">
-                    </div>
-                    <div class="feature-content">
-                        <h3>Величественные горы</h3>
-                        <p>Более 90% территории Таджикистана занимают горы. Памирские горы с пиком Исмоила Сомони (7495 м) являются одними из высочайших в мире.</p>
-                    </div>
-                </div>
-                <div class="feature-card">
-                    <div class="feature-img">
-                        <img src="https://avatars.dzeninfra.ru/get-zen_doc/271828/pub_676d5f80b96b121a4a715f01_676d604cbdc355605f57b7e3/scale_1200" alt="Озера Таджикистана">
-                    </div>
-                    <div class="feature-content">
-                        <h3>Кристальные озера</h3>
-                        <p>Таджикистан славится своими живописными озерами, среди которых Искандеркуль и Каракуль - настоящие жемчужины Центральной Азии.</p>
-                    </div>
-                </div>
-                <div class="feature-card">
-                    <div class="feature-img">
-                        <img src="https://static.tildacdn.one/tild6638-6536-4563-b739-363966343834/image_1169.png" alt="Архитектура Таджикистана">
-                    </div>
-                    <div class="feature-content">
-                        <h3>Богатая история</h3>
-                        <p>Таджикистан имеет древнюю историю, восходящую к персидской империи Ахеменидов. На территории страны сохранились уникальные памятники архитектуры.</p>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </section>
+  <script>
+    // Получаем элементы страниц
+    const landingPage = document.getElementById('landingPage');
+    const greetingPage = document.getElementById('greetingPage');
+    const showGreetingBtn = document.getElementById('showGreeting');
+    const showLandingBtn = document.getElementById('showLanding');
 
-    <section id="culture" class="section culture-section">
-        <div class="container">
-            <h2 class="section-title">Культура и традиции</h2>
-            <div class="culture-grid">
-                <div class="culture-item">
-                    <div class="culture-icon">Н</div>
-                    <h3>Навруз</h3>
-                    <p>Главный праздник таджикского народа, символизирующий приход весны и обновление природы.</p>
-                </div>
-                <div class="culture-item">
-                    <div class="culture-icon">П</div>
-                    <h3>Плов</h3>
-                    <p>Традиционное блюдо, которое готовят на все праздники и важные события.</p>
-                </div>
-                <div class="culture-item">
-                    <div class="culture-icon">С</div>
-                    <h3>Сузани</h3>
-                    <p>Искусство вышивки, передающееся из поколения в поколение.</p>
-                </div>
-                <div class="culture-item">
-                    <div class="culture-icon">М</div>
-                    <h3>Музыка</h3>
-                    <p>Традиционная музыка маком и фалак является неотъемлемой частью культуры.</p>
-                </div>
-            </div>
-        </div>
-    </section>
+    // Функция для показа страницы с поздравлением
+    function showGreetingPage() {
+      landingPage.classList.add('hide');
+      greetingPage.classList.add('show');
+      // Прокручиваем страницу вверх при открытии
+      window.scrollTo({
+        top: 0,
+        behavior: 'smooth'
+      });
+    }
 
-    <section id="nature" class="section">
-        <div class="container">
-            <h2 class="section-title">Природные богатства</h2>
-            <p style="text-align: center; margin-bottom: 30px; max-width: 800px; margin-left: auto; margin-right: auto;">
-                Таджикистан обладает уникальными природными ресурсами, включая мощные реки, минеральные источники и разнообразный животный мир. Страна занимает ведущее место в Центральной Азии по запасам гидроэнергетических ресурсов.
-            </p>
-            <div class="features">
-                <div class="feature-card">
-                    <div class="feature-img">
-                        <img src="https://avatars.mds.yandex.net/i?id=8ee53fe0f082bd561f34c76b89f6cebf34b0c3a0-5869756-images-thumbs&n=13" alt="Реки Таджикистана">
-                    </div>
-                    <div class="feature-content">
-                        <h3>Водные ресурсы</h3>
-                        <p>Таджикистан является истоком многих рек Центральной Азии, включая Амударью и Сырдарью.</p>
-                    </div>
-                </div>
-                <div class="feature-card">
-                    <div class="feature-img">
-                        <img src="https://avatars.mds.yandex.net/i?id=c18c68c1a9066c0f3584ba8301b4f529_l-5233303-images-thumbs&n=13" alt="Флора Таджикистана">
-                    </div>
-                    <div class="feature-content">
-                        <h3>Растительный мир</h3>
-                        <p>Разнообразие климатических зон создает условия для произрастания более 5000 видов растений.</p>
-                    </div>
-                </div>
-                <div class="feature-card">
-                    <div class="feature-img">
-                        <img src="https://www.gazeta.uz/media/img/2018/02/NUQz7w15192857132018_l.jpg" alt="Фауна Таджикистана">
-                    </div>
-                    <div class="feature-content">
-                        <h3>Животный мир</h3>
-                        <p>В горах Таджикистана обитают снежные барсы, горные козлы, архары и множество других видов.</p>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </section>
-    </footer>
+    // Функция для показа лендинга
+    function showLandingPage() {
+      landingPage.classList.remove('hide');
+      greetingPage.classList.remove('show');
+      // Прокручиваем страницу вверх при возврате
+      window.scrollTo({
+        top: 0,
+        behavior: 'smooth'
+      });
+    }
+
+    // Обработчики событий
+    showGreetingBtn.addEventListener('click', showGreetingPage);
+    showLandingBtn.addEventListener('click', showLandingPage);
+
+    // Добавляем поддержку свайпов для мобильных устройств (опционально)
+    let touchstartX = 0;
+    let touchendX = 0;
+
+    function checkSwipe() {
+      const minSwipeDistance = 100;
+      if (touchendX < touchstartX - minSwipeDistance && greetingPage.classList.contains('show')) {
+        // Свайп вправо - возвращаем на главную
+        showLandingPage();
+      }
+    }
+
+    document.addEventListener('touchstart', e => {
+      touchstartX = e.changedTouches[0].screenX;
+    });
+
+    document.addEventListener('touchend', e => {
+      touchendX = e.changedTouches[0].screenX;
+      checkSwipe();
+    });
+
+    // Предотвращаем случайные нажатия при двойном тапе
+    let lastClickTime = 0;
+    document.querySelectorAll('button').forEach(button => {
+      button.addEventListener('click', (e) => {
+        const currentTime = new Date().getTime();
+        if (currentTime - lastClickTime < 300) {
+          e.preventDefault();
+          return;
+        }
+        lastClickTime = currentTime;
+      });
+    });
+  </script>
 </body>
 </html>
