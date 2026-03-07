@@ -40,40 +40,48 @@
     body {
       font-family: var(--font-main);
       color: var(--text-main);
+      background: #1a0f25; /* Цвет фона на случай, если страницы не загрузились */
+    }
+
+    /* Контейнер для страниц — используем Flexbox для переключения */
+    .pages-container {
+      position: relative;
+      width: 100%;
+      min-height: 100vh;
+      overflow: hidden;
     }
 
     .page {
-      min-height: 100vh;
       width: 100%;
+      min-height: 100vh;
       display: flex;
-      position: fixed; /* Меняем на fixed для плавных переходов */
+      transition: opacity var(--transition-speed) cubic-bezier(0.4, 0, 0.2, 1),
+                  filter var(--transition-speed) cubic-bezier(0.4, 0, 0.2, 1);
+      will-change: opacity, filter;
+      position: absolute;
       top: 0;
       left: 0;
-      transition: transform var(--transition-speed) cubic-bezier(0.4, 0, 0.2, 1),
-                  opacity var(--transition-speed) cubic-bezier(0.4, 0, 0.2, 1),
-                  filter var(--transition-speed) cubic-bezier(0.4, 0, 0.2, 1);
-      will-change: transform, opacity;
     }
 
     /* Лендинг страница */
     .page--landing {
-      position: relative;
-      justify-content: center;
-      align-items: center;
       background-image: url("https://i.pinimg.com/originals/08/87/97/088797a00c0e8348f1e0c635c123b3ca.jpg");
       background-size: cover;
       background-position: center;
       background-repeat: no-repeat;
       background-attachment: fixed;
-      transform: translateX(0);
+      justify-content: center;
+      align-items: center;
       opacity: 1;
+      filter: blur(0);
+      z-index: 2; /* Поверх, когда активна */
     }
 
     .page--landing.hide {
-      transform: translateX(-100%) scale(0.95);
       opacity: 0;
       filter: blur(10px);
       pointer-events: none;
+      z-index: 1; /* Убираем вниз */
     }
 
     .overlay {
@@ -189,17 +197,17 @@
       align-items: flex-start;
       padding: 16px;
       opacity: 0;
-      transform: translateX(100%) scale(0.95);
       filter: blur(10px);
       pointer-events: none;
       overflow-y: auto;
+      z-index: 1; /* Внизу, когда не активна */
     }
 
     .page--greeting.show {
-      transform: translateX(0) scale(1);
       opacity: 1;
       filter: blur(0);
       pointer-events: auto;
+      z-index: 2; /* Поверх, когда активна */
     }
 
     .greeting-content {
@@ -504,30 +512,33 @@
     <div class="loading-spinner"></div>
   </div>
 
-  <!-- Лендинг страница -->
-  <div id="landingPage" class="page page--landing">
-    <div class="overlay"></div>
-    <main class="landing-content">
-      <div class="landing-card">
-        <h1 class="landing-title">Нажми на кнопку</h1>
-        <button id="showGreeting" class="btn-primary">Posh</button>
-      </div>
-    </main>
-  </div>
+  <!-- Контейнер для страниц (исправляет тряску) -->
+  <div class="pages-container">
+    <!-- Лендинг страница -->
+    <div id="landingPage" class="page page--landing">
+      <div class="overlay"></div>
+      <main class="landing-content">
+        <div class="landing-card">
+          <h1 class="landing-title">Нажми на кнопку</h1>
+          <button id="showGreeting" class="btn-primary">Posh</button>
+        </div>
+      </main>
+    </div>
 
-  <!-- Страница с поздравлением -->
-  <div id="greetingPage" class="page page--greeting">
-    <main class="greeting-content">
-      <section class="greeting-card">
-        <h1 class="greeting-title">Моя дорогая!</h1>
-        <p>С праздником весны! Хочу пожелать тебе чтобы твоя жизнь была похожа на самый лучший фанфик который ты когда-либо читала только хэппи-энд никаких драм только сладость и нежность — ну может чуть-чуть пикантности как ты любишь)</p>
-        <p>Спасибо что делишься со мной своими увлечениями.</p>
-        <p>Ведь твои увлечения делают тебя той самой удивительной какой я тебя знаю. И мне безумно приятно что ты открываешь мне двери в свои миры.</p>
-        <p>Пусть в нашем общем будущем будет не меньше тепла, уюта и радости, чем в твоих самых любимых историях.</p>
-        <p class="greeting-sign">С праздником, моя прекрасная!</p>
-        <button id="showLanding" class="link-back">← Назад</button>
-      </section>
-    </main>
+    <!-- Страница с поздравлением -->
+    <div id="greetingPage" class="page page--greeting">
+      <main class="greeting-content">
+        <section class="greeting-card">
+          <h1 class="greeting-title">Моя дорогая!</h1>
+          <p>С праздником весны! Хочу пожелать тебе чтобы твоя жизнь была похожа на самый лучший фанфик который ты когда-либо читала только хэппи-энд никаких драм только сладость и нежность — ну может чуть-чуть пикантности как ты любишь)</p>
+          <p>Спасибо что делишься со мной своими увлечениями.</p>
+          <p>Ведь твои увлечения делают тебя той самой удивительной какой я тебя знаю. И мне безумно приятно что ты открываешь мне двери в свои миры.</p>
+          <p>Пусть в нашем общем будущем будет не меньше тепла, уюта и радости, чем в твоих самых любимых историях.</p>
+          <p class="greeting-sign">С праздником, моя прекрасная!</p>
+          <button id="showLanding" class="link-back">← Назад</button>
+        </section>
+      </main>
+    </div>
   </div>
 
   <script>
