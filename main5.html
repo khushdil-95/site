@@ -6,15 +6,17 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=yes" />
   <style>
     :root {
-      --bg-overlay: rgba(5, 10, 25, 0.4); /* Уменьшил непрозрачность */
+      --bg-overlay: rgba(5, 10, 25, 0.3); /* Еще уменьшил непрозрачность */
       --accent: #ff7bb0;
       --accent-soft: rgba(255, 123, 176, 0.24);
       --text-main: #fdfbff;
       --text-muted: #d8d0e5;
-      --card-bg: rgba(10, 14, 35, 0.75); /* Более прозрачный фон */
-      --card-bg-light: rgba(255, 255, 255, 0.95);
-      --shadow-soft: 0 24px 60px rgba(0, 0, 0, 0.55);
-      --radius-lg: 22px;
+      --card-bg: rgba(10, 14, 35, 0.6); /* Еще более прозрачный фон */
+      --card-bg-light: rgba(255, 255, 255, 0.98);
+      --shadow-soft: 0 20px 40px rgba(0, 0, 0, 0.45);
+      --border-light: 1px solid rgba(255, 255, 255, 0.25);
+      --border-dark: 1px solid rgba(255, 182, 214, 0.6);
+      --radius-lg: 24px;
       --radius-pill: 999px;
       --font-main: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
     }
@@ -31,7 +33,7 @@
       padding: 0;
       height: 100%;
       width: 100%;
-      overflow-x: hidden; /* Запрещаем горизонтальный скролл */
+      overflow-x: hidden;
     }
 
     body {
@@ -55,15 +57,14 @@
       background-size: cover;
       background-position: center;
       background-repeat: no-repeat;
-      background-attachment: fixed; /* Фиксируем фон для лучшего отображения */
+      background-attachment: fixed;
     }
 
     .overlay {
       position: fixed;
       inset: 0;
-      /* Более легкое затемнение, чтобы фото было видно */
-      background: radial-gradient(circle at top, rgba(255, 255, 255, 0.15), transparent 60%),
-                  linear-gradient(to bottom, rgba(4, 7, 26, 0.3), rgba(2, 4, 12, 0.4));
+      background: radial-gradient(circle at top, rgba(255, 255, 255, 0.1), transparent 70%),
+                  linear-gradient(to bottom, rgba(4, 7, 26, 0.2), rgba(2, 4, 12, 0.3));
       pointer-events: none;
       z-index: 1;
     }
@@ -79,58 +80,57 @@
     }
 
     .landing-card {
-      background: linear-gradient(135deg, rgba(10, 14, 35, 0.7), rgba(26, 18, 51, 0.75));
+      background: linear-gradient(135deg, rgba(10, 14, 35, 0.55), rgba(26, 18, 51, 0.6));
       border-radius: var(--radius-lg);
-      padding: clamp(24px, 6vw, 36px); /* Адаптивные отступы */
+      padding: 24px 28px; /* Уменьшил отступы */
       box-shadow: var(--shadow-soft);
-      border: 1px solid rgba(255, 255, 255, 0.2);
-      backdrop-filter: blur(8px); /* Легкое размытие фона */
+      border: var(--border-light); /* Добавил границу */
+      backdrop-filter: blur(8px);
       text-align: center;
-      max-width: 400px;
+      max-width: 320px; /* Уменьшил максимальную ширину */
       width: 100%;
       margin: 0 auto;
     }
 
     .landing-title {
-      margin: 0 0 20px;
-      font-size: clamp(22px, 5vw, 28px); /* Адаптивный размер */
+      margin: 0 0 16px; /* Уменьшил отступ */
+      font-size: 22px; /* Фиксированный размер */
       letter-spacing: 0.06em;
       text-transform: uppercase;
-      text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3); /* Тень для читаемости */
+      text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
     }
 
     .btn-primary {
       display: inline-flex;
       align-items: center;
       justify-content: center;
-      padding: clamp(12px, 3vw, 16px) clamp(24px, 8vw, 40px);
+      padding: 10px 28px; /* Уменьшил кнопку */
       border-radius: var(--radius-pill);
-      border: none;
+      border: var(--border-light); /* Добавил границу */
       background: linear-gradient(135deg, var(--accent), #ffafc7);
       color: #1a0f25;
       font-weight: 600;
-      font-size: clamp(16px, 4vw, 18px);
+      font-size: 15px; /* Уменьшил шрифт */
       text-decoration: none;
-      letter-spacing: 0.12em;
+      letter-spacing: 0.1em;
       text-transform: uppercase;
-      box-shadow: 0 18px 38px rgba(255, 123, 176, 0.55);
+      box-shadow: 0 12px 28px rgba(255, 123, 176, 0.5);
       cursor: pointer;
-      transition: transform 0.15s ease-out, box-shadow 0.15s ease-out, filter 0.15s ease-out;
+      transition: all 0.2s ease-out;
       width: fit-content;
-      min-width: 200px; /* Минимальная ширина */
-      border: 1px solid rgba(255, 255, 255, 0.3);
-      -webkit-tap-highlight-color: transparent; /* Убираем серый фон при тапе на iOS */
+      min-width: 140px; /* Уменьшил минимальную ширину */
+      -webkit-tap-highlight-color: transparent;
     }
 
     .btn-primary:hover {
-      transform: translateY(-2px) scale(1.02);
-      box-shadow: 0 22px 46px rgba(255, 123, 176, 0.7);
-      filter: brightness(1.05);
+      transform: translateY(-1px) scale(1.01);
+      box-shadow: 0 16px 32px rgba(255, 123, 176, 0.6);
+      filter: brightness(1.03);
     }
 
     .btn-primary:active {
       transform: translateY(1px) scale(0.98);
-      box-shadow: 0 12px 28px rgba(255, 123, 176, 0.5);
+      box-shadow: 0 8px 20px rgba(255, 123, 176, 0.4);
     }
 
     /* Страница с поздравлением */
@@ -138,24 +138,24 @@
       background: radial-gradient(circle at top left, #ffe2f1 0, #fef1ff 28%, #f4f1ff 55%, #e7ecff 100%);
       color: #2a1535;
       justify-content: center;
-      align-items: flex-start; /* Выравнивание сверху для скролла */
+      align-items: flex-start;
       padding: 16px;
-      display: none; /* Скрыта по умолчанию */
-      overflow-y: auto; /* Включаем скролл если контент не помещается */
+      display: none;
+      overflow-y: auto;
     }
 
     .greeting-content {
       width: 100%;
-      max-width: 720px;
-      margin: auto; /* Центрируем по вертикали */
+      max-width: 680px; /* Чуть уменьшил */
+      margin: auto;
     }
 
     .greeting-card {
       background: var(--card-bg-light);
-      border-radius: clamp(20px, 5vw, 28px);
-      padding: clamp(24px, 5vw, 40px) clamp(20px, 4vw, 36px);
-      box-shadow: 0 28px 70px rgba(88, 56, 116, 0.35);
-      border: 1px solid rgba(255, 182, 214, 0.8);
+      border-radius: 24px;
+      padding: 28px 24px; /* Уменьшил отступы */
+      box-shadow: 0 20px 50px rgba(88, 56, 116, 0.3);
+      border: 2px solid rgba(255, 182, 214, 0.9); /* Сделал границу толще и заметнее */
       position: relative;
       overflow: hidden;
     }
@@ -163,60 +163,67 @@
     .greeting-card::before {
       content: "";
       position: absolute;
-      inset: -60px;
+      inset: -40px;
       background:
-        radial-gradient(circle at top right, rgba(255, 182, 214, 0.45), transparent 55%),
-        radial-gradient(circle at bottom left, rgba(182, 198, 255, 0.45), transparent 55%);
-      opacity: 0.9;
+        radial-gradient(circle at top right, rgba(255, 182, 214, 0.3), transparent 60%),
+        radial-gradient(circle at bottom left, rgba(182, 198, 255, 0.3), transparent 60%);
+      opacity: 0.8;
       z-index: -1;
     }
 
+    .greeting-card::after {
+      content: "";
+      position: absolute;
+      inset: 0;
+      border-radius: 24px;
+      border: 1px solid rgba(255, 255, 255, 0.5); /* Внутренняя граница для объема */
+      pointer-events: none;
+    }
+
     .greeting-title {
-      margin: 0 0 16px;
-      font-size: clamp(26px, 6vw, 34px);
+      margin: 0 0 14px;
+      font-size: 28px; /* Фиксированный размер */
       color: #2a1535;
       line-height: 1.2;
-      word-break: break-word; /* Перенос длинных слов */
     }
 
     .greeting-card p {
-      margin: 12px 0;
+      margin: 10px 0;
       line-height: 1.6;
-      font-size: clamp(16px, 4vw, 18px);
+      font-size: 16px; /* Фиксированный размер */
       color: #3b2445;
-      word-break: break-word;
     }
 
     .greeting-sign {
-      margin-top: 24px;
+      margin-top: 20px;
       font-weight: 600;
       color: #9b3971;
-      font-size: clamp(18px, 4.5vw, 20px);
+      font-size: 18px;
     }
 
     .link-back {
       display: inline-flex;
       align-items: center;
       justify-content: center;
-      margin-top: 24px;
-      font-size: clamp(14px, 3.5vw, 16px);
+      margin-top: 20px;
+      font-size: 14px;
       text-decoration: none;
       color: #7b3a7f;
-      padding: 12px 24px;
+      padding: 8px 20px; /* Уменьшил кнопку */
       border-radius: 999px;
       background: var(--accent-soft);
-      border: 1px solid rgba(255, 123, 176, 0.4);
-      backdrop-filter: blur(6px);
-      transition: background 0.15s ease-out, transform 0.15s ease-out, box-shadow 0.15s ease-out;
+      border: 2px solid rgba(255, 123, 176, 0.5); /* Сделал границу толще */
+      backdrop-filter: blur(4px);
+      transition: all 0.2s ease-out;
       cursor: pointer;
       width: fit-content;
       -webkit-tap-highlight-color: transparent;
     }
 
     .link-back:hover {
-      background: rgba(255, 123, 176, 0.32);
-      transform: translateY(-2px);
-      box-shadow: 0 10px 22px rgba(177, 130, 204, 0.45);
+      background: rgba(255, 123, 176, 0.28);
+      transform: translateY(-1px);
+      box-shadow: 0 8px 18px rgba(177, 130, 204, 0.3);
     }
 
     .link-back:active {
@@ -232,41 +239,64 @@
       display: none;
     }
 
-    /* Специальные стили для маленьких экранов */
+    /* Стили для телефонов */
     @media (max-width: 480px) {
       .landing-card {
-        backdrop-filter: blur(12px); /* Усиливаем размытие на маленьких экранах */
-        background: linear-gradient(135deg, rgba(10, 14, 35, 0.8), rgba(26, 18, 51, 0.85));
+        padding: 20px 16px; /* Еще уменьшил для телефонов */
+        max-width: 280px;
+        backdrop-filter: blur(10px);
+      }
+      
+      .landing-title {
+        font-size: 20px;
+        margin-bottom: 14px;
       }
       
       .btn-primary {
-        width: 100%; /* Кнопка на всю ширину на телефонах */
-        min-width: unset;
+        padding: 8px 20px;
+        font-size: 14px;
+        min-width: 120px;
       }
       
       .greeting-card {
         padding: 20px 16px;
       }
       
+      .greeting-title {
+        font-size: 24px;
+      }
+      
       .greeting-card p {
-        margin: 10px 0;
+        font-size: 15px;
+        margin: 8px 0;
+      }
+      
+      .greeting-sign {
+        font-size: 16px;
+        margin-top: 16px;
       }
       
       .link-back {
-        width: 100%; /* Кнопка назад на всю ширину */
-        justify-content: center;
+        padding: 8px 18px;
+        font-size: 13px;
+        margin-top: 16px;
       }
     }
 
     /* Для очень маленьких экранов */
     @media (max-width: 360px) {
+      .landing-card {
+        max-width: 260px;
+      }
+      
       .landing-title {
-        font-size: 20px;
+        font-size: 18px;
       }
       
       .btn-primary {
-        font-size: 14px;
-        padding: 10px 16px;
+        padding: 6px 16px;
+        font-size: 13px;
+        min-width: 100px;
       }
       
       .greeting-title {
@@ -278,35 +308,30 @@
       }
     }
 
-    /* Для устройств с высоким разрешением */
-    @media (min-width: 1920px) {
+    /* Стили для планшетов */
+    @media (min-width: 768px) and (max-width: 1024px) {
       .landing-card {
-        max-width: 500px;
+        max-width: 360px;
+        padding: 28px 32px;
       }
       
-      .landing-title {
-        font-size: 32px;
-      }
-      
-      .btn-primary {
-        font-size: 20px;
-        padding: 16px 48px;
+      .greeting-card {
+        padding: 32px 28px;
       }
     }
 
-    /* Улучшаем сенсорное взаимодействие */
+    /* Touch-устройства */
     @media (hover: none) and (pointer: coarse) {
       .btn-primary, .link-back {
-        /* Убираем hover эффекты на touch-устройствах */
-        transition: transform 0.1s ease-out, box-shadow 0.1s ease-out;
+        transition: transform 0.1s ease-out;
       }
       
       .btn-primary:active {
-        transform: scale(0.97);
+        transform: scale(0.96);
       }
       
       .link-back:active {
-        transform: scale(0.97);
+        transform: scale(0.96);
       }
     }
   </style>
@@ -339,46 +364,39 @@
   </div>
 
   <script>
-    // Получаем элементы страниц
     const landingPage = document.getElementById('landingPage');
     const greetingPage = document.getElementById('greetingPage');
     const showGreetingBtn = document.getElementById('showGreeting');
     const showLandingBtn = document.getElementById('showLanding');
 
-    // Функция для показа страницы с поздравлением
     function showGreetingPage() {
       landingPage.classList.add('hide');
       greetingPage.classList.add('show');
-      // Прокручиваем страницу вверх при открытии
       window.scrollTo({
         top: 0,
         behavior: 'smooth'
       });
     }
 
-    // Функция для показа лендинга
     function showLandingPage() {
       landingPage.classList.remove('hide');
       greetingPage.classList.remove('show');
-      // Прокручиваем страницу вверх при возврате
       window.scrollTo({
         top: 0,
         behavior: 'smooth'
       });
     }
 
-    // Обработчики событий
     showGreetingBtn.addEventListener('click', showGreetingPage);
     showLandingBtn.addEventListener('click', showLandingPage);
 
-    // Добавляем поддержку свайпов для мобильных устройств (опционально)
+    // Свайпы для мобильных
     let touchstartX = 0;
     let touchendX = 0;
 
     function checkSwipe() {
-      const minSwipeDistance = 100;
+      const minSwipeDistance = 80;
       if (touchendX < touchstartX - minSwipeDistance && greetingPage.classList.contains('show')) {
-        // Свайп вправо - возвращаем на главную
         showLandingPage();
       }
     }
@@ -392,7 +410,7 @@
       checkSwipe();
     });
 
-    // Предотвращаем случайные нажатия при двойном тапе
+    // Защита от двойного нажатия
     let lastClickTime = 0;
     document.querySelectorAll('button').forEach(button => {
       button.addEventListener('click', (e) => {
