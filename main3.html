@@ -1,318 +1,390 @@
 <!DOCTYPE html>
 <html lang="ru">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
-    <meta name="format-detection" content="telephone=no">
-    <meta name="theme-color" content="#dc143c">
-    <meta name="description" content="Туры по Таджикистану, Памир, Сарез, Искандеркуль, отели, гиды и уникальные маршруты от CROWNTOUR">
-    <title>CROWNTOUR | Туры по Таджикистану</title>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Старшему брату</title>
+  <!-- Подключение шрифта Google Fonts для красивого оформления -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,700;1,700&family=Roboto:wght@300;400;500&display=swap" rel="stylesheet">
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
 
-    <!-- Fonts & CSS -->
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,300;14..32,400;14..32,500;14..32,600;14..32,700;14..32,800&family=Playfair+Display:wght@400;600;700&display=swap" rel="stylesheet">
-    
-    <style>
-        /* ---------- ROOT VARIABLES (Tajik colors) ---------- */
-        :root {
-            --color-primary: #dc143c;
-            --color-primary-dark: #8b0000;
-            --color-secondary: #006400;
-            --color-secondary-light: #228b22;
-            --color-gold: #ffd700;
-            --color-gold-dark: #ff8c00;
-            --color-white: #ffffff;
-            --color-text: #1a1a1a;
-            --color-text-light: #666666;
-            --color-bg: #fafafa;
-            --color-bg-light: #ffffff;
-            --font-primary: 'Inter', system-ui, -apple-system, 'Segoe UI', sans-serif;
-            --font-display: 'Playfair Display', serif;
-            --pattern-size: 60px;
-            --border-radius: 16px;
-            --shadow: 0 4px 20px rgba(220, 20, 60, 0.1);
-            --shadow-hover: 0 8px 30px rgba(220, 20, 60, 0.2);
-            --shadow-3d: 0 10px 30px rgba(0, 0, 0, 0.12), 0 4px 12px rgba(0, 0, 0, 0.08);
-            --shadow-3d-hover: 0 25px 50px rgba(0, 0, 0, 0.2), 0 12px 24px rgba(0, 0, 0, 0.12);
-        }
-        * { margin: 0; padding: 0; box-sizing: border-box; }
-        body {
-            font-family: var(--font-primary);
-            color: var(--color-text);
-            background: var(--color-bg);
-            line-height: 1.6;
-            overflow-x: hidden;
-        }
-        .container { max-width: 1200px; margin: 0 auto; padding: 0 20px; }
+    body {
+      min-height: 100vh;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      background: linear-gradient(145deg, #0b1a2e 0%, #1b3b4f 100%);
+      font-family: 'Roboto', sans-serif;
+      padding: 20px;
+    }
 
-        /* header */
-        .header {
-            background: var(--color-white);
-            box-shadow: var(--shadow);
-            position: sticky;
-            top: 0;
-            z-index: 1000;
-            border-bottom: 3px solid var(--color-primary);
-        }
-        .header__top { padding: 1rem 0; }
-        .header__wrapper { display: flex; align-items: center; justify-content: space-between; gap: 2rem; flex-wrap: wrap; }
-        .header__logo { text-decoration: none; display: flex; flex-direction: column; }
-        .logo-text { font-family: var(--font-display); font-size: 1.8rem; font-weight: 700; color: var(--color-text); letter-spacing: -0.5px; }
-        .logo-accent { color: var(--color-primary); }
-        .logo-subtitle { font-size: 0.75rem; color: var(--color-text-light); font-weight: 500; margin-top: -4px; }
-        .nav__list { display: flex; list-style: none; gap: 2rem; }
-        .nav__link { text-decoration: none; color: var(--color-text); font-weight: 500; transition: color 0.3s; position: relative; }
-        .nav__link::after { content: ''; position: absolute; bottom: -4px; left: 0; width: 0; height: 2px; background: var(--color-primary); transition: width 0.3s; }
-        .nav__link:hover { color: var(--color-primary); }
-        .nav__link:hover::after { width: 100%; }
-        .header__actions { display: flex; align-items: center; gap: 1.5rem; }
-        .language-switcher { position: relative; }
-        .language-switcher__btn { display: flex; align-items: center; gap: 6px; padding: 8px 12px; background: var(--color-white); border: 2px solid rgba(220,20,60,0.2); border-radius: 12px; cursor: pointer; font-weight: 600; }
-        .language-switcher__dropdown { position: absolute; top: calc(100% + 8px); right: 0; background: white; border-radius: 12px; box-shadow: 0 8px 30px rgba(0,0,0,0.15); list-style: none; padding: 8px 0; min-width: 140px; opacity: 0; visibility: hidden; transform: translateY(-10px); transition: all 0.2s; z-index: 1000; }
-        .language-switcher__dropdown.active { opacity: 1; visibility: visible; transform: translateY(0); }
-        .language-switcher__option { display: block; padding: 8px 20px; text-decoration: none; color: var(--color-text); transition: 0.2s; }
-        .language-switcher__option:hover { background: rgba(220,20,60,0.1); color: var(--color-primary); }
-        .header__phone { text-decoration: none; color: var(--color-primary); font-weight: 600; white-space: nowrap; }
-        .btn { padding: 12px 24px; border-radius: 12px; font-weight: 600; cursor: pointer; text-decoration: none; display: inline-block; transition: 0.2s; }
-        .btn--primary { background: linear-gradient(135deg, var(--color-primary), var(--color-primary-dark)); color: white; box-shadow: var(--shadow); border: none; }
-        .btn--primary:hover { transform: translateY(-2px); box-shadow: var(--shadow-hover); }
-        .header__burger { display: none; flex-direction: column; gap: 5px; background: none; border: none; cursor: pointer; }
-        .header__burger span { width: 26px; height: 2px; background: var(--color-text); transition: 0.2s; }
+    .card {
+      max-width: 800px;
+      width: 100%;
+      background: rgba(255, 255, 255, 0.08);
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+      border-radius: 48px;
+      padding: 40px 35px;
+      box-shadow: 0 30px 50px rgba(0, 0, 0, 0.7), 0 0 0 1px rgba(255, 215, 150, 0.15);
+      text-align: center;
+      transition: all 0.3s ease;
+      border: 1px solid rgba(255, 215, 150, 0.2);
+    }
 
-        /* hero */
-        .hero {
-            position: relative;
-            padding: 120px 0 80px;
-            background: url('https://i.ytimg.com/vi/H6Lfh8Q7vZA/maxresdefault.jpg') center/cover no-repeat;
-            color: white;
-        }
-        .hero__pattern { position: absolute; inset: 0; background: linear-gradient(to bottom, rgba(0,0,0,0.35), rgba(0,0,0,0.6)); pointer-events: none; }
-        .hero__content { position: relative; text-align: center; max-width: 800px; margin: 0 auto; z-index: 2; }
-        .hero__title { font-family: var(--font-display); font-size: 3.5rem; margin-bottom: 1rem; text-shadow: 0 2px 10px rgba(0,0,0,0.4); }
-        .text-accent { color: var(--color-gold); }
-        .hero__subtitle { font-size: 1.25rem; margin-bottom: 2rem; }
-        .search-form { display: flex; max-width: 600px; margin: 0 auto; background: white; border-radius: 60px; overflow: hidden; }
-        .search-form__input { flex: 1; padding: 16px 24px; border: none; outline: none; font-size: 1rem; }
-        .search-form__btn { padding: 16px 24px; background: var(--color-primary); border: none; color: white; cursor: pointer; }
-        .section-title { font-family: var(--font-display); font-size: 2.5rem; text-align: center; margin-bottom: 2rem; position: relative; display: inline-block; width: 100%; }
-        .section-title::after { content: ''; position: absolute; bottom: -12px; left: 50%; transform: translateX(-50%); width: 80px; height: 4px; background: linear-gradient(90deg, var(--color-primary), var(--color-secondary)); border-radius: 4px; }
-        .categories, .regions, .tours, .advantages, .how-it-works, .attractions, .widgets, .tour-builder { padding: 80px 0; }
-        .categories__grid, .regions__grid, .tours__grid, .advantages__grid, .attractions__grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 2rem; }
-        .category-card, .region-card, .tour-card, .advantage-item, .attraction-card { background: white; border-radius: 20px; overflow: hidden; box-shadow: var(--shadow-3d); transition: all 0.3s; text-decoration: none; color: inherit; display: block; }
-        .category-card:hover, .region-card:hover, .tour-card:hover { transform: translateY(-10px); box-shadow: var(--shadow-3d-hover); }
-        .category-card__image, .region-card__image, .tour-card__image { height: 200px; background: linear-gradient(135deg, var(--color-primary), var(--color-secondary)); position: relative; overflow: hidden; }
-        .category-card__image img, .region-card__image img, .tour-card__image img { width: 100%; height: 100%; object-fit: cover; transition: transform 0.4s; display: block; }
-        .category-card:hover img, .region-card:hover img, .tour-card:hover img { transform: scale(1.05); }
-        .category-card__title, .region-card__title, .tour-card__title { padding: 1.5rem 1.5rem 0.5rem; font-size: 1.25rem; font-weight: 700; }
-        .category-card__count, .region-card__description, .tour-card__description { padding: 0 1.5rem 1.5rem; color: var(--color-text-light); }
-        .tour-card__meta { padding: 0 1.5rem 1rem; border-bottom: 1px solid #eee; }
-        .tag { display: inline-block; background: rgba(220,20,60,0.1); color: var(--color-primary); border-radius: 30px; padding: 4px 12px; font-size: 0.75rem; margin: 0.5rem 0.5rem 0 0; }
-        .footer { background: linear-gradient(135deg, #1a1a1a, #2a2a2a); color: white; padding: 60px 0 20px; }
-        .footer__content { display: grid; grid-template-columns: 2fr 1fr; gap: 3rem; }
-        .footer__list { list-style: none; }
-        .footer__list a { color: #ccc; text-decoration: none; }
-        .whatsapp-cta-block { background: linear-gradient(135deg, #25D366, #128C7E); padding: 1.5rem; border-radius: 20px; text-align: center; margin-top: 2rem; }
-        .region-hero { min-height: 400px; position: relative; display: flex; align-items: flex-end; padding-bottom: 3rem; }
-        .region-hero__image { position: absolute; inset: 0; z-index: 0; }
-        .region-hero__image img { width: 100%; height: 100%; object-fit: cover; }
-        .region-hero__overlay { position: absolute; inset: 0; background: linear-gradient(to bottom, rgba(0,0,0,0.3), rgba(0,0,0,0.7)); z-index: 1; }
-        .region-hero__content { position: relative; z-index: 2; color: white; }
-        .region-content__wrapper { display: grid; grid-template-columns: 2fr 1fr; gap: 3rem; margin-top: 3rem; }
-        .tour-book-widget { background: white; border-radius: 20px; padding: 1.5rem; box-shadow: var(--shadow); margin-top: 1.5rem; }
-        .tour-book-stepper { display: inline-flex; border: 1px solid #ddd; border-radius: 40px; overflow: hidden; }
-        .tour-book-stepper button { width: 36px; border: none; background: #f0f0f0; cursor: pointer; font-size: 1.2rem; }
-        .tour-book-btn { display: block; background: var(--color-primary); color: white; text-align: center; padding: 12px; border-radius: 40px; margin-top: 1rem; font-weight: 600; text-decoration: none; }
-        @media (max-width: 768px) {
-            .header__nav { display: none; }
-            .header__burger { display: flex; }
-            .hero__title { font-size: 2.2rem; }
-            .region-content__wrapper { grid-template-columns: 1fr; }
-            .footer__content { grid-template-columns: 1fr; }
-        }
-    </style>
-    <style>
-        /* остальные стили (полный, из kh.css) */
-        .region-section__title { font-family: var(--font-display); font-size: 1.8rem; border-left: 5px solid var(--color-primary); padding-left: 1rem; margin-bottom: 1.5rem; }
-        .attraction-item { background: white; border-radius: 16px; padding: 1.2rem; box-shadow: var(--shadow); margin-bottom: 1rem; }
-        .region-info-card { background: white; border-radius: 20px; padding: 1.5rem; box-shadow: var(--shadow); margin-bottom: 1.5rem; }
-        .tour-builder__form { max-width: 600px; margin: 0 auto; background: white; border-radius: 24px; padding: 2rem; box-shadow: var(--shadow-3d); }
-        .tour-builder__select, .tour-builder__input { width: 100%; padding: 12px; border-radius: 12px; border: 1px solid #ddd; margin-top: 4px; }
-        .blog-form__stars { display: flex; gap: 8px; }
-        .star-btn { background: none; border: none; font-size: 28px; color: #ccc; cursor: pointer; }
-        .star-btn--active { color: var(--color-gold); }
-        .review-card { background: white; border-radius: 20px; padding: 1.5rem; margin-bottom: 1rem; box-shadow: var(--shadow); }
-    </style>
+    /* декоративный акцент */
+    .card::before {
+      content: '';
+      position: absolute;
+      top: -2px;
+      left: 20%;
+      width: 60%;
+      height: 4px;
+      background: linear-gradient(90deg, transparent, #f5c27b, #e8b06b, #f5c27b, transparent);
+      border-radius: 4px;
+      opacity: 0.6;
+    }
+
+    .card {
+      position: relative;
+      overflow: hidden;
+    }
+
+    .icon-big {
+      font-size: 72px;
+      line-height: 1.2;
+      margin-bottom: 12px;
+      display: inline-block;
+      filter: drop-shadow(0 8px 12px rgba(0,0,0,0.4));
+      animation: float 3s ease-in-out infinite;
+    }
+
+    @keyframes float {
+      0% { transform: translateY(0px); }
+      50% { transform: translateY(-10px); }
+      100% { transform: translateY(0px); }
+    }
+
+    h1 {
+      font-family: 'Playfair Display', serif;
+      font-weight: 700;
+      font-size: 3.2rem;
+      color: #f6e3c5;
+      text-shadow: 0 4px 20px rgba(0, 0, 0, 0.5);
+      margin-bottom: 8px;
+      letter-spacing: 1px;
+    }
+
+    .subhead {
+      font-size: 1.4rem;
+      font-weight: 300;
+      color: #d6c6a6;
+      margin-bottom: 28px;
+      border-bottom: 1px dashed rgba(255, 215, 150, 0.3);
+      padding-bottom: 18px;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+    }
+
+    .message {
+      font-size: 1.25rem;
+      line-height: 1.8;
+      color: #efe3d0;
+      background: rgba(0, 0, 0, 0.2);
+      padding: 28px 24px;
+      border-radius: 32px;
+      backdrop-filter: blur(4px);
+      margin: 20px 0 30px 0;
+      border-left: 4px solid #f3c58b;
+      font-weight: 300;
+      text-align: left;
+      box-shadow: inset 0 2px 8px rgba(0,0,0,0.3);
+    }
+
+    .message strong {
+      color: #fad5a5;
+      font-weight: 500;
+    }
+
+    .signature {
+      display: flex;
+      justify-content: flex-end;
+      font-size: 1.3rem;
+      font-style: italic;
+      color: #eddcc0;
+      margin-top: -10px;
+      margin-bottom: 25px;
+      padding-right: 10px;
+      font-family: 'Playfair Display', serif;
+    }
+
+    .signature span {
+      background: rgba(255, 215, 150, 0.1);
+      padding: 0 20px 0 12px;
+      border-radius: 40px;
+      backdrop-filter: blur(2px);
+      border: 1px solid rgba(255, 215, 150, 0.2);
+    }
+
+    .features {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      gap: 18px 25px;
+      margin: 30px 0 20px;
+    }
+
+    .feature-item {
+      background: rgba(255, 255, 255, 0.05);
+      padding: 10px 22px;
+      border-radius: 60px;
+      backdrop-filter: blur(4px);
+      border: 1px solid rgba(255, 215, 150, 0.15);
+      color: #dacdb6;
+      font-weight: 400;
+      font-size: 1rem;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      transition: 0.2s;
+      box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+    }
+
+    .feature-item:hover {
+      background: rgba(255, 215, 150, 0.08);
+      border-color: #f3c58b;
+      color: #f6e3c5;
+      transform: scale(1.02);
+    }
+
+    .feature-item i {
+      font-size: 1.4rem;
+      filter: drop-shadow(0 2px 4px black);
+    }
+
+    .btn {
+      display: inline-block;
+      background: linear-gradient(145deg, #e6c28b, #cfaa77);
+      border: none;
+      padding: 16px 44px;
+      border-radius: 60px;
+      font-size: 1.2rem;
+      font-weight: 500;
+      color: #15242e;
+      box-shadow: 0 10px 20px rgba(0, 0, 0, 0.5);
+      cursor: pointer;
+      transition: 0.25s ease;
+      letter-spacing: 0.5px;
+      margin-top: 12px;
+      border: 1px solid #f5dbb0;
+      text-transform: uppercase;
+    }
+
+    .btn:hover {
+      background: linear-gradient(145deg, #f5dbb0, #dbb580);
+      transform: scale(1.03) translateY(-3px);
+      box-shadow: 0 16px 28px rgba(0, 0, 0, 0.6);
+      color: #0a171f;
+    }
+
+    .btn:active {
+      transform: scale(0.97);
+    }
+
+    .footer-note {
+      margin-top: 28px;
+      font-size: 0.9rem;
+      color: #a89478;
+      letter-spacing: 1px;
+      opacity: 0.7;
+    }
+
+    /* адаптив */
+    @media (max-width: 600px) {
+      .card {
+        padding: 30px 20px;
+        border-radius: 32px;
+      }
+      h1 {
+        font-size: 2.4rem;
+      }
+      .subhead {
+        font-size: 1.1rem;
+      }
+      .message {
+        font-size: 1.05rem;
+        padding: 20px 16px;
+      }
+      .features {
+        gap: 10px;
+      }
+      .feature-item {
+        padding: 8px 16px;
+        font-size: 0.9rem;
+      }
+      .btn {
+        padding: 14px 28px;
+        font-size: 1rem;
+      }
+      .signature {
+        font-size: 1.1rem;
+      }
+    }
+
+    @media (max-width: 400px) {
+      .icon-big {
+        font-size: 52px;
+      }
+      h1 {
+        font-size: 2rem;
+      }
+    }
+  </style>
 </head>
 <body>
+  <div class="card">
+    <!-- Декоративная иконка -->
+    <div class="icon-big">👑</div>
 
-<header class="header">
-    <div class="container">
-        <div class="header__wrapper">
-            <a href="#" class="header__logo">
-                <span class="logo-text">CROWN<span class="logo-accent">TOUR</span></span>
-                <span class="logo-subtitle">Таджикистан</span>
-            </a>
-            <nav class="header__nav">
-                <ul class="nav__list">
-                    <li><a href="#tours" class="nav__link">Туры</a></li>
-                    <li><a href="#regions" class="nav__link">Регионы</a></li>
-                    <li><a href="#objects" class="nav__link">Достопримечательности</a></li>
-                    <li><a href="#blog" class="nav__link">Отзывы</a></li>
-                    <li><a href="#faq" class="nav__link">FAQ</a></li>
-                </ul>
-            </nav>
-            <div class="header__actions">
-                <div class="language-switcher">
-                    <button class="language-switcher__btn" id="langBtn">RU ▼</button>
-                    <ul class="language-switcher__dropdown" id="langDropdown">
-                        <li><a href="#" data-lang="ru" class="language-switcher__option">Русский</a></li>
-                        <li><a href="#" data-lang="en" class="language-switcher__option">English</a></li>
-                        <li><a href="#" data-lang="tg" class="language-switcher__option">Тоҷикӣ</a></li>
-                    </ul>
-                </div>
-                <a href="https://wa.me/992002663407" class="header__phone">(+992) 00 266 34 07</a>
-                <button class="btn btn--primary" id="selectTourBtn">Подобрать тур</button>
-                <button class="header__burger" id="mobileMenuBtn"><span></span><span></span><span></span></button>
-            </div>
-        </div>
+    <h1>Старший Брат</h1>
+    <div class="subhead">Ты — наша опора и гордость</div>
+
+    <!-- Основное поздравление -->
+    <div class="message">
+      <p style="margin-bottom: 12px;">
+        <strong>Дорогой брат!</strong> 
+        С каждым годом ты становишься ещё мудрее, сильнее и добрее. 
+        Спасибо за твою защиту, советы и пример. 
+        Ты — тот человек, на которого всегда можно положиться.
+      </p>
+      <p style="margin-top: 8px;">
+        Пусть все твои мечты сбываются, а удача идёт по пятам. 
+        Желаю тебе здоровья, счастья и больших побед. 
+        Ты — лучший брат в мире!
+      </p>
     </div>
-</header>
 
-<main>
-    <!-- Hero -->
-    <section class="hero">
-        <div class="hero__pattern"></div>
-        <div class="container"><div class="hero__content">
-            <h1 class="hero__title">Откройте <span class="text-accent">Таджикистан</span><br>с CROWNTOUR</h1>
-            <p class="hero__subtitle">Уникальные путешествия по древним городам, горам и кристальным озерам</p>
-            <form class="search-form" id="searchForm">
-                <input type="text" class="search-form__input" placeholder="Поиск туров..." id="searchInput" list="tourSuggestions">
-                <datalist id="tourSuggestions"></datalist>
-                <button type="submit" class="search-form__btn">🔍</button>
-            </form>
-        </div></div>
-    </section>
+    <!-- Подпись с эмодзи -->
+    <div class="signature">
+      <span>❤️ Твой младший брат</span>
+    </div>
 
-    <!-- Categories -->
-    <section class="categories" id="categories">
-        <div class="container"><h2 class="section-title">Категории туров</h2>
-        <div class="categories__grid" id="categoriesGrid">
-            <a href="#" class="category-card" data-cat="lakes"><div class="category-card__image"><img src="https://eurasia.travel/wp-content/uploads/2024/08/Iskanderkul-Lake-1.jpg" alt="Озера"></div><h3 class="category-card__title">Озера</h3><p class="category-card__count">64 тура</p></a>
-            <a href="#" class="category-card" data-cat="mountains"><div class="category-card__image"><img src="https://masterpiecer-images.s3.yandex.net/5f9d17b97ef8100:upscaled" alt="Горы"></div><h3 class="category-card__title">По горам</h3><p class="category-card__count">22 тура</p></a>
-            <a href="#" class="category-card" data-cat="ethno"><div class="category-card__image"><img src="https://www.mountain.ru/article/article_img/6855/f_4.jpg" alt="Этно-туры"></div><h3 class="category-card__title">Этно-туры</h3><p class="category-card__count">27 туров</p></a>
-            <a href="#" class="category-card" data-cat="fan"><div class="category-card__image"><img src="https://avatars.mds.yandex.net/i?id=3372c30112ca130b41d3a48bcc0dafeb_l-5250028-images-thumbs&n=13" alt="Фанские горы"></div><h3 class="category-card__title">Фанские горы</h3><p class="category-card__count">43 тура</p></a>
-        </div></div>
-    </section>
+    <!-- Небольшие "фишки" с иконками (символические пожелания) -->
+    <div class="features">
+      <div class="feature-item">
+        <span>🚀</span> Успехов
+      </div>
+      <div class="feature-item">
+        <span>💪</span> Силы
+      </div>
+      <div class="feature-item">
+        <span>🌟</span> Вдохновения
+      </div>
+      <div class="feature-item">
+        <span>🔥</span> Энергии
+      </div>
+    </div>
 
-    <!-- Regions -->
-    <section class="regions" id="regions"><div class="container"><h2 class="section-title">Области Таджикистана</h2>
-    <div class="regions__grid">
-        <a href="#gba" class="region-card"><div class="region-card__image"><img src="https://vecherka.tj/wp-content/uploads/2016/08/0022.jpg" alt="ГБАО"></div><h3 class="region-card__title">Горно-Бадахшанская АО</h3><p class="region-card__description">Памир — крыша мира</p></a>
-        <a href="#rrp" class="region-card"><div class="region-card__image"><img src="https://avatars.mds.yandex.net/i?id=406635ef40e42b5cd24c3fad1cd55460c8a06259-12920861-images-thumbs&n=13" alt="РРП"></div><h3 class="region-card__title">Районы республиканского подчинения</h3><p class="region-card__description">Столичный регион</p></a>
-        <a href="#sogd" class="region-card"><div class="region-card__image"><img src="https://tour.tj/upload/iblock/c4b/y3w5xeidx81m5gcsoriqdjkl6serntkl.jpg" alt="Согд"></div><h3 class="region-card__title">Согдийская область</h3><p class="region-card__description">Древний Согд и Шелковый путь</p></a>
-        <a href="#khatlon" class="region-card"><div class="region-card__image"><img src="https://asiaplustj.info/sites/default/files/articles/264499/7%20%D0%A5%D1%83%D0%BB%D1%8C%D0%B1%D1%83%D0%BA.jpg" alt="Хатлон"></div><h3 class="region-card__title">Хатлонская область</h3><p class="region-card__description">Традиции и современность</p></a>
-    </div></div></section>
+    <!-- Интерактивная кнопка (с сюрпризом) -->
+    <button class="btn" id="surpriseBtn">🎁 Сюрприз для брата</button>
+    <div id="surpriseMessage" style="margin-top: 18px; font-size: 1.2rem; min-height: 2.8rem; color: #f5dbb0; font-weight: 300; letter-spacing: 0.5px;"></div>
 
-    <!-- Tours -->
-    <section class="tours" id="tours"><div class="container"><h2 class="section-title">Популярные туры</h2>
-    <div class="tours__grid" id="toursGrid">
-        <div class="tour-card"><div class="tour-card__image"><img src="https://ucare.timepad.ru/883e42a3-34bb-42c4-b044-f136735d90e8/-/preview/" alt="Памирский тракт"></div><div class="tour-card__content"><h3 class="tour-card__title">Памирский тракт</h3><p class="tour-card__description">8 дней, путешествие по крыше мира</p><div class="tag">#Памир</div><div class="tag">#Экспедиция</div></div></div>
-        <div class="tour-card"><div class="tour-card__image"><img src="https://artuch.tj/wp-content/uploads/2017/10/845534619.jpg" alt="Пенджикент"></div><div class="tour-card__content"><h3 class="tour-card__title">Пенджикент и Худжанд</h3><p class="tour-card__description">5 дней, древние города Согда</p><div class="tag">#Шелковый путь</div></div></div>
-        <div class="tour-card"><div class="tour-card__image"><img src="https://avatars.mds.yandex.net/get-altay/11398069/2a00000190b16a35888a51350950c16e1b1e/XXL_height" alt="Культурный тур"></div><div class="tour-card__content"><h3 class="tour-card__title">Культурный тур по Согду</h3><p class="tour-card__description">6 дней, история и культура</p><div class="tag">#Культура</div></div></div>
-        <div class="tour-card"><div class="tour-card__image"><img src="https://avatars.mds.yandex.net/i?id=7646d488b188c5a3ecea02866534b79f_l-5319478-images-thumbs&n=13" alt="Велотур"></div><div class="tour-card__content"><h3 class="tour-card__title">Велотур по Памиру</h3><p class="tour-card__description">10 дней, активное приключение</p><div class="tag">#Вело</div></div></div>
-    </div></div></section>
+    <div class="footer-note">
+      ✦ С любовью и уважением ✦
+    </div>
+  </div>
 
-    <!-- Attractions -->
-    <section class="attractions" id="objects"><div class="container"><h2 class="section-title">Достопримечательности</h2>
-    <div class="attractions__grid">
-        <div class="attraction-card"><div class="attraction-card__image"><img src="https://asiaplustj.info/sites/default/files/articles/298543/%D0%98%D1%81%D0%BA%D0%B0%D0%BD%D0%B4%D0%B5%D1%80%D0%BA%D1%83%D0%BB%D1%8C.%20%D0%98%D1%81%D1%82%D0%BE%D1%87%D0%BD%D0%B8%D0%BA_%20%40pohod.tj.jpg.png" alt="Искандеркуль"></div><div class="attraction-card__content"><h3>Искандеркуль</h3><p>Высокогорное озеро на 2195 м</p></div></div>
-        <div class="attraction-card"><div class="attraction-card__image"><img src="https://live.staticflickr.com/65535/54291034578_e0e420ce4f_h.jpg" alt="Пенджикент"></div><div class="attraction-card__content"><h3>Древний Пенджикент</h3><p>Город на Шелковом пути</p></div></div>
-        <div class="attraction-card"><div class="attraction-card__image"><img src="https://upload.wikimedia.org/wikipedia/commons/thumb/0/0e/%D0%93%D0%B8%D1%81%D1%81%D0%B0%D1%80%D1%81%D0%BA%D0%B0%D1%8F_%D0%BA%D1%80%D0%B5%D0%BF%D0%BE%D1%81%D1%82%D1%8C_03.jpg/1200px-%D0%93%D0%B8%D1%81%D1%81%D0%B0%D1%80%D1%81%D0%BA%D0%B0%D1%8F_%D0%BA%D1%80%D0%B5%D0%BF%D0%BE%D1%81%D1%82%D1%8C_03.jpg" alt="Гиссар"></div><div class="attraction-card__content"><h3>Гиссарская крепость</h3><p>Древняя цитадель</p></div></div>
-    </div></div></section>
+  <script>
+    (function() {
+      const surpriseBtn = document.getElementById('surpriseBtn');
+      const surpriseDiv = document.getElementById('surpriseMessage');
 
-    <!-- Tour builder -->
-    <section class="tour-builder"><div class="container"><h2 class="section-title">Создай свой тур</h2>
-    <form class="tour-builder__form" id="builderForm">
-        <select class="tour-builder__select" id="builderDirection"><option value="pamir">Памирский тракт</option><option value="fan">Фанские горы</option><option value="ethno">Этно-тур</option></select>
-        <select class="tour-builder__select" id="builderDays"><option value="5">5 дней</option><option value="7">7 дней</option><option value="10">10 дней</option></select>
-        <select class="tour-builder__select" id="builderPeople"><option value="1">1 человек</option><option value="2">2 человека</option><option value="4" selected>4 человека</option></select>
-        <div style="margin-top:20px"><strong>Итог: <span id="builderTotal">0 $</span></strong></div>
-    </form></div></section>
+      // Массив с дополнительными тёплыми фразами
+      const extraMessages = [
+        'Ты — мой герой! 🦸‍♂️',
+        'Спасибо, что всегда рядом. 🙏',
+        'Ты лучший пример для подражания! 🌟',
+        'Пусть удача улыбается тебе каждый день. 😊',
+        'Ты делаешь этот мир лучше! 🌍',
+        'Будь счастлив, брат! ❤️',
+        'Твоя сила и доброта вдохновляют. 💫',
+        'Никогда не сдавайся, ты сможешь всё! ⚡'
+      ];
 
-    <!-- Blog / Reviews -->
-    <section class="attractions" id="blog"><div class="container"><h2 class="section-title">Отзывы клиентов</h2>
-    <div id="reviewsList" class="reviews-list"></div>
-    <form id="reviewForm" style="background:white; padding:2rem; border-radius:24px; margin-top:2rem;">
-        <input type="text" id="reviewName" placeholder="Ваше имя" required style="width:100%; padding:12px; margin-bottom:12px; border-radius:40px; border:1px solid #ddd;">
-        <input type="email" id="reviewEmail" placeholder="Email" required style="width:100%; padding:12px; margin-bottom:12px; border-radius:40px; border:1px solid #ddd;">
-        <div class="blog-form__stars" id="starRating"><button type="button" class="star-btn" data-rating="1">★</button><button type="button" class="star-btn" data-rating="2">★</button><button type="button" class="star-btn" data-rating="3">★</button><button type="button" class="star-btn" data-rating="4">★</button><button type="button" class="star-btn" data-rating="5">★</button></div>
-        <input type="hidden" id="reviewRating" value="0">
-        <textarea id="reviewText" rows="3" placeholder="Ваш отзыв..." style="width:100%; margin-top:12px; border-radius:20px; padding:12px;"></textarea>
-        <button type="submit" class="btn btn--primary" style="margin-top:16px">Отправить отзыв</button>
-    </form>
-    </div></section>
+      let index = 0;
+      let timeoutId = null;
 
-    <!-- FAQ block -->
-    <section id="faq" class="advantages"><div class="container"><h2 class="section-title">Часто задаваемые вопросы</h2>
-    <details><summary>Нужна ли виза?</summary><p>Граждане РФ и большинства стран СНГ — безвизово до 30 дней.</p></details>
-    <details><summary>Как оплатить?</summary><p>Банковский перевод, карта, предоплата 30%.</p></details>
-    </div></section>
+      // Функция показа следующего сообщения (по кругу)
+      function showNextMessage() {
+        // Если есть таймер — сбрасываем, чтобы не накладывалось
+        if (timeoutId) {
+          clearTimeout(timeoutId);
+          timeoutId = null;
+        }
 
-    <!-- Widgets currency + weather -->
-    <section class="widgets"><div class="container"><div class="widgets__grid" style="display:flex; gap:2rem; flex-wrap:wrap;">
-        <div style="flex:1; background:white; border-radius:20px; padding:1.5rem;"><h3>Курс валют</h3><div id="currencyContent"><div>USD → TJS: <span id="usdRate">—</span></div><div>EUR → TJS: <span id="eurRate">—</span></div><div>RUB → TJS: <span id="rubRate">—</span></div></div><div id="currencyUpdate"></div></div>
-        <div style="flex:1; background:white; border-radius:20px; padding:1.5rem;"><h3>Погода в Душанбе</h3><div><div id="weatherIcon">☀️</div><div id="weatherTemp">—</div><div id="weatherDesc"></div><div>Ощущается: <span id="weatherFeels"></span></div><div>Влажность: <span id="weatherHumidity"></span></div><div>Ветер: <span id="weatherWind"></span></div><div id="weatherUpdate"></div></div></div>
-    </div></div></section>
-</main>
+        // Берём текущее сообщение
+        const msg = extraMessages[index % extraMessages.length];
+        surpriseDiv.textContent = msg;
 
-<footer class="footer"><div class="container"><div class="footer__content"><div><span class="logo-text">CROWN<span class="logo-accent">TOUR</span></span><p>Ваш надёжный партнёр по Таджикистану</p></div><div><h4>Контакты</h4><ul class="footer__list"><li><a href="https://wa.me/992002663407">WhatsApp +992 00 266 34 07</a></li><li><a href="mailto:info@crowntour.tj">info@crowntour.tj</a></li></ul></div></div><div class="footer__bottom"><p>© 2025 CROWNTOUR. Все права защищены.</p></div></div></footer>
+        // Увеличиваем индекс для следующего раза
+        index++;
 
-<script>
-    // ------------------- language dummy (быстрая заглушка) ------------------
-    const langBtn = document.getElementById('langBtn');
-    const langDropdown = document.getElementById('langDropdown');
-    if(langBtn && langDropdown){
-        langBtn.addEventListener('click', ()=> langDropdown.classList.toggle('active'));
-        document.addEventListener('click', (e)=> { if(!langBtn.contains(e.target) && !langDropdown.contains(e.target)) langDropdown.classList.remove('active'); });
-        langDropdown.querySelectorAll('.language-switcher__option').forEach(opt => opt.addEventListener('click', (e)=>{ e.preventDefault(); langDropdown.classList.remove('active'); }));
-    }
-    // mobile burger
-    const burger = document.getElementById('mobileMenuBtn');
-    const nav = document.querySelector('.header__nav');
-    if(burger && nav) burger.addEventListener('click', ()=> nav.classList.toggle('nav--open'));
+        // Устанавливаем таймер на очистку через 5 секунд
+        timeoutId = setTimeout(() => {
+          surpriseDiv.textContent = '';
+          timeoutId = null;
+        }, 5000);
+      }
 
-    // поиск (простой highlight)
-    const searchForm = document.getElementById('searchForm');
-    const searchInput = document.getElementById('searchInput');
-    if(searchForm && searchInput){
-        searchForm.addEventListener('submit', (e)=> { e.preventDefault(); const q = searchInput.value.toLowerCase(); document.querySelectorAll('.tour-card, .category-card, .region-card').forEach(card => { const text = card.innerText.toLowerCase(); if(text.includes(q)) card.style.display='block'; else card.style.display='none'; }); });
-        searchInput.addEventListener('input', ()=> { const q = searchInput.value.toLowerCase(); document.querySelectorAll('.tour-card, .category-card, .region-card').forEach(card => { if(!q || card.innerText.toLowerCase().includes(q)) card.style.display='block'; else card.style.display='none'; }); });
-    }
+      // Обработчик клика по кнопке
+      surpriseBtn.addEventListener('click', function() {
+        // Если в данный момент отображается сообщение — сбрасываем таймер и показываем новое
+        if (timeoutId) {
+          clearTimeout(timeoutId);
+          timeoutId = null;
+        }
+        showNextMessage();
+      });
 
-    // tour builder dummy price
-    const builderDir = document.getElementById('builderDirection');
-    const builderDays = document.getElementById('builderDays');
-    const builderPeople = document.getElementById('builderPeople');
-    const builderTotalSpan = document.getElementById('builderTotal');
-    function updateBuilderTotal() { if(builderTotalSpan && builderDir && builderDays && builderPeople) { const price = 85 * parseInt(builderDays.value) * parseInt(builderPeople.value); builderTotalSpan.innerText = price + ' $'; } }
-    if(builderDir && builderDays && builderPeople) { builderDir.addEventListener('change', updateBuilderTotal); builderDays.addEventListener('change', updateBuilderTotal); builderPeople.addEventListener('change', updateBuilderTotal); updateBuilderTotal(); }
+      // Дополнительно: если пользователь кликнет на само сообщение — оно исчезнет (приятный UX)
+      surpriseDiv.addEventListener('click', function() {
+        if (timeoutId) {
+          clearTimeout(timeoutId);
+          timeoutId = null;
+        }
+        surpriseDiv.textContent = '';
+      });
 
-    // Отзывы (localstorage)
-    let reviews = JSON.parse(localStorage.getItem('crowntour_reviews') || '[]');
-    const reviewList = document.getElementById('reviewsList');
-    function renderReviews() { if(reviewList) { reviewList.innerHTML = reviews.slice().reverse().map(r => `<div class="review-card"><strong>${escapeHtml(r.name)}</strong> ★${r.rating}<br>${escapeHtml(r.text)}<br><small>${new Date(r.date).toLocaleDateString()}</small></div>`).join(''); } }
-    function escapeHtml(s) { return s.replace(/[&<>]/g, function(m){ if(m === '&') return '&amp;'; if(m === '<') return '&lt;'; if(m === '>') return '&gt;'; return m;}); }
-    const reviewForm = document.getElementById('reviewForm');
-    if(reviewForm) reviewForm.addEventListener('submit', (e)=> { e.preventDefault(); const name = document.getElementById('reviewName').value.trim(); const email = document.getElementById('reviewEmail').value.trim(); const rating = parseInt(document.getElementById('reviewRating').value,10); const text = document.getElementById('reviewText').value.trim(); if(!name || !email || !rating || !text) alert('Заполните все поля'); else { reviews.push({ name, email, rating, text, date: new Date().toISOString() }); localStorage.setItem('crowntour_reviews', JSON.stringify(reviews)); renderReviews(); reviewForm.reset(); document.querySelectorAll('.star-btn').forEach(b=>b.classList.remove('star-btn--active')); document.getElementById('reviewRating').value=0; } });
-    const starButtons = document.querySelectorAll('.star-btn');
-    if(starButtons.length){ starButtons.forEach(btn => btn.addEventListener('click', ()=> { const r = parseInt(btn.getAttribute('data-rating'),10); document.querySelectorAll('.star-btn').forEach(b=>b.classList.remove('star-btn--active')); for(let i=0;i<r;i++) starButtons[i].classList.add('star-btn--active'); document.getElementById('reviewRating').value = r; })); }
-    renderReviews();
-
-    // Currency + weather widgets (live)
-    async function updateCurrency() { try { const resp = await fetch('https://api.exchangerate-api.com/v4/latest/USD'); if(resp.ok) { const data = await resp.json(); const tjs = data.rates.TJS || 10.5; document.getElementById('usdRate').innerText = tjs.toFixed(2); document.getElementById('eurRate').innerText = (tjs / data.rates.EUR).toFixed(2); document.getElementById('rubRate').innerText = (tjs / data.rates.RUB).toFixed(2); } } catch(e) { console.warn(e); } }
-    async function updateWeather() { try { const resp = await fetch('https://wttr.in/Dushanbe?format=j1&lang=ru'); if(resp.ok) { const data = await resp.json(); const curr = data.current_condition[0]; document.getElementById('weatherTemp').innerText = curr.temp_C + '°C'; document.getElementById('weatherDesc').innerText = curr.lang_ru?.[0]?.value || curr.weatherDesc[0]?.value || ''; document.getElementById('weatherFeels').innerText = curr.FeelsLikeC + '°C'; document.getElementById('weatherHumidity').innerText = curr.humidity + '%'; document.getElementById('weatherWind').innerText = curr.windspeedKmph + ' км/ч'; } } catch(e) { console.warn(e); } }
-    updateCurrency(); updateWeather(); setInterval(updateCurrency, 300000); setInterval(updateWeather, 300000);
-</script>
+      // Небольшое приветствие при загрузке (показываем первое сообщение через 1.5 секунды)
+      setTimeout(() => {
+        // Показываем первое сообщение, только если ничего не отображается
+        if (surpriseDiv.textContent === '') {
+          // Берём первое сообщение без увеличения индекса? но мы используем showNextMessage — он увеличит индекс,
+          // однако лучше просто показать первое, не сдвигая индекс.
+          // Чтобы индекс не сдвигался — вызовем напрямую, но учтём, что index останется 0.
+          // Но при первом вызове index = 0, поэтому покажет extraMessages[0] и увеличит index до 1 — ок.
+          // Можно просто вызвать showNextMessage, но тогда при первом клике покажет уже второе.
+          // Сделаем так: показываем первое сообщение без изменения индекса.
+          surpriseDiv.textContent = extraMessages[0];
+          // Устанавливаем таймер на очистку
+          timeoutId = setTimeout(() => {
+            surpriseDiv.textContent = '';
+            timeoutId = null;
+          }, 5000);
+          // Индекс не трогаем, чтобы при клике начать с первого же (extraMessages[0])?
+          // Но мы уже показали первое. При клике пользователь ожидает новое. Так что оставим index = 1,
+          // чтобы при клике показалось второе.
+          index = 1;
+        }
+      }, 1500);
+    })();
+  </script>
 </body>
 </html>
