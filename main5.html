@@ -2,7 +2,7 @@
 <html lang="ru">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
 <title>Nebula Heart</title>
 <style>
   :root{
@@ -15,10 +15,15 @@
     height: 100%;
     background: var(--bg);
     overflow: hidden;
+    overscroll-behavior: none;
+    touch-action: manipulation;
   }
   canvas {
     display: block;
     background: var(--bg);
+    position: fixed;
+    top: 0;
+    left: 0;
   }
   /* Небольшая подпись в углу — можно убрать */
   .label {
@@ -80,23 +85,27 @@
 // ---------- НАСТРОЙКИ (можно менять для улучшения/вариаций) ----------
 const CONFIG = {
   particleCount: 300,       // swarm_size в оригинале
-  durationMs: 16000,        // сколько реального времени идёт сборка сердца (было слишком быстро — увеличено)
-  startDistMin: 50,         // random.uniform(50, 300) в оригинале
-  startDistMax: 300,
-  heartScale: 13,           // масштаб кривой сердца (высота ~ heartScale*21)
+  durationMs: 10000,        // реальная длительность сборки в оригинальном видео — около 10 сек
+  // дистанция и масштаб сердца ниже пересчитываются от размера экрана (см. computeLayout),
+  // это лишь ДОЛИ от меньшей стороны экрана, а не абсолютные пиксели —
+  // так рисунок всегда хорошо помещается что на телефоне, что на десктопе
+  startDistMinFrac: 0.09,
+  startDistMaxFrac: 0.55,
+  heartWidthFrac: 0.82,     // ширина сердца ~82% от меньшей стороны экрана
   // Оттенок идёт от красного к фиолетовому КОРОТКИМ путём по кругу HSV —
   // через розовый/пурпурный (а не через жёлтый-зелёный-голубой).
-  // hueEnd отрицательный специально: 0 -> -0.18 при переводе в hue
-  // соответствует движению 0 -> 0.82 "в другую сторону" колеса.
   hueStart: 0.0,            // оттенок в начале анимации (0 = красный)
   hueEnd: -0.18,            // оттенок в конце анимации (эквивалент 0.82 = фиолетово-розовый)
-  lineWidth: 1.1,           // толщина основного (чёткого) штриха
-  lineAlpha: 0.30,          // прозрачность основного штриха
-  glowLineWidth: 4.5,       // толщина второго, размытого штриха (создаёт мягкое сияние)
-  glowLineAlpha: 0.10,      // прозрачность размытого штриха
-  glow: 10,                 // сила свечения (shadowBlur) у чёткого штриха
-  glowBlurExtra: 18,        // сила свечения у размытого штриха — сильнее, для мягкого ореола
-  moveEasing: 'easeOutQuint', // характер сближения частиц к цели: чем "мягче" в начале, тем более тягучим кажется полёт
+  lineWidth: 1.15,          // толщина основного штриха
+  lineAlpha: 0.24,          // прозрачность основного штриха (снижена, чтобы не было пересвета)
+  glowLineWidth: 3,         // толщина мягкого фонового сияния
+  glowLineAlpha: 0.045,     // прозрачность мягкого сияния (очень слабая — просто лёгкая дымка)
+  glow: 5,                  // shadowBlur основного штриха
+  glowBlurExtra: 14,        // shadowBlur мягкого сияния
+  // движение частиц — мягкая, но равномерная кривая (без резкого рывка в начале
+  // и без "зависания" ближе к концу, как было с easeOutQuint)
+  moveEasing: 'easeOutQuad',
+  hueEasing: 'easeOutQuad',
   restartOnClick: true,     // клик / пробел — перезапуск анимации
   autoRestartDelayMs: 4000  // пауза перед авто-рестартом после завершения (null — не рестартовать)
 };
@@ -104,15 +113,31 @@ const CONFIG = {
 const canvas = document.getElementById('c');
 const ctx = canvas.getContext('2d');
 
-let W, H, cx, cy;
-function resize() {
-  W = canvas.width = window.innerWidth;
-  H = canvas.height = window.innerHeight;
+let W, H, cx, cy, heartScale, startDistMin, startDistMax;
+function getViewportSize() {
+  // на мобильных браузерах (особенно iOS Safari) window.innerHeight скачет
+  // из-за скрывающихся панелей — visualViewport даёт более стабильное значение
+  if (window.visualViewport) {
+    return { w: window.visualViewport.width, h: window.visualViewport.height };
+  }
+  return { w: window.innerWidth, h: window.innerHeight };
+}
+function computeLayout() {
+  const { w, h } = getViewportSize();
+  W = canvas.width = w;
+  H = canvas.height = h;
   cx = W / 2;
   cy = H / 2;
+  const base = Math.min(W, H); // подстраиваемся под МЕНЬШУЮ сторону — важно для портретного телефона
+  heartScale = (base * CONFIG.heartWidthFrac) / 32; // 32 = полная ширина кривой сердца в "сырых" единицах
+  startDistMin = base * CONFIG.startDistMinFrac;
+  startDistMax = base * CONFIG.startDistMaxFrac;
 }
-window.addEventListener('resize', resize);
-resize();
+window.addEventListener('resize', () => { computeLayout(); });
+if (window.visualViewport) {
+  window.visualViewport.addEventListener('resize', () => { computeLayout(); });
+}
+computeLayout();
 
 // ---------- Параметрическая кривая сердца (цель для частиц) ----------
 function heartPoint(t, scale) {
@@ -147,10 +172,8 @@ function rgbToCss({r,g,b}, a) { return a === undefined ? `rgb(${r}, ${g}, ${b})`
 // ---------- Кривые сглаживания (easing) ----------
 const EASINGS = {
   linear: (x) => x,
+  easeOutQuad: (x) => 1 - (1 - x) * (1 - x),
   easeOutCubic: (x) => 1 - Math.pow(1 - x, 3),
-  // ещё мягче на старте и с более долгим "дотягиванием" в конце —
-  // из-за этого полёт частиц ощущается более плавным и тягучим,
-  // ближе к неспешному темпу оригинала
   easeOutQuint: (x) => 1 - Math.pow(1 - x, 5),
   easeInOutCubic: (x) => x < 0.5 ? 4*x*x*x : 1 - Math.pow(-2*x+2, 3)/2
 };
@@ -163,13 +186,13 @@ function ease(name, x) {
 class Particle {
   constructor(index, total) {
     const angle = Math.random() * Math.PI * 2;
-    const dist = CONFIG.startDistMin + Math.random() * (CONFIG.startDistMax - CONFIG.startDistMin);
+    const dist = startDistMin + Math.random() * (startDistMax - startDistMin);
     this.sx = cx + dist * Math.cos(angle); // старт X
     this.sy = cy + dist * Math.sin(angle); // старт Y
 
     // целевая точка на контуре сердца — распределена по индексу частицы
     const t = (index / total) * Math.PI * 2;
-    const target = heartPoint(t, CONFIG.heartScale);
+    const target = heartPoint(t, heartScale);
     this.tx = cx + target.x;
     this.ty = cy + target.y;
   }
@@ -190,6 +213,7 @@ let startTime = 0;
 let lastT = 0;
 
 function initScene() {
+  computeLayout();
   particles = [];
   for (let i = 0; i < CONFIG.particleCount; i++) {
     particles.push(new Particle(i, CONFIG.particleCount));
@@ -205,7 +229,7 @@ function initScene() {
 // красный держится только на старте (пока частицы ещё скучены в центре),
 // затем быстро уходит в пурпурный и надолго там задерживается
 function colorAt(t) {
-  const hueT = ease('easeOutQuint', t);
+  const hueT = ease(CONFIG.hueEasing, t);
   let hue = CONFIG.hueStart + (CONFIG.hueEnd - CONFIG.hueStart) * hueT;
   hue = ((hue % 1) + 1) % 1;
   return hsvToRgb(hue, 0.95, 1);
