@@ -1,634 +1,284 @@
 <!DOCTYPE html>
 <html lang="ru">
 <head>
-  <meta charset="UTF-8" />
-  <title>Весеннее поздравление</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=yes" />
-  <style>
-    :root {
-      --bg-overlay: rgba(5, 10, 25, 0.3);
-      --accent: #ff7bb0;
-      --accent-soft: rgba(255, 123, 176, 0.24);
-      --text-main: #fdfbff;
-      --text-muted: #d8d0e5;
-      --card-bg: rgba(10, 14, 35, 0.6);
-      --card-bg-light: rgba(255, 255, 255, 0.98);
-      --shadow-soft: 0 20px 40px rgba(0, 0, 0, 0.45);
-      --border-light: 1px solid rgba(255, 255, 255, 0.25);
-      --border-dark: 1px solid rgba(255, 182, 214, 0.6);
-      --radius-lg: 24px;
-      --radius-pill: 999px;
-      --font-main: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
-      --transition-speed: 0.6s;
-    }
-
-    *,
-    *::before,
-    *::after {
-      box-sizing: border-box;
-    }
-
-    html,
-    body {
-      margin: 0;
-      padding: 0;
-      height: 100%;
-      width: 100%;
-      overflow-x: hidden;
-    }
-
-    body {
-      font-family: var(--font-main);
-      color: var(--text-main);
-      background: #1a0f25; /* Цвет фона на случай, если страницы не загрузились */
-    }
-
-    /* Контейнер для страниц — используем Flexbox для переключения */
-    .pages-container {
-      position: relative;
-      width: 100%;
-      min-height: 100vh;
-      overflow: hidden;
-    }
-
-    .page {
-      width: 100%;
-      min-height: 100vh;
-      display: flex;
-      transition: opacity var(--transition-speed) cubic-bezier(0.4, 0, 0.2, 1),
-                  filter var(--transition-speed) cubic-bezier(0.4, 0, 0.2, 1);
-      will-change: opacity, filter;
-      position: absolute;
-      top: 0;
-      left: 0;
-    }
-
-    /* Лендинг страница */
-    .page--landing {
-      background-image: url("https://i.pinimg.com/originals/08/87/97/088797a00c0e8348f1e0c635c123b3ca.jpg");
-      background-size: cover;
-      background-position: center;
-      background-repeat: no-repeat;
-      background-attachment: fixed;
-      justify-content: center;
-      align-items: center;
-      opacity: 1;
-      filter: blur(0);
-      z-index: 2; /* Поверх, когда активна */
-    }
-
-    .page--landing.hide {
-      opacity: 0;
-      filter: blur(10px);
-      pointer-events: none;
-      z-index: 1; /* Убираем вниз */
-    }
-
-    .overlay {
-      position: fixed;
-      inset: 0;
-      background: radial-gradient(circle at top, rgba(255, 255, 255, 0.1), transparent 70%),
-                  linear-gradient(to bottom, rgba(4, 7, 26, 0.2), rgba(2, 4, 12, 0.3));
-      pointer-events: none;
-      z-index: 1;
-    }
-
-    .landing-content {
-      position: relative;
-      z-index: 2;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      width: 100%;
-      padding: 16px;
-    }
-
-    .landing-card {
-      background: linear-gradient(135deg, rgba(10, 14, 35, 0.55), rgba(26, 18, 51, 0.6));
-      border-radius: var(--radius-lg);
-      padding: 24px 28px;
-      box-shadow: var(--shadow-soft);
-      border: var(--border-light);
-      backdrop-filter: blur(8px);
-      text-align: center;
-      max-width: 320px;
-      width: 100%;
-      margin: 0 auto;
-      animation: fadeInScale 0.8s ease-out;
-    }
-
-    @keyframes fadeInScale {
-      0% {
-        opacity: 0;
-        transform: scale(0.8);
-      }
-      100% {
-        opacity: 1;
-        transform: scale(1);
-      }
-    }
-
-    .landing-title {
-      margin: 0 0 16px;
-      font-size: 22px;
-      letter-spacing: 0.06em;
-      text-transform: uppercase;
-      text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
-    }
-
-    .btn-primary {
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
-      padding: 10px 28px;
-      border-radius: var(--radius-pill);
-      border: var(--border-light);
-      background: linear-gradient(135deg, var(--accent), #ffafc7);
-      color: #1a0f25;
-      font-weight: 600;
-      font-size: 15px;
-      text-decoration: none;
-      letter-spacing: 0.1em;
-      text-transform: uppercase;
-      box-shadow: 0 12px 28px rgba(255, 123, 176, 0.5);
-      cursor: pointer;
-      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-      width: fit-content;
-      min-width: 140px;
-      -webkit-tap-highlight-color: transparent;
-      position: relative;
-      overflow: hidden;
-    }
-
-    .btn-primary::before {
-      content: '';
-      position: absolute;
-      top: 50%;
-      left: 50%;
-      width: 0;
-      height: 0;
-      border-radius: 50%;
-      background: rgba(255, 255, 255, 0.3);
-      transform: translate(-50%, -50%);
-      transition: width 0.6s ease-out, height 0.6s ease-out;
-    }
-
-    .btn-primary:hover::before {
-      width: 300px;
-      height: 300px;
-    }
-
-    .btn-primary:hover {
-      transform: translateY(-1px) scale(1.01);
-      box-shadow: 0 16px 32px rgba(255, 123, 176, 0.6);
-      filter: brightness(1.03);
-    }
-
-    .btn-primary:active {
-      transform: translateY(1px) scale(0.98);
-      box-shadow: 0 8px 20px rgba(255, 123, 176, 0.4);
-    }
-
-    /* Страница с поздравлением */
-    .page--greeting {
-      background: radial-gradient(circle at top left, #ffe2f1 0, #fef1ff 28%, #f4f1ff 55%, #e7ecff 100%);
-      color: #2a1535;
-      justify-content: center;
-      align-items: flex-start;
-      padding: 16px;
-      opacity: 0;
-      filter: blur(10px);
-      pointer-events: none;
-      overflow-y: auto;
-      z-index: 1; /* Внизу, когда не активна */
-    }
-
-    .page--greeting.show {
-      opacity: 1;
-      filter: blur(0);
-      pointer-events: auto;
-      z-index: 2; /* Поверх, когда активна */
-    }
-
-    .greeting-content {
-      width: 100%;
-      max-width: 680px;
-      margin: auto;
-      animation: slideUpFade 0.8s ease-out 0.2s both;
-    }
-
-    @keyframes slideUpFade {
-      0% {
-        opacity: 0;
-        transform: translateY(30px);
-      }
-      100% {
-        opacity: 1;
-        transform: translateY(0);
-      }
-    }
-
-    .greeting-card {
-      background: var(--card-bg-light);
-      border-radius: 24px;
-      padding: 28px 24px;
-      box-shadow: 0 20px 50px rgba(88, 56, 116, 0.3);
-      border: 2px solid rgba(255, 182, 214, 0.9);
-      position: relative;
-      overflow: hidden;
-      transform-origin: center;
-    }
-
-    .greeting-card::before {
-      content: "";
-      position: absolute;
-      inset: -40px;
-      background:
-        radial-gradient(circle at top right, rgba(255, 182, 214, 0.3), transparent 60%),
-        radial-gradient(circle at bottom left, rgba(182, 198, 255, 0.3), transparent 60%);
-      opacity: 0.8;
-      z-index: -1;
-      animation: pulseGradient 4s ease-in-out infinite;
-    }
-
-    @keyframes pulseGradient {
-      0%, 100% {
-        opacity: 0.6;
-        transform: scale(1);
-      }
-      50% {
-        opacity: 0.9;
-        transform: scale(1.05);
-      }
-    }
-
-    .greeting-card::after {
-      content: "";
-      position: absolute;
-      inset: 0;
-      border-radius: 24px;
-      border: 1px solid rgba(255, 255, 255, 0.5);
-      pointer-events: none;
-    }
-
-    .greeting-title {
-      margin: 0 0 14px;
-      font-size: 28px;
-      color: #2a1535;
-      line-height: 1.2;
-      animation: slideInLeft 0.6s ease-out;
-    }
-
-    @keyframes slideInLeft {
-      0% {
-        opacity: 0;
-        transform: translateX(-20px);
-      }
-      100% {
-        opacity: 1;
-        transform: translateX(0);
-      }
-    }
-
-    .greeting-card p {
-      margin: 10px 0;
-      line-height: 1.6;
-      font-size: 16px;
-      color: #3b2445;
-      animation: fadeIn 0.6s ease-out;
-      animation-fill-mode: both;
-    }
-
-    .greeting-card p:nth-child(2) { animation-delay: 0.1s; }
-    .greeting-card p:nth-child(3) { animation-delay: 0.2s; }
-    .greeting-card p:nth-child(4) { animation-delay: 0.3s; }
-    .greeting-card p:nth-child(5) { animation-delay: 0.4s; }
-
-    @keyframes fadeIn {
-      0% {
-        opacity: 0;
-      }
-      100% {
-        opacity: 1;
-      }
-    }
-
-    .greeting-sign {
-      margin-top: 20px;
-      font-weight: 600;
-      color: #9b3971;
-      font-size: 18px;
-      animation: scaleIn 0.6s ease-out 0.5s both;
-    }
-
-    @keyframes scaleIn {
-      0% {
-        opacity: 0;
-        transform: scale(0.8);
-      }
-      100% {
-        opacity: 1;
-        transform: scale(1);
-      }
-    }
-
-    .link-back {
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
-      margin-top: 20px;
-      font-size: 14px;
-      text-decoration: none;
-      color: #7b3a7f;
-      padding: 8px 20px;
-      border-radius: 999px;
-      background: var(--accent-soft);
-      border: 2px solid rgba(255, 123, 176, 0.5);
-      backdrop-filter: blur(4px);
-      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-      cursor: pointer;
-      width: fit-content;
-      -webkit-tap-highlight-color: transparent;
-      position: relative;
-      overflow: hidden;
-    }
-
-    .link-back::before {
-      content: '';
-      position: absolute;
-      top: 50%;
-      left: 50%;
-      width: 0;
-      height: 0;
-      border-radius: 50%;
-      background: rgba(255, 255, 255, 0.5);
-      transform: translate(-50%, -50%);
-      transition: width 0.6s ease-out, height 0.6s ease-out;
-    }
-
-    .link-back:hover::before {
-      width: 200px;
-      height: 200px;
-    }
-
-    .link-back:hover {
-      background: rgba(255, 123, 176, 0.28);
-      transform: translateY(-1px);
-      box-shadow: 0 8px 18px rgba(177, 130, 204, 0.3);
-    }
-
-    .link-back:active {
-      transform: translateY(1px);
-    }
-
-    /* Эффект загрузки */
-    .loading-effect {
-      position: fixed;
-      top: 0;
-      left: 0;
-      width: 100%;
-      height: 100%;
-      background: linear-gradient(135deg, #ff7bb0, #ffafc7);
-      z-index: 9999;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      opacity: 0;
-      pointer-events: none;
-      transition: opacity 0.4s ease-out;
-    }
-
-    .loading-effect.show {
-      opacity: 1;
-      pointer-events: none;
-    }
-
-    .loading-spinner {
-      width: 50px;
-      height: 50px;
-      border: 3px solid rgba(255, 255, 255, 0.3);
-      border-radius: 50%;
-      border-top-color: #fff;
-      animation: spin 1s ease-in-out infinite;
-    }
-
-    @keyframes spin {
-      to { transform: rotate(360deg); }
-    }
-
-    /* Стили для телефонов */
-    @media (max-width: 480px) {
-      .landing-card {
-        padding: 20px 16px;
-        max-width: 280px;
-        backdrop-filter: blur(10px);
-      }
-      
-      .landing-title {
-        font-size: 20px;
-        margin-bottom: 14px;
-      }
-      
-      .btn-primary {
-        padding: 8px 20px;
-        font-size: 14px;
-        min-width: 120px;
-      }
-      
-      .greeting-card {
-        padding: 20px 16px;
-      }
-      
-      .greeting-title {
-        font-size: 24px;
-      }
-      
-      .greeting-card p {
-        font-size: 15px;
-        margin: 8px 0;
-      }
-      
-      .greeting-sign {
-        font-size: 16px;
-        margin-top: 16px;
-      }
-      
-      .link-back {
-        padding: 8px 18px;
-        font-size: 13px;
-        margin-top: 16px;
-      }
-    }
-
-    /* Для очень маленьких экранов */
-    @media (max-width: 360px) {
-      .landing-card {
-        max-width: 260px;
-      }
-      
-      .landing-title {
-        font-size: 18px;
-      }
-      
-      .btn-primary {
-        padding: 6px 16px;
-        font-size: 13px;
-        min-width: 100px;
-      }
-      
-      .greeting-title {
-        font-size: 22px;
-      }
-      
-      .greeting-card p {
-        font-size: 14px;
-      }
-    }
-
-    /* Touch-устройства */
-    @media (hover: none) and (pointer: coarse) {
-      .btn-primary, .link-back {
-        transition: transform 0.2s ease-out;
-      }
-      
-      .btn-primary:active {
-        transform: scale(0.96);
-      }
-      
-      .link-back:active {
-        transform: scale(0.96);
-      }
-      
-      .btn-primary::before,
-      .link-back::before {
-        display: none;
-      }
-    }
-  </style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Nebula Heart</title>
+<style>
+  :root{
+    --bg: #000000;
+  }
+  html, body {
+    margin: 0;
+    padding: 0;
+    width: 100%;
+    height: 100%;
+    background: var(--bg);
+    overflow: hidden;
+  }
+  canvas {
+    display: block;
+    background: var(--bg);
+  }
+  /* Небольшая подпись в углу — можно убрать */
+  .label {
+    position: fixed;
+    left: 12px;
+    bottom: 10px;
+    color: #666;
+    font: 12px system-ui, sans-serif;
+    letter-spacing: 1px;
+    user-select: none;
+    pointer-events: none;
+  }
+  .hint {
+    position: fixed;
+    right: 12px;
+    bottom: 10px;
+    color: #555;
+    font: 11px system-ui, sans-serif;
+    user-select: none;
+    pointer-events: none;
+  }
+</style>
 </head>
 <body>
-  <!-- Эффект загрузки -->
-  <div id="loadingEffect" class="loading-effect">
-    <div class="loading-spinner"></div>
-  </div>
+<canvas id="c"></canvas>
+<div class="label">Nebula Heart</div>
+<div class="hint">клик / пробел — перезапустить</div>
 
-  <!-- Контейнер для страниц (исправляет тряску) -->
-  <div class="pages-container">
-    <!-- Лендинг страница -->
-    <div id="landingPage" class="page page--landing">
-      <div class="overlay"></div>
-      <main class="landing-content">
-        <div class="landing-card">
-          <h1 class="landing-title">Нажми на кнопку</h1>
-          <button id="showGreeting" class="btn-primary">Posh</button>
-        </div>
-      </main>
-    </div>
+<script>
+/* ============================================================
+   NEBULA HEART — рой "черепашек" (turtle), стягивающихся
+   в контур сердца, как в оригинале на Python/turtle.
+   Переписано на чистый HTML5 Canvas + JS одним файлом,
+   чтобы открывалось прямо в браузере (в т.ч. на GitHub Pages)
+   без установки Python.
 
-    <!-- Страница с поздравлением -->
-    <div id="greetingPage" class="page page--greeting">
-      <main class="greeting-content">
-        <section class="greeting-card">
-          <h1 class="greeting-title">Моя дорогая!</h1>
-          <p>С праздником весны! Хочу пожелать тебе чтобы твоя жизнь была похожа на самый лучший фанфик который ты когда-либо читала только хэппи-энд никаких драм только сладость и нежность — ну может чуть-чуть пикантности как ты любишь)</p>
-          <p>Спасибо что делишься со мной своими увлечениями.</p>
-          <p>Ведь твои увлечения делают тебя той самой удивительной какой я тебя знаю. И мне безумно приятно что ты открываешь мне двери в свои миры.</p>
-          <p>Пусть в нашем общем будущем будет не меньше тепла, уюта и радости, чем в твоих самых любимых историях.</p>
-          <p class="greeting-sign">С праздником, моя прекрасная!</p>
-          <button id="showLanding" class="link-back">← Назад</button>
-        </section>
-      </main>
-    </div>
-  </div>
+   КАК ЭТО РАБОТАЕТ В ОРИГИНАЛЕ (восстановлено по видео):
+     - swarm_size=300 "частиц" стартуют в случайных точках
+       вокруг центра: random.uniform(0, 2*pi) по углу и
+       random.uniform(50, 300) по дистанции;
+     - у каждой частицы есть своя целевая точка на кривой
+       сердца (индекс i задаёт положение на контуре);
+     - экран НЕ очищается и линии НЕ гаснут — turtle просто
+       рисует новый отрезок пути каждый "кадр" (frame),
+       поэтому все штрихи остаются на экране навсегда;
+     - цвет — общий для всех частиц в данный момент времени
+       (не свой у каждой) и зависит от номера кадра:
+       в начале анимации (frame≈0) — красный, к концу
+       (frame≈total) — фиолетовый/пурпурный, через
+       colorsys.hsv_to_rgb;
+     - из-за того что линии рисуются с аддитивным наложением
+       (glow/lighter), в центре, где на старте все частицы
+       ещё скучены и линии короткие и часто пересекаются,
+       возникает яркое красное свечение, а к контуру сердца
+       расходятся пурпурные лучи — именно это видно в
+       оригинальном ролике.
+   ============================================================ */
 
-  <script>
-    const landingPage = document.getElementById('landingPage');
-    const greetingPage = document.getElementById('greetingPage');
-    const showGreetingBtn = document.getElementById('showGreeting');
-    const showLandingBtn = document.getElementById('showLanding');
-    const loadingEffect = document.getElementById('loadingEffect');
+// ---------- НАСТРОЙКИ (можно менять для улучшения/вариаций) ----------
+const CONFIG = {
+  particleCount: 300,       // swarm_size в оригинале
+  durationMs: 16000,        // сколько реального времени идёт сборка сердца (было слишком быстро — увеличено)
+  startDistMin: 50,         // random.uniform(50, 300) в оригинале
+  startDistMax: 300,
+  heartScale: 13,           // масштаб кривой сердца (высота ~ heartScale*21)
+  // Оттенок идёт от красного к фиолетовому КОРОТКИМ путём по кругу HSV —
+  // через розовый/пурпурный (а не через жёлтый-зелёный-голубой).
+  // hueEnd отрицательный специально: 0 -> -0.18 при переводе в hue
+  // соответствует движению 0 -> 0.82 "в другую сторону" колеса.
+  hueStart: 0.0,            // оттенок в начале анимации (0 = красный)
+  hueEnd: -0.18,            // оттенок в конце анимации (эквивалент 0.82 = фиолетово-розовый)
+  lineWidth: 1.1,           // толщина основного (чёткого) штриха
+  lineAlpha: 0.30,          // прозрачность основного штриха
+  glowLineWidth: 4.5,       // толщина второго, размытого штриха (создаёт мягкое сияние)
+  glowLineAlpha: 0.10,      // прозрачность размытого штриха
+  glow: 10,                 // сила свечения (shadowBlur) у чёткого штриха
+  glowBlurExtra: 18,        // сила свечения у размытого штриха — сильнее, для мягкого ореола
+  moveEasing: 'easeOutQuint', // характер сближения частиц к цели: чем "мягче" в начале, тем более тягучим кажется полёт
+  restartOnClick: true,     // клик / пробел — перезапуск анимации
+  autoRestartDelayMs: 4000  // пауза перед авто-рестартом после завершения (null — не рестартовать)
+};
 
-    function showGreetingPage() {
-      // Показываем эффект загрузки
-      loadingEffect.classList.add('show');
-      
-      // Добавляем классы для анимации
-      landingPage.classList.add('hide');
-      
-      // Небольшая задержка перед показом второй страницы
-      setTimeout(() => {
-        greetingPage.classList.add('show');
-        
-        // Скрываем эффект загрузки
-        setTimeout(() => {
-          loadingEffect.classList.remove('show');
-        }, 400);
-        
-        window.scrollTo({
-          top: 0,
-          behavior: 'smooth'
-        });
-      }, 300);
+const canvas = document.getElementById('c');
+const ctx = canvas.getContext('2d');
+
+let W, H, cx, cy;
+function resize() {
+  W = canvas.width = window.innerWidth;
+  H = canvas.height = window.innerHeight;
+  cx = W / 2;
+  cy = H / 2;
+}
+window.addEventListener('resize', resize);
+resize();
+
+// ---------- Параметрическая кривая сердца (цель для частиц) ----------
+function heartPoint(t, scale) {
+  const x = 16 * Math.pow(Math.sin(t), 3);
+  const y = 13 * Math.cos(t) - 5 * Math.cos(2 * t) - 2 * Math.cos(3 * t) - Math.cos(4 * t);
+  return {
+    x: x * scale,
+    y: -y * scale // инверсия Y — в canvas ось Y растёт вниз
+  };
+}
+
+// ---------- HSV -> RGB / RGBA (как colorsys.hsv_to_rgb в оригинале) ----------
+function hsvToRgb(h, s, v) {
+  let r, g, b;
+  const i = Math.floor(h * 6);
+  const f = h * 6 - i;
+  const p = v * (1 - s);
+  const q = v * (1 - f * s);
+  const t = v * (1 - (1 - f) * s);
+  switch (i % 6) {
+    case 0: r = v; g = t; b = p; break;
+    case 1: r = q; g = v; b = p; break;
+    case 2: r = p; g = v; b = t; break;
+    case 3: r = p; g = q; b = v; break;
+    case 4: r = t; g = p; b = v; break;
+    case 5: r = v; g = p; b = q; break;
+  }
+  return { r: Math.round(r*255), g: Math.round(g*255), b: Math.round(b*255) };
+}
+function rgbToCss({r,g,b}, a) { return a === undefined ? `rgb(${r}, ${g}, ${b})` : `rgba(${r}, ${g}, ${b}, ${a})`; }
+
+// ---------- Кривые сглаживания (easing) ----------
+const EASINGS = {
+  linear: (x) => x,
+  easeOutCubic: (x) => 1 - Math.pow(1 - x, 3),
+  // ещё мягче на старте и с более долгим "дотягиванием" в конце —
+  // из-за этого полёт частиц ощущается более плавным и тягучим,
+  // ближе к неспешному темпу оригинала
+  easeOutQuint: (x) => 1 - Math.pow(1 - x, 5),
+  easeInOutCubic: (x) => x < 0.5 ? 4*x*x*x : 1 - Math.pow(-2*x+2, 3)/2
+};
+function ease(name, x) {
+  const fn = EASINGS[name] || EASINGS.linear;
+  return fn(Math.min(1, Math.max(0, x)));
+}
+
+// ---------- Частица ("turtle") ----------
+class Particle {
+  constructor(index, total) {
+    const angle = Math.random() * Math.PI * 2;
+    const dist = CONFIG.startDistMin + Math.random() * (CONFIG.startDistMax - CONFIG.startDistMin);
+    this.sx = cx + dist * Math.cos(angle); // старт X
+    this.sy = cy + dist * Math.sin(angle); // старт Y
+
+    // целевая точка на контуре сердца — распределена по индексу частицы
+    const t = (index / total) * Math.PI * 2;
+    const target = heartPoint(t, CONFIG.heartScale);
+    this.tx = cx + target.x;
+    this.ty = cy + target.y;
+  }
+  // позиция при глобальном прогрессе анимации t (0..1)
+  positionAt(t) {
+    const e = ease(CONFIG.moveEasing, t);
+    return {
+      x: this.sx + (this.tx - this.sx) * e,
+      y: this.sy + (this.ty - this.sy) * e
+    };
+  }
+}
+
+let particles = [];
+let running = false;
+let restartTimer = null;
+let startTime = 0;
+let lastT = 0;
+
+function initScene() {
+  particles = [];
+  for (let i = 0; i < CONFIG.particleCount; i++) {
+    particles.push(new Particle(i, CONFIG.particleCount));
+  }
+  ctx.fillStyle = '#000000';
+  ctx.fillRect(0, 0, W, H);
+  ctx.lineCap = 'round';
+  lastT = 0;
+  startTime = 0;
+}
+
+// цвет для данного момента t (0..1) — та же ease-кривая, что и для движения:
+// красный держится только на старте (пока частицы ещё скучены в центре),
+// затем быстро уходит в пурпурный и надолго там задерживается
+function colorAt(t) {
+  const hueT = ease('easeOutQuint', t);
+  let hue = CONFIG.hueStart + (CONFIG.hueEnd - CONFIG.hueStart) * hueT;
+  hue = ((hue % 1) + 1) % 1;
+  return hsvToRgb(hue, 0.95, 1);
+}
+
+function drawSegment(t0, t1) {
+  const rgb = colorAt(t1);
+
+  // 1) мягкое размытое сияние (широкий, очень прозрачный штрих с сильным blur)
+  ctx.shadowBlur = CONFIG.glowBlurExtra;
+  ctx.shadowColor = rgbToCss(rgb);
+  ctx.strokeStyle = rgbToCss(rgb, CONFIG.glowLineAlpha);
+  ctx.lineWidth = CONFIG.glowLineWidth;
+  ctx.beginPath();
+  for (const p of particles) {
+    const a = p.positionAt(t0);
+    const b = p.positionAt(t1);
+    ctx.moveTo(a.x, a.y);
+    ctx.lineTo(b.x, b.y);
+  }
+  ctx.stroke();
+
+  // 2) чёткая яркая линия поверх (тонкий штрих с умеренным blur)
+  ctx.shadowBlur = CONFIG.glow;
+  ctx.strokeStyle = rgbToCss(rgb, CONFIG.lineAlpha);
+  ctx.lineWidth = CONFIG.lineWidth;
+  ctx.beginPath();
+  for (const p of particles) {
+    const a = p.positionAt(t0);
+    const b = p.positionAt(t1);
+    ctx.moveTo(a.x, a.y);
+    ctx.lineTo(b.x, b.y);
+  }
+  ctx.stroke();
+}
+
+function animate(now) {
+  if (!running) return;
+  if (!startTime) startTime = now;
+  const elapsed = now - startTime;
+  const t = Math.min(1, elapsed / CONFIG.durationMs);
+
+  drawSegment(lastT, t);
+  lastT = t;
+
+  if (t < 1) {
+    requestAnimationFrame(animate);
+  } else {
+    running = false;
+    if (CONFIG.autoRestartDelayMs !== null) {
+      restartTimer = setTimeout(restart, CONFIG.autoRestartDelayMs);
     }
+  }
+}
 
-    function showLandingPage() {
-      // Показываем эффект загрузки
-      loadingEffect.classList.add('show');
-      
-      // Добавляем классы для анимации
-      greetingPage.classList.remove('show');
-      
-      // Небольшая задержка перед показом первой страницы
-      setTimeout(() => {
-        landingPage.classList.remove('hide');
-        
-        // Скрываем эффект загрузки
-        setTimeout(() => {
-          loadingEffect.classList.remove('show');
-        }, 400);
-        
-        window.scrollTo({
-          top: 0,
-          behavior: 'smooth'
-        });
-      }, 300);
-    }
+function restart() {
+  clearTimeout(restartTimer);
+  initScene();
+  running = true;
+  requestAnimationFrame(animate);
+}
 
-    showGreetingBtn.addEventListener('click', showGreetingPage);
-    showLandingBtn.addEventListener('click', showLandingPage);
+if (CONFIG.restartOnClick) {
+  window.addEventListener('click', restart);
+  window.addEventListener('keydown', (e) => {
+    if (e.code === 'Space') restart();
+  });
+}
 
-    // Свайпы для мобильных
-    let touchstartX = 0;
-    let touchendX = 0;
-
-    function checkSwipe() {
-      const minSwipeDistance = 80;
-      if (touchendX < touchstartX - minSwipeDistance && greetingPage.classList.contains('show')) {
-        showLandingPage();
-      }
-    }
-
-    document.addEventListener('touchstart', e => {
-      touchstartX = e.changedTouches[0].screenX;
-    });
-
-    document.addEventListener('touchend', e => {
-      touchendX = e.changedTouches[0].screenX;
-      checkSwipe();
-    });
-
-    // Защита от двойного нажатия
-    let lastClickTime = 0;
-    document.querySelectorAll('button').forEach(button => {
-      button.addEventListener('click', (e) => {
-        const currentTime = new Date().getTime();
-        if (currentTime - lastClickTime < 300) {
-          e.preventDefault();
-          return;
-        }
-        lastClickTime = currentTime;
-      });
-    });
-  </script>
+// ---------- Запуск ----------
+initScene();
+running = true;
+requestAnimationFrame(animate);
+</script>
 </body>
 </html>
