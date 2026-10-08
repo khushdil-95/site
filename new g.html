@@ -1,291 +1,239 @@
 <!DOCTYPE html>
 <html lang="ru">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Обувной магазин «Шаг»</title>
-  <style>
-    /* весь CSS из исходного кода, сгруппирован */
-    body {
-      font-family: Verdana, Arial, sans-serif;
-      background: #f4efe6;
-      margin: 0;
-      color: #222;
-    }
-    a {
-      color: #7a2e0e;
-    }
-    .h {
-      background: #7a2e0e;
-      color: #fff;
-      padding: 12px;
-      text-align: center;
-    }
-    .h h1 {
-      margin: 0;
-      font-family: Georgia, serif;
-    }
-    .n {
-      background: #d9c7a8;
-      padding: 8px;
-      text-align: center;
-      border-bottom: 2px solid #7a2e0e;
-    }
-    .n a {
-      display: inline-block;
-      margin: 3px;
-      padding: 5px 12px;
-      background: #fff;
-      border: 1px solid #7a2e0e;
-      text-decoration: none;
-      cursor: pointer;
-    }
-    .n a.on {
-      background: #7a2e0e;
-      color: #fff;
-    }
-    .w {
-      max-width: 960px;
-      margin: auto;
-      padding: 10px;
-    }
-    .g {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 10px;
-    }
-    .c {
-      width: calc(33% - 8px);
-      min-width: 220px;
-      flex-grow: 1;
-      background: #fff;
-      border: 1px solid #999;
-      padding: 8px;
-      text-align: center;
-      box-sizing: border-box;
-    }
-    .c img {
-      width: 100%;
-      border: 1px solid #ccc;
-    }
-    .p {
-      font-size: 18px;
-      font-weight: bold;
-      color: #7a2e0e;
-    }
-    .b {
-      background: #7a2e0e;
-      color: #fff;
-      border: 0;
-      padding: 7px 14px;
-      cursor: pointer;
-    }
-    .k {
-      background: #fff;
-      border: 2px solid #7a2e0e;
-      padding: 10px;
-      margin-top: 15px;
-    }
-    .f {
-      text-align: center;
-      font-size: 12px;
-      padding: 15px;
-      color: #666;
-    }
-    marquee {
-      /* сохраняем поведение по умолчанию */
-    }
-  </style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Обувной магазин «Шаг»</title>
+<style>
+  body { font-family: Verdana, Arial, sans-serif; background: #f4efe6; margin: 0; color: #222; }
+  a { color: #7a2e0e; }
+  .h { background: #7a2e0e; color: #fff; padding: 12px; text-align: center; }
+  .h h1 { margin: 0; font-family: Georgia, serif; }
+  .n { background: #d9c7a8; padding: 8px; text-align: center; border-bottom: 2px solid #7a2e0e; }
+  .n a { display: inline-block; margin: 3px; padding: 5px 12px; background: #fff; border: 1px solid #7a2e0e; text-decoration: none; cursor: pointer; }
+  .n a.on { background: #7a2e0e; color: #fff; }
+  .w { max-width: 960px; margin: auto; padding: 10px; }
+  .g { display: flex; flex-wrap: wrap; gap: 10px; }
+  .c { width: calc(33% - 8px); min-width: 220px; flex-grow: 1; background: #fff; border: 1px solid #999; padding: 8px; text-align: center; box-sizing: border-box; }
+  .c img { width: 100%; border: 1px solid #ccc; }
+  .p { font-size: 18px; font-weight: bold; color: #7a2e0e; }
+  .b { background: #7a2e0e; color: #fff; border: 0; padding: 7px 14px; cursor: pointer; }
+  .k { background: #fff; border: 2px solid #7a2e0e; padding: 10px; margin-top: 15px; }
+  .f { text-align: center; font-size: 12px; padding: 15px; color: #666; }
+</style>
 </head>
 <body>
-  <!-- Шапка -->
-  <div class="h">
-    <h1>👞 Обувной магазин «Шаг» 👟</h1>
-    <marquee>Бесплатная доставка от 10000 ₽ &bull; Скидка 10% на второй товар &bull; Примерка при получении</marquee>
+
+<!-- Шапка -->
+<div class="h">
+  <h1>👞 Обувной магазин «Шаг» 👟</h1>
+  <marquee>Бесплатная доставка от 10000 ₽ &bull; Скидка 10% на второй товар &bull; Примерка при получении</marquee>
+</div>
+
+<!-- Навигация -->
+<div class="n" id="nav"></div>
+
+<!-- Контент -->
+<div class="w">
+  <div class="g" id="list"></div>
+  <div class="k">
+    <h2>Корзина (<span id="cn">0</span>)</h2>
+    <div id="cart">Пока пусто</div>
+    <p>Итого: <span class="p" id="tot">0 ₽</span>
+      <button class="b" onclick="buy()">Оформить заказ</button>
+    </p>
   </div>
+</div>
 
-  <!-- Навигация -->
-  <div class="n" id="nav"></div>
+<!-- Подвал -->
+<div class="f">© 2026 Обувной магазин «Шаг». Учебный проект.</div>
 
-  <!-- Контент -->
-  <div class="w">
-    <div class="g" id="list"></div>
-    <div class="k">
-      <h2>Корзина (<span id="cn">0</span>)</h2>
-      <div id="cart">Пока пусто</div>
-      <p>Итого: <span class="p" id="tot">0 ₽</span>
-        <button class="b" onclick="buy()">Оформить заказ</button>
-      </p>
-    </div>
-  </div>
+<script>
+// ---------- ДАННЫЕ ----------
+var C = [
+  ['all', 'Все'],
+  ['m', 'Мужская'],
+  ['w', 'Женская'],
+  ['k', 'Детская'],
+  ['s', 'Спортивная']
+];
 
-  <!-- Подвал -->
-  <div class="f">© 2026 Обувной магазин «Шаг». Учебный проект.</div>
+var K = {
+  'Чёрный': '#222',
+  'Коричневый': '#6b3e26',
+  'Белый': '#f2f2f2',
+  'Красный': '#c0392b',
+  'Синий': '#2c5aa0',
+  'Серый': '#888',
+  'Бежевый': '#d8c3a5',
+  'Зелёный': '#3c8d4f',
+  'Розовый': '#e48aa8'
+};
 
-  <script>
-    // ---------- ДАННЫЕ ----------
-    var C = [
-      ['all', 'Все'],
-      ['m', 'Мужская'],
-      ['w', 'Женская'],
-      ['k', 'Детская'],
-      ['s', 'Спортивная']
-    ];
+var Z = {
+  m: [40, 46],
+  w: [36, 41],
+  k: [28, 35],
+  s: [38, 46]
+};
 
-    var K = {
-      'Чёрный': '#222',
-      'Коричневый': '#6b3e26',
-      'Белый': '#f2f2f2',
-      'Красный': '#c0392b',
-      'Синий': '#2c5aa0',
-      'Серый': '#888',
-      'Бежевый': '#d8c3a5',
-      'Зелёный': '#3c8d4f',
-      'Розовый': '#e48aa8'
-    };
+var P = [
+  [1, 'm', 'Туфли Оксфорд', 5990, 0, ['Чёрный', 'Коричневый']],
+  [2, 'm', 'Ботинки Челси', 7490, 1, ['Коричневый', 'Чёрный', 'Серый']],
+  [3, 'm', 'Лоферы классические', 4990, 0, ['Бежевый', 'Коричневый']],
+  [4, 'w', 'Туфли-лодочки', 6290, 2, ['Красный', 'Чёрный', 'Бежевый']],
+  [5, 'w', 'Ботильоны на каблуке', 8190, 1, ['Чёрный', 'Серый', 'Розовый']],
+  [6, 'w', 'Балетки кожаные', 3990, 0, ['Розовый', 'Белый', 'Чёрный']],
+  [7, 'k', 'Кеды детские', 2490, 0, ['Синий', 'Красный', 'Белый']],
+  [8, 'k', 'Ботинки утеплённые', 3790, 1, ['Зелёный', 'Синий']],
+  [9, 'k', 'Сандалии летние', 1990, 3, ['Розовый', 'Синий', 'Белый']],
+  [10, 's', 'Кроссовки Runner', 6990, 0, ['Белый', 'Чёрный', 'Синий']],
+  [11, 's', 'Кроссовки Trail', 7890, 0, ['Зелёный', 'Серый', 'Красный']],
+  [12, 's', 'Высокие кеды Street', 5490, 1, ['Чёрный', 'Белый', 'Красный']]
+];
 
-    var Z = {
-      m: [40, 46],
-      w: [36, 41],
-      k: [28, 35],
-      s: [38, 46]
-    };
+var cur = 'all';
+var cart = [];
 
-    var P = [
-      [1, 'm', 'Туфли Оксфорд', 5990, 0, ['Чёрный', 'Коричневый']],
-      [2, 'm', 'Ботинки Челси', 7490, 1, ['Коричневый', 'Чёрный', 'Серый']],
-      [3, 'm', 'Лоферы классические', 4990, 0, ['Бежевый', 'Коричневый']],
-      [4, 'w', 'Туфли-лодочки', 6290, 2, ['Красный', 'Чёрный', 'Бежевый']],
-      [5, 'w', 'Ботильоны на каблуке', 8190, 1, ['Чёрный', 'Серый', 'Розовый']],
-      [6, 'w', 'Балетки кожаные', 3990, 0, ['Розовый', 'Белый', 'Чёрный']],
-      [7, 'k', 'Кеды детские', 2490, 0, ['Синий', 'Красный', 'Белый']],
-      [8, 'k', 'Ботинки утеплённые', 3790, 1, ['Зелёный', 'Синий']],
-      [9, 'k', 'Сандалии летние', 1990, 3, ['Розовый', 'Синий', 'Белый']],
-      [10, 's', 'Кроссовки Runner', 6990, 0, ['Белый', 'Чёрный', 'Синий']],
-      [11, 's', 'Кроссовки Trail', 7890, 0, ['Зелёный', 'Серый', 'Красный']],
-      [12, 's', 'Высокие кеды Street', 5490, 1, ['Чёрный', 'Белый', 'Красный']]
-    ];
+// ---------- SVG-ИЗОБРАЖЕНИЯ ПОД НАЗВАНИЯ ТОВАРОВ ----------
+// t: 0 - туфли/лоферы/балетки/кроссовки, 1 - ботинки/ботильоны/высокие кеды,
+//    2 - лодочки на каблуке, 3 - сандалии
+function img(col, t, name) {
+  var s = '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 210 130">' +
+    '<rect width="210" height="130" fill="#f4efe6"/>' +
+    '<ellipse cx="105" cy="112" rx="90" ry="7" fill="#0002"/>';
 
-    var cur = 'all';
-    var cart = [];
+  // Рисуем обувь в зависимости от типа
+  if (t == 0) {
+    // Туфли / лоферы / балетки / кроссовки
+    s += '<path d="M18 92V62Q50 58 70 42L88 56Q130 66 182 76Q194 82 194 92Z" fill="' + col + '" stroke="#333" stroke-width="2"/>' +
+         '<path d="M70 42L88 56M80 62L100 70M96 66L116 74" stroke="#fff" stroke-width="3"/>' +
+         '<rect x="14" y="92" width="184" height="12" rx="5" fill="#eee" stroke="#333" stroke-width="2"/>';
+  }
+  if (t == 1) {
+    // Ботинки / ботильоны / высокие кеды
+    s += '<path d="M40 20H88V58Q130 66 182 76Q194 82 194 92H30Z" fill="' + col + '" stroke="#333" stroke-width="2"/>' +
+         '<path d="M40 34H88M40 46H88" stroke="#fff6" stroke-width="3"/>' +
+         '<rect x="14" y="92" width="184" height="12" rx="5" fill="#eee" stroke="#333" stroke-width="2"/>';
+  }
+  if (t == 2) {
+    // Туфли-лодочки на каблуке
+    s += '<path d="M24 30Q50 40 70 70Q120 75 184 84Q196 90 192 96H60Q40 80 24 30Z" fill="' + col + '" stroke="#333" stroke-width="2"/>' +
+         '<path d="M30 30L26 104H36L48 80" fill="#333"/>' +
+         '<rect x="58" y="96" width="136" height="8" rx="3" fill="#333"/>';
+  }
+  if (t == 3) {
+    // Сандалии
+    s += '<path d="M20 92V74H190V92Z" fill="' + col + '" stroke="#333" stroke-width="2"/>' +
+         '<path d="M60 74Q100 40 140 74M90 74V54" fill="none" stroke="' + col + '" stroke-width="12"/>' +
+         '<path d="M60 74Q100 40 140 74" fill="none" stroke="#333" stroke-width="2"/>' +
+         '<rect x="58" y="96" width="136" height="8" rx="3" fill="#333"/>';
+  }
 
-    // ---------- ГЕНЕРАЦИЯ SVG-ИЗОБРАЖЕНИЯ (заглушка) ----------
-    function img(col, t) {
-      var s = '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 210 130">' +
-        '<rect width="210" height="130" fill="#f4efe6"/>' +
-        '<ellipse cx="105" cy="112" rx="90" ry="7" fill="#0002"/>';
+  // Подпись с названием товара
+  s += '<text x="105" y="124" font-family="Verdana" font-size="8" fill="#666" text-anchor="middle">' + name + '</text>';
 
-      if (t == 0) s += '<path d="M18 92V62Q50 58 70 42L88 56Q130 66 182 76Q194 82 194 92Z" fill="' + col + '" stroke="#333" stroke-width="2"/><path d="M70 42L88 56M80 62L100 70M96 66L116 74" stroke="#fff" stroke-width="3"/>';
-      if (t == 1) s += '<path d="M40 20H88V58Q130 66 182 76Q194 82 194 92H30Z" fill="' + col + '" stroke="#333" stroke-width="2"/><path d="M40 34H88M40 46H88" stroke="#fff6" stroke-width="3"/>';
-      if (t == 2) s += '<path d="M24 30Q50 40 70 70Q120 75 184 84Q196 90 192 96H60Q40 80 24 30Z" fill="' + col + '" stroke="#333" stroke-width="2"/><path d="M30 30L26 104H36L48 80" fill="#333"/>';
-      if (t == 3) s += '<path d="M20 92V74H190V92Z" fill="' + col + '" stroke="#333" stroke-width="2"/><path d="M60 74Q100 40 140 74M90 74V54" fill="none" stroke="' + col + '" stroke-width="12"/><path d="M60 74Q100 40 140 74" fill="none" stroke="#333" stroke-width="2"/>';
+  return 'data:image/svg+xml,' + encodeURIComponent(s + '</svg>');
+}
 
-      if (t != 2) s += '<rect x="14" y="92" width="184" height="12" rx="5" fill="#eee" stroke="#333" stroke-width="2"/>';
-      else s += '<rect x="58" y="96" width="136" height="8" rx="3" fill="#333"/>';
+// ---------- НАВИГАЦИЯ ----------
+function nav() {
+  var h = '';
+  C.forEach(function(c) {
+    h += '<a class="' + (c[0] == cur ? 'on' : '') + '" onclick="go(\'' + c[0] + '\')">' + c[1] + '</a>';
+  });
+  document.getElementById('nav').innerHTML = h;
+}
 
-      return 'data:image/svg+xml,' + encodeURIComponent(s + '</svg>');
+function go(c) {
+  cur = c;
+  nav();
+  show();
+}
+
+// ---------- ВЫВОД ТОВАРОВ ----------
+function show() {
+  var h = '';
+  P.forEach(function(p) {
+    if (cur != 'all' && p[1] != cur) return;
+
+    var o = '', s = '', i;
+    p[5].forEach(function(x) {
+      o += '<option>' + x + '</option>';
+    });
+    for (i = Z[p[1]][0]; i <= Z[p[1]][1]; i++) {
+      s += '<option>' + i + '</option>';
     }
 
-    // ---------- НАВИГАЦИЯ ----------
-    function nav() {
-      var h = '';
-      C.forEach(function(c) {
-        h += '<a class="' + (c[0] == cur ? 'on' : '') + '" onclick="go(\'' + c[0] + '\')">' + c[1] + '</a>';
-      });
-      document.getElementById('nav').innerHTML = h;
-    }
+    h += '<div class="c">' +
+      '<img id="im' + p[0] + '" src="photos/' + p[0] + '.jpg" onerror="fb(' + p[0] + ')" alt="' + p[2] + '">' +
+      '<h3>' + p[2] + '</h3>' +
+      '<div class="p">' + p[3] + ' ₽</div>' +
+      '<p>Цвет: <select id="c' + p[0] + '" onchange="cc(' + p[0] + ')">' + o + '</select><br>' +
+      'Размер: <select id="s' + p[0] + '">' + s + '</select></p>' +
+      '<button class="b" onclick="add(' + p[0] + ')">В корзину</button>' +
+      '</div>';
+  });
+  document.getElementById('list').innerHTML = h;
+}
 
-    function go(c) {
-      cur = c;
-      nav();
-      show();
-    }
+// ---------- ЦВЕТ / FALLBACK КАРТИНКИ ----------
+function cc(id) {
+  var p = P[id - 1];
+  var e = document.getElementById('im' + id);
+  if (e.dataset.f) {
+    e.src = img(K[document.getElementById('c' + id).value], p[4], p[2]);
+  }
+}
 
-    // ---------- ВЫВОД ТОВАРОВ ----------
-    function show() {
-      var h = '';
-      P.forEach(function(p) {
-        if (cur != 'all' && p[1] != cur) return;
+function fb(id) {
+  var e = document.getElementById('im' + id);
+  e.onerror = null;
+  e.dataset.f = 1;
+  cc(id);
+}
 
-        var o = '', s = '', i;
-        // опции цветов
-        p[5].forEach(function(x) {
-          o += '<option>' + x + '</option>';
-        });
-        // опции размеров
-        for (i = Z[p[1]][0]; i <= Z[p[1]][1]; i++) {
-          s += '<option>' + i + '</option>';
-        }
+// ---------- КОРЗИНА ----------
+function add(id) {
+  var p = P[id - 1];
+  cart.push({
+    n: p[2],
+    c: document.getElementById('c' + id).value,
+    s: document.getElementById('s' + id).value,
+    p: p[3]
+  });
+  cr();
+}
 
-        h += '<div class="c">' +
-          '<img id="im' + p[0] + '" src="photos/' + p[0] + '.jpg" onerror="fb(' + p[0] + ')" alt="' + p[2] + '">' +
-          '<h3>' + p[2] + '</h3>' +
-          '<div class="p">' + p[3] + ' ₽</div>' +
-          '<p>Цвет: <select id="c' + p[0] + '" onchange="cc(' + p[0] + ')">' + o + '</select><br>' +
-          'Размер: <select id="s' + p[0] + '">' + s + '</select></p>' +
-          '<button class="b" onclick="add(' + p[0] + ')">В корзину</button>' +
-          '</div>';
-      });
-      document.getElementById('list').innerHTML = h;
-    }
+function del(i) {
+  cart.splice(i, 1);
+  cr();
+}
 
-    // ---------- ЦВЕТ / FALLBACK КАРТИНКИ ----------
-    function cc(id) {
-      var p = P[id - 1];
-      var e = document.getElementById('im' + id);
-      if (e.dataset.f) {
-        e.src = img(K[document.getElementById('c' + id).value], p[4]);
-      }
-    }
+function cr() {
+  var h = '', t = 0;
+  cart.forEach(function(x, i) {
+    t += x.p;
+    h += '<div>' + (i + 1) + '. ' + x.n + ', ' + x.c + ', р. ' + x.s + ' — <b>' + x.p + ' ₽</b> <a href="#" onclick="del(' + i + ');return false">[удалить]</a></div>';
+  });
+  document.getElementById('cart').innerHTML = h || 'Пока пусто';
+  document.getElementById('cn').innerHTML = cart.length;
+  document.getElementById('tot').innerHTML = t + ' ₽';
+}
 
-    function fb(id) {
-      var e = document.getElementById('im' + id);
-      e.onerror = null;
-      e.dataset.f = 1;
-      cc(id);
-    }
+function buy() {
+  if (!cart.length) {
+    alert('Корзина пуста');
+    return;
+  }
+  alert('Спасибо за заказ! Мы свяжемся с вами для подтверждения.');
+  cart = [];
+  cr();
+}
 
-    // ---------- КОРЗИНА ----------
-    function add(id) {
-      var p = P[id - 1];
-      cart.push({
-        n: p[2],
-        c: document.getElementById('c' + id).value,
-        s: document.getElementById('s' + id).value,
-        p: p[3]
-      });
-      cr();
-    }
-
-    function del(i) {
-      cart.splice(i, 1);
-      cr();
-    }
-
-    function cr() {
-      var h = '', t = 0;
-      cart.forEach(function(x, i) {
-        t += x.p;
-        h += '<div>' + (i + 1) + '. ' + x.n + ', ' + x.c + ', р. ' + x.s + ' — <b>' + x.p + ' ₽</b> <a href="#" onclick="del(' + i + ');return false">[удалить]</a></div>';
-      });
-      document.getElementById('cart').innerHTML = h || 'Пока пусто';
-      document.getElementById('cn').innerHTML = cart.length;
-      document.getElementById('tot').innerHTML = t + ' ₽';
-    }
-
-    function buy() {
-      if (!cart.length) {
-        alert('Корзина пуста');
-        return;
-      }
-      alert('Спасибо за заказ! Мы свяжемся с вами для подтверждения.');
-      cart = [];
-      cr();
-    }
-
-    // ---------- ИНИЦИАЛИЗАЦИЯ ----------
-    nav();
-    show();
-  </script>
+// ---------- ИНИЦИАЛИЗАЦИЯ ----------
+nav();
+show();
+</script>
 </body>
 </html>
