@@ -15,7 +15,7 @@
   .w { max-width: 960px; margin: auto; padding: 10px; }
   .g { display: flex; flex-wrap: wrap; gap: 10px; }
   .c { width: calc(33% - 8px); min-width: 220px; flex-grow: 1; background: #fff; border: 1px solid #999; padding: 8px; text-align: center; box-sizing: border-box; }
-  .c img { width: 100%; border: 1px solid #ccc; }
+  .c img { width: 100%; height: 180px; object-fit: cover; border: 1px solid #ccc; }
   .p { font-size: 18px; font-weight: bold; color: #7a2e0e; }
   .b { background: #7a2e0e; color: #fff; border: 0; padding: 7px 14px; cursor: pointer; }
   .k { background: #fff; border: 2px solid #7a2e0e; padding: 10px; margin-top: 15px; }
@@ -95,45 +95,24 @@ var P = [
 var cur = 'all';
 var cart = [];
 
-// ---------- SVG-ИЗОБРАЖЕНИЯ ПОД НАЗВАНИЯ ТОВАРОВ ----------
-// t: 0 - туфли/лоферы/балетки/кроссовки, 1 - ботинки/ботильоны/высокие кеды,
-//    2 - лодочки на каблуке, 3 - сандалии
-function img(col, t, name) {
-  var s = '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 210 130">' +
-    '<rect width="210" height="130" fill="#f4efe6"/>' +
-    '<ellipse cx="105" cy="112" rx="90" ry="7" fill="#0002"/>';
-
-  // Рисуем обувь в зависимости от типа
-  if (t == 0) {
-    // Туфли / лоферы / балетки / кроссовки
-    s += '<path d="M18 92V62Q50 58 70 42L88 56Q130 66 182 76Q194 82 194 92Z" fill="' + col + '" stroke="#333" stroke-width="2"/>' +
-         '<path d="M70 42L88 56M80 62L100 70M96 66L116 74" stroke="#fff" stroke-width="3"/>' +
-         '<rect x="14" y="92" width="184" height="12" rx="5" fill="#eee" stroke="#333" stroke-width="2"/>';
-  }
-  if (t == 1) {
-    // Ботинки / ботильоны / высокие кеды
-    s += '<path d="M40 20H88V58Q130 66 182 76Q194 82 194 92H30Z" fill="' + col + '" stroke="#333" stroke-width="2"/>' +
-         '<path d="M40 34H88M40 46H88" stroke="#fff6" stroke-width="3"/>' +
-         '<rect x="14" y="92" width="184" height="12" rx="5" fill="#eee" stroke="#333" stroke-width="2"/>';
-  }
-  if (t == 2) {
-    // Туфли-лодочки на каблуке
-    s += '<path d="M24 30Q50 40 70 70Q120 75 184 84Q196 90 192 96H60Q40 80 24 30Z" fill="' + col + '" stroke="#333" stroke-width="2"/>' +
-         '<path d="M30 30L26 104H36L48 80" fill="#333"/>' +
-         '<rect x="58" y="96" width="136" height="8" rx="3" fill="#333"/>';
-  }
-  if (t == 3) {
-    // Сандалии
-    s += '<path d="M20 92V74H190V92Z" fill="' + col + '" stroke="#333" stroke-width="2"/>' +
-         '<path d="M60 74Q100 40 140 74M90 74V54" fill="none" stroke="' + col + '" stroke-width="12"/>' +
-         '<path d="M60 74Q100 40 140 74" fill="none" stroke="#333" stroke-width="2"/>' +
-         '<rect x="58" y="96" width="136" height="8" rx="3" fill="#333"/>';
-  }
-
-  // Подпись с названием товара
-  s += '<text x="105" y="124" font-family="Verdana" font-size="8" fill="#666" text-anchor="middle">' + name + '</text>';
-
-  return 'data:image/svg+xml,' + encodeURIComponent(s + '</svg>');
+// ---------- НАСТОЯЩИЕ ФОТО ТОВАРОВ ----------
+// Подставляем настоящее фото обуви в зависимости от названия
+function photo(name) {
+  var PH = {
+    'Туфли Оксфорд':        'https://images.unsplash.com/photo-1614252369475-531eba835eb1?w=400',
+    'Ботинки Челси':        'https://images.unsplash.com/photo-1608256246200-53e635b5b65f?w=400',
+    'Лоферы классические':   'https://images.unsplash.com/photo-1533867617858-e7b97e060509?w=400',
+    'Туфли-лодочки':        'https://images.unsplash.com/photo-1543163521-1bf539c55dd2?w=400',
+    'Ботильоны на каблуке': 'https://images.unsplash.com/photo-1603808033192-082d6919d3e1?w=400',
+    'Балетки кожаные':      'https://images.unsplash.com/photo-1560769629-975ec94e6a86?w=400',
+    'Кеды детские':         'https://images.unsplash.com/photo-1595950653106-6c9ebd614d3a?w=400',
+    'Ботинки утеплённые':   'https://images.unsplash.com/photo-1542840410-3092f99611a3?w=400',
+    'Сандалии летние':      'https://images.unsplash.com/photo-1603487742131-4160ec999306?w=400',
+    'Кроссовки Runner':     'https://images.unsplash.com/photo-1542291026-7eec264c27ff?w=400',
+    'Кроссовки Trail':      'https://images.unsplash.com/photo-1551107696-a4b0c5a0d9a2?w=400',
+    'Высокие кеды Street':  'https://images.unsplash.com/photo-1600269452121-4f2416e55c28?w=400'
+  };
+  return PH[name] || 'https://images.unsplash.com/photo-1549298916-b41d501d3772?w=400';
 }
 
 // ---------- НАВИГАЦИЯ ----------
@@ -166,7 +145,7 @@ function show() {
     }
 
     h += '<div class="c">' +
-      '<img id="im' + p[0] + '" src="photos/' + p[0] + '.jpg" onerror="fb(' + p[0] + ')" alt="' + p[2] + '">' +
+      '<img id="im' + p[0] + '" src="' + photo(p[2]) + '" onerror="fb(' + p[0] + ')" alt="' + p[2] + '">' +
       '<h3>' + p[2] + '</h3>' +
       '<div class="p">' + p[3] + ' ₽</div>' +
       '<p>Цвет: <select id="c' + p[0] + '" onchange="cc(' + p[0] + ')">' + o + '</select><br>' +
@@ -181,16 +160,15 @@ function show() {
 function cc(id) {
   var p = P[id - 1];
   var e = document.getElementById('im' + id);
-  if (e.dataset.f) {
-    e.src = img(K[document.getElementById('c' + id).value], p[4], p[2]);
-  }
+  // Всегда подставляем настоящее фото
+  e.src = photo(p[2]);
 }
 
 function fb(id) {
   var e = document.getElementById('im' + id);
   e.onerror = null;
-  e.dataset.f = 1;
-  cc(id);
+  // Если фото не загрузилось — ставим запасное
+  e.src = 'https://images.unsplash.com/photo-1549298916-b41d501d3772?w=400';
 }
 
 // ---------- КОРЗИНА ----------
