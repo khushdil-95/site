@@ -5,21 +5,138 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Обувной магазин «Шаг»</title>
 <style>
-  body { font-family: Verdana, Arial, sans-serif; background: #f4efe6; margin: 0; color: #222; }
-  a { color: #7a2e0e; }
-  .h { background: #7a2e0e; color: #fff; padding: 12px; text-align: center; }
-  .h h1 { margin: 0; font-family: Georgia, serif; }
-  .n { background: #d9c7a8; padding: 8px; text-align: center; border-bottom: 2px solid #7a2e0e; }
-  .n a { display: inline-block; margin: 3px; padding: 5px 12px; background: #fff; border: 1px solid #7a2e0e; text-decoration: none; cursor: pointer; }
-  .n a.on { background: #7a2e0e; color: #fff; }
+  body {
+    font-family: Verdana, Arial, sans-serif;
+    background: #f7f3ec;          /* тёплый песочный фон */
+    margin: 0;
+    color: #2e2a26;               /* мягкий тёмно-коричневый текст */
+  }
+  a { color: #8a5a2b; }            /* тёплая коричневая ссылка */
+
+  .h {
+    background: linear-gradient(180deg, #6b4a2b 0%, #4e3520 100%);
+    color: #fdf8f0;
+    padding: 14px;
+    text-align: center;
+    border-bottom: 3px solid #3a2616;
+  }
+  .h h1 {
+    margin: 0;
+    font-family: Georgia, serif;
+    letter-spacing: 1px;
+    color: #fdf8f0;
+  }
+  .h marquee { color: #e8dcc8; }
+
+  .n {
+    background: #e9dcc5;           /* бежевая навигация */
+    padding: 8px;
+    text-align: center;
+    border-bottom: 2px solid #b99a6b;
+  }
+  .n a {
+    display: inline-block;
+    margin: 3px;
+    padding: 5px 12px;
+    background: #fdf8f0;
+    border: 1px solid #b99a6b;
+    color: #5a3d22;
+    text-decoration: none;
+    cursor: pointer;
+    border-radius: 4px;
+    transition: all .2s ease;
+  }
+  .n a:hover { background: #f1e6d2; }
+  .n a.on {
+    background: #6b4a2b;
+    color: #fdf8f0;
+    border-color: #4e3520;
+  }
+
   .w { max-width: 960px; margin: auto; padding: 10px; }
+
   .g { display: flex; flex-wrap: wrap; gap: 10px; }
-  .c { width: calc(33% - 8px); min-width: 220px; flex-grow: 1; background: #fff; border: 1px solid #999; padding: 8px; text-align: center; box-sizing: border-box; }
-  .c img { width: 100%; height: 180px; object-fit: cover; border: 1px solid #ccc; }
-  .p { font-size: 18px; font-weight: bold; color: #7a2e0e; }
-  .b { background: #7a2e0e; color: #fff; border: 0; padding: 7px 14px; cursor: pointer; }
-  .k { background: #fff; border: 2px solid #7a2e0e; padding: 10px; margin-top: 15px; }
-  .f { text-align: center; font-size: 12px; padding: 15px; color: #666; }
+
+  .c {
+    width: calc(33% - 8px);
+    min-width: 220px;
+    flex-grow: 1;
+    background: #fdfaf5;           /* почти белый тёплый */
+    border: 1px solid #d8c7a8;
+    padding: 8px;
+    text-align: center;
+    box-sizing: border-box;
+    border-radius: 6px;
+    box-shadow: 0 2px 6px rgba(90, 61, 34, .08);
+    transition: transform .15s ease, box-shadow .15s ease;
+  }
+  .c:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 6px 14px rgba(90, 61, 34, .15);
+  }
+  .c img {
+    width: 100%;
+    height: 180px;
+    object-fit: cover;
+    border: 1px solid #e3d6bd;
+    border-radius: 4px;
+    background: #f1e6d2;
+  }
+  .c h3 {
+    color: #4e3520;
+    font-size: 15px;
+    margin: 10px 0 6px;
+  }
+
+  .p {
+    font-size: 18px;
+    font-weight: bold;
+    color: #8a5a2b;                /* тёплый акцент цены */
+  }
+
+  .b {
+    background: #6b4a2b;
+    color: #fdf8f0;
+    border: 0;
+    padding: 8px 16px;
+    cursor: pointer;
+    border-radius: 4px;
+    font-size: 13px;
+    transition: background .2s ease;
+  }
+  .b:hover { background: #4e3520; }
+
+  select {
+    padding: 3px 5px;
+    border: 1px solid #cbb794;
+    border-radius: 3px;
+    background: #fdfaf5;
+    color: #4e3520;
+    font-size: 13px;
+  }
+
+  .k {
+    background: #fdfaf5;
+    border: 2px solid #b99a6b;
+    padding: 12px;
+    margin-top: 18px;
+    border-radius: 6px;
+    box-shadow: 0 2px 6px rgba(90, 61, 34, .08);
+  }
+  .k h2 {
+    color: #4e3520;
+    margin-top: 0;
+    font-family: Georgia, serif;
+  }
+
+  .f {
+    text-align: center;
+    font-size: 12px;
+    padding: 15px;
+    color: #8a7a63;
+    background: #efe6d4;
+    border-top: 1px solid #d8c7a8;
+  }
 </style>
 </head>
 <body>
@@ -96,7 +213,6 @@ var cur = 'all';
 var cart = [];
 
 // ---------- НАСТОЯЩИЕ ФОТО ТОВАРОВ ----------
-// Подставляем настоящее фото обуви в зависимости от названия
 function photo(name) {
   var PH = {
     'Туфли Оксфорд':        'https://avatars.mds.yandex.net/i?id=d970b2150f56191829bf2890d149cb94_l-16291675-images-thumbs&n=13',
@@ -160,14 +276,12 @@ function show() {
 function cc(id) {
   var p = P[id - 1];
   var e = document.getElementById('im' + id);
-  // Всегда подставляем настоящее фото
   e.src = photo(p[2]);
 }
 
 function fb(id) {
   var e = document.getElementById('im' + id);
   e.onerror = null;
-  // Если фото не загрузилось — ставим запасное
   e.src = 'https://images.unsplash.com/photo-1549298916-b41d501d3772?w=400';
 }
 
