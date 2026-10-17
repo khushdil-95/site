@@ -440,6 +440,8 @@ textarea.field { resize: vertical; min-height: 4.5rem; }
       <textarea class="field" id="note" maxlength="140" placeholder="Например: возьмём тёплый чай с собой" style="margin-top:6px"></textarea>
       <div class="send" style="margin-top:16px">
         <a class="btn go" id="mail" href="#">Отправить на почту</a>
+        <a class="btn alt" id="tg" href="#" target="_blank" rel="noopener">Отправить в Telegram</a>
+        <button class="btn" id="copy" type="button">Скопировать</button>
       </div>
       <p class="after">Чтобы я точно узнал о твоём выборе, отправь это сообщение мне любым удобным способом. Кнопка почты откроет готовое письмо на твоём устройстве, останется нажать «Отправить».</p>
     </section>
@@ -538,4 +540,361 @@ textarea.field { resize: vertical; min-height: 4.5rem; }
       requestAnimationFrame(loop);
     };
     requestAnimationFrame(loop);
-  } else if (lv) { lv
+  } else if (lv) { lv.hidden = true; }
+
+  /* конфетти */
+  var cf = $('confetti');
+  var cctx = cf && cf.getContext ? cf.getContext('2d') : null;
+  var parts = [], cfRun = false;
+  function sizeC() {
+    var dpr = Math.min(window.devicePixelRatio || 1, 2);
+    cf.width = window.innerWidth * dpr; cf.height = window.innerHeight * dpr;
+    cf.style.width = window.innerWidth + 'px'; cf.style.height = window.innerHeight + 'px';
+    cctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+  }
+  function fireConfetti(x, y) {
+    if (reduce || !cctx) return;
+    sizeC();
+    var colors = ['#ff7a3d', '#ffd166', '#3ccf9b', '#e5484d', '#34204f', '#b57bff'];
+    for (var i = 0; i < 130; i++) {
+      var a = -Math.PI / 2 + (Math.random() - 0.5) * 2.4;
+      var v = 6 + Math.random() * 9;
+      parts.push({
+        x: x, y: y, vx: Math.cos(a) * v, vy: Math.sin(a) * v,
+        w: 6 + Math.random() * 6, h: 3 + Math.random() * 4,
+        r: Math.random() * 6.28, vr: (Math.random() - 0.5) * 0.4,
+        c: colors[(Math.random() * colors.length) | 0],
+        leaf: Math.random() < 0.25, life: 110 + Math.random() * 60
+      });
+    }
+    if (!cfRun) { cfRun = true; requestAnimationFrame(cfLoop); }
+  }
+  function cfLoop() {
+    cctx.clearRect(0, 0, window.innerWidth, window.innerHeight);
+    parts = parts.filter(function (p) { return p.life > 0 && p.y < window.innerHeight + 40; });
+    parts.forEach(function (p) {
+      p.life--; p.vy += 0.28; p.vx *= 0.99; p.x += p.vx; p.y += p.vy; p.r += p.vr;
+      cctx.save();
+      cctx.translate(p.x, p.y);
+      cctx.rotate(p.r);
+      cctx.globalAlpha = Math.min(1, p.life / 40);
+      cctx.fillStyle = p.c;
+      if (p.leaf) {
+        cctx.beginPath();
+        cctx.ellipse(0, 0, p.w * 0.5, p.w, 0, 0, 6.2832);
+        cctx.fill();
+      } else {
+        cctx.fillRect(-p.w / 2, -p.h / 2, p.w, p.h);
+      }
+      cctx.restore();
+    });
+    if (parts.length) requestAnimationFrame(cfLoop);
+    else { cfRun = false; cctx.clearRect(0, 0, window.innerWidth, window.innerHeight); }
+  }
+
+  /* искорки за мышкой */
+  var lastS = { x: -100, y: -100 };
+  var glyphs = ['✦', '✧', '❀'];
+  window.addEventListener('pointermove', function (e) {
+    if (reduce || e.pointerType !== 'mouse') return;
+    var dx = e.clientX - lastS.x, dy = e.clientY - lastS.y;
+    if (dx * dx + dy * dy < 500) return;
+    lastS.x = e.clientX; lastS.y = e.clientY;
+    var s = document.createElement('span');
+    s.className = 'spark';
+    s.textContent = glyphs[(Math.random() * glyphs.length) | 0];
+    s.style.left = e.clientX + 'px';
+    s.style.top = e.clientY + 'px';
+    s.style.fontSize = (10 + Math.random() * 9) + 'px';
+    s.style.color = Math.random() < 0.5 ? '#ff7a3d' : '#ffb627';
+    document.body.appendChild(s);
+    s.addEventListener('animationend', function () { s.remove(); });
+  });
+
+  /* кнопки «Да» и «Нет» */
+  var yes = $('yes'), no = $('no'), slot = $('noSlot'), hero = $('hero');
+  var tries = 0, MAX = 9, fled = false, done = false, gaveUp = false, lastDodge = 0;
+  var taunts = [
+    'Кнопка «Нет» застеснялась и убежала.',
+    'Не поймала. Она шустрее, чем кажется.',
+    'Может, нажмёшь «Да»? Она как раз растёт.',
+    'Погода такая красивая, а ты тут кнопки ловишь.',
+    'Эта кнопка вообще умеет останавливаться?',
+    'Ещё немного, и «Нет» сдастся.',
+    'Одна прогулка, тёплый чай и хорошая компания.',
+    'Осталась последняя попытка.'
+  ];
+  function gap(px, py, r) {
+    var dx = Math.max(r.left - px, 0, px - r.right);
+    var dy = Math.max(r.top - py, 0, py - r.bottom);
+    return Math.hypot(dx, dy);
+  }
+  function dodge(px, py) {
+    if (done || gaveUp) return;
+    var now = performance.now();
+    if (now - lastDodge < 180) return;
+    lastDodge = now;
+    tries++;
+    $('tries').textContent = tries;
+    if (tries >= MAX) { giveUp(); return; }
+    $('taunt').textContent = taunts[Math.min(tries - 1, taunts.length - 1)];
+    yes.style.setProperty('--yes-size', Math.min(1.2 + tries * 0.12, 2.1) + 'rem');
+    hero.classList.remove('shake');
+    void hero.offsetWidth;
+    hero.classList.add('shake');
+
+    var r = no.getBoundingClientRect();
+    var w = r.width, h = r.height;
+    if (!fled) {
+      slot.style.width = w + 'px';
+      slot.style.height = h + 'px';
+      no.style.left = r.left + 'px';
+      no.style.top = r.top + 'px';
+      no.classList.add('fled');
+      fled = true;
+      void no.offsetWidth;
+    }
+    var vw = document.documentElement.clientWidth, vh = window.innerHeight;
+    var yr = yes.getBoundingClientRect();
+    var pad = 14;
+    var minD = Math.min(220, Math.min(vw, vh) * 0.4);
+    var best = null, bestD = -1;
+    for (var i = 0; i < 60; i++) {
+      var x = 8 + Math.random() * Math.max(vw - w - 16, 0);
+      var y = 8 + Math.random() * Math.max(vh - h - 16, 0);
+      var d = Math.hypot(x + w / 2 - px, y + h / 2 - py);
+      var hits = x < yr.right + pad && x + w > yr.left - pad && y < yr.bottom + pad && y + h > yr.top - pad;
+      if (hits) continue;
+      if (d > bestD) { bestD = d; best = { x: x, y: y }; }
+      if (d >= minD) break;
+    }
+    if (!best) best = { x: 8, y: 8 };
+    no.style.left = best.x + 'px';
+    no.style.top = best.y + 'px';
+  }
+  function giveUp() {
+    gaveUp = true;
+    no.classList.remove('fled');
+    no.classList.add('gave-up');
+    no.style.left = ''; no.style.top = '';
+    slot.style.width = ''; slot.style.height = '';
+    no.textContent = 'Ладно, согласна';
+    $('taunt').textContent = 'Всё, «Нет» устала бегать и перешла на сторону «Да».';
+  }
+  function center(el) {
+    var r = el.getBoundingClientRect();
+    return { x: r.left + r.width / 2, y: r.top + r.height / 2 };
+  }
+  window.addEventListener('pointermove', function (e) {
+    if (done || gaveUp || e.pointerType !== 'mouse') return;
+    if (gap(e.clientX, e.clientY, no.getBoundingClientRect()) < 70) dodge(e.clientX, e.clientY);
+  });
+  no.addEventListener('pointerdown', function (e) {
+    if (gaveUp) return;
+    e.preventDefault();
+    dodge(e.clientX, e.clientY);
+  });
+  no.addEventListener('focus', function () {
+    if (gaveUp || done) return;
+    var c = center(no);
+    dodge(c.x, c.y);
+  });
+  no.addEventListener('click', function (e) {
+    if (gaveUp) { agree(no); return; }
+    e.preventDefault();
+    var c = center(no);
+    dodge(c.x, c.y);
+  });
+  yes.addEventListener('click', function () { agree(yes); });
+  window.addEventListener('resize', function () {
+    if (!fled || gaveUp || done) return;
+    var r = no.getBoundingClientRect();
+    var vw = document.documentElement.clientWidth, vh = window.innerHeight;
+    no.style.left = Math.max(8, Math.min(r.left, vw - r.width - 8)) + 'px';
+    no.style.top = Math.max(8, Math.min(r.top, vh - r.height - 8)) + 'px';
+  });
+
+  function agree(src) {
+    if (done) return;
+    done = true;
+    var c = center(src);
+    fireConfetti(c.x, c.y);
+    $('answerWrap').hidden = true;
+    $('yay').hidden = false;
+    $('flow').hidden = false;
+    setTimeout(function () {
+      $('step1').scrollIntoView({ behavior: reduce ? 'auto' : 'smooth', block: 'start' });
+    }, 450);
+  }
+
+  /* состояние выбора */
+  var state = { date: null, time: '' };
+  var today = new Date(); today.setHours(0, 0, 0, 0);
+  var maxDate = new Date(today); maxDate.setDate(maxDate.getDate() + 90);
+  var viewY = today.getFullYear(), viewM = today.getMonth();
+  var monthNames = ['январь', 'февраль', 'март', 'апрель', 'май', 'июнь', 'июль', 'август', 'сентябрь', 'октябрь', 'ноябрь', 'декабрь'];
+
+  function sameDay(a, b) { return a && b && a.getFullYear() === b.getFullYear() && a.getMonth() === b.getMonth() && a.getDate() === b.getDate(); }
+  function longDate(d) { return d.toLocaleDateString('ru-RU', { weekday: 'long', day: 'numeric', month: 'long' }); }
+
+  /* место */
+  var placeInputs = document.querySelectorAll('input[name=place]');
+  var customPlace = $('customPlace');
+  function currentPlace() {
+    var r = document.querySelector('input[name=place]:checked');
+    if (!r) return '';
+    if (r.value === 'custom') return customPlace.value.trim();
+    return r.getAttribute('data-label');
+  }
+  Array.prototype.forEach.call(placeInputs, function (r) {
+    r.addEventListener('change', function () {
+      customPlace.hidden = r.value !== 'custom' || !r.checked;
+      if (r.value === 'custom' && r.checked) customPlace.focus();
+      refresh();
+    });
+  });
+  customPlace.addEventListener('input', refresh);
+
+  /* календарь */
+  var daysEl = $('days');
+  function renderCal() {
+    $('calTitle').textContent = monthNames[viewM] + ' ' + viewY;
+    $('prevM').disabled = viewY === today.getFullYear() && viewM <= today.getMonth();
+    $('nextM').disabled = viewY > maxDate.getFullYear() || (viewY === maxDate.getFullYear() && viewM >= maxDate.getMonth());
+    daysEl.textContent = '';
+    var first = new Date(viewY, viewM, 1);
+    var offset = (first.getDay() + 6) % 7;
+    var count = new Date(viewY, viewM + 1, 0).getDate();
+    for (var i = 0; i < offset; i++) {
+      var v = document.createElement('span');
+      v.className = 'day void';
+      daysEl.appendChild(v);
+    }
+    for (var d = 1; d <= count; d++) {
+      (function (d) {
+        var date = new Date(viewY, viewM, d);
+        var b = document.createElement('button');
+        b.type = 'button';
+        b.className = 'day';
+        b.textContent = d;
+        b.setAttribute('aria-label', longDate(date));
+        var wd = date.getDay();
+        if (wd === 0 || wd === 6) b.classList.add('we');
+        if (sameDay(date, today)) b.classList.add('today');
+        if (sameDay(date, state.date)) { b.classList.add('sel'); b.setAttribute('aria-pressed', 'true'); }
+        if (date < today || date > maxDate) b.disabled = true;
+        b.addEventListener('click', function () { pickDate(date); });
+        daysEl.appendChild(b);
+      })(d);
+    }
+  }
+  function pickDate(date) {
+    state.date = date;
+    viewY = date.getFullYear(); viewM = date.getMonth();
+    renderCal();
+    renderTimes();
+    refresh();
+  }
+  $('prevM').addEventListener('click', function () { viewM--; if (viewM < 0) { viewM = 11; viewY--; } renderCal(); });
+  $('nextM').addEventListener('click', function () { viewM++; if (viewM > 11) { viewM = 0; viewY++; } renderCal(); });
+  Array.prototype.forEach.call(document.querySelectorAll('[data-quick]'), function (b) {
+    b.addEventListener('click', function () {
+      var q = b.getAttribute('data-quick');
+      var d = new Date(today);
+      if (q === 'sat') d.setDate(d.getDate() + ((6 - d.getDay() + 7) % 7));
+      else d.setDate(d.getDate() + Number(q));
+      pickDate(d);
+    });
+  });
+
+  /* время */
+  var timesEl = $('times'), customTime = $('customTime'), hint = $('timeHint');
+  function renderTimes() {
+    timesEl.textContent = '';
+    var nowMin = null;
+    if (state.date && sameDay(state.date, today)) {
+      var n = new Date();
+      nowMin = n.getHours() * 60 + n.getMinutes() + 30;
+    }
+    for (var h = 10; h <= 21; h++) {
+      (function (h) {
+        var val = pad(h) + ':00';
+        var off = nowMin !== null && h * 60 < nowMin;
+        var l = document.createElement('label');
+        l.className = 'chip' + (off ? ' off' : '');
+        var inp = document.createElement('input');
+        inp.type = 'radio'; inp.name = 'time'; inp.value = val; inp.disabled = off;
+        if (state.time === val && !off) inp.checked = true;
+        inp.addEventListener('change', function () {
+          state.time = val;
+          customTime.value = '';
+          refresh();
+        });
+        l.appendChild(inp);
+        l.appendChild(document.createTextNode(val));
+        timesEl.appendChild(l);
+      })(h);
+    }
+    if (state.time && !timesEl.querySelector('input:checked') && customTime.value !== state.time) state.time = '';
+    hint.textContent = state.date
+      ? (nowMin !== null ? 'На сегодня доступны только те часы, которые ещё не прошли.' : 'Выбери час или впиши своё время.')
+      : 'Сначала выбери день, и я покажу свободные часы.';
+  }
+  customTime.addEventListener('input', function () {
+    Array.prototype.forEach.call(document.querySelectorAll('input[name=time]'), function (r) { r.checked = false; });
+    state.time = customTime.value;
+    refresh();
+  });
+
+  /* итог */
+  var summary = $('summary'), bubble = $('bubble'), note = $('note');
+  var wasReady = false, lastMsg = '';
+  function refresh() {
+    var p = currentPlace();
+    var ready = !!(p && state.date && state.time);
+    summary.hidden = !ready;
+    if (!ready) { wasReady = false; return; }
+    var n = note.value.trim();
+    lastMsg = 'Я согласна на прогулку!\nКуда: ' + p + '\nКогда: ' + longDate(state.date) + ', ' + state.time + (n ? '\nПожелание: ' + n : '');
+    bubble.textContent = lastMsg;
+    var enc = encodeURIComponent(lastMsg);
+    $('mail').href = 'mailto:' + MAIL_TO + '?subject=' + encodeURIComponent('Ноз выбрала время для прогулки') + '&body=' + encodeURIComponent(lastMsg.replace(/\n/g, '\r\n'));
+    $('tg').href = 'https://t.me/share/url?url=&text=' + enc;
+    if (!wasReady) {
+      wasReady = true;
+      summary.classList.remove('pop');
+      void summary.offsetWidth;
+      summary.classList.add('pop');
+      setTimeout(function () { summary.scrollIntoView({ behavior: reduce ? 'auto' : 'smooth', block: 'center' }); }, 150);
+    }
+  }
+  note.addEventListener('input', refresh);
+
+  var toastEl = $('toast'), toastT = 0;
+  function toast(msg) {
+    toastEl.textContent = msg;
+    toastEl.classList.add('show');
+    clearTimeout(toastT);
+    toastT = setTimeout(function () { toastEl.classList.remove('show'); }, 2800);
+  }
+  $('copy').addEventListener('click', function () {
+    var ok = function () { toast('Скопировано. Отправь это сообщение мне.'); };
+    var fail = function () {
+      var rg = document.createRange();
+      rg.selectNodeContents(bubble);
+      var sel = window.getSelection();
+      sel.removeAllRanges();
+      sel.addRange(rg);
+      toast('Текст выделен, скопируй его вручную.');
+    };
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(lastMsg).then(ok, fail);
+    } else { fail(); }
+  });
+
+  renderCal();
+  renderTimes();
+})();
+</script>
+
+</body></html>
