@@ -386,9 +386,7 @@ textarea.field { resize: vertical; min-height: 4.5rem; }
         <span class="no-slot" id="noSlot"><button class="btn no" id="no" type="button">Нет</button></span>
       </div>
       <div class="taunt-row">
-        <span id="taunt" aria-live="polite">Выбор за тобой.</span>
-        <span>Попыток сказать «нет»: <b id="tries">0</b></span>
-      </div>
+        <span id="taunt" aria-live="polite">Выбор за тобой.</span>      </div>
     </div>
     <p class="yay" id="yay" hidden><b>Ура!</b>Я так и знал, что ты согласишься. Давай выберем, куда пойдём и когда.</p>
 
@@ -440,10 +438,8 @@ textarea.field { resize: vertical; min-height: 4.5rem; }
       <textarea class="field" id="note" maxlength="140" placeholder="Например: возьмём тёплый чай с собой" style="margin-top:6px"></textarea>
       <div class="send" style="margin-top:16px">
         <a class="btn go" id="mail" href="#">Отправить на почту</a>
-        <a class="btn alt" id="tg" href="#" target="_blank" rel="noopener">Отправить в Telegram</a>
-        <button class="btn" id="copy" type="button">Скопировать</button>
       </div>
-      <p class="after">Чтобы я точно узнал о твоём выборе, отправь это сообщение мне любым удобным способом. Кнопка почты откроет готовое письмо на твоём устройстве, останется нажать «Отправить».</p>
+      <p class="after">Чтобы я точно узнал о твоём выборе, нажми кнопку: откроется готовое письмо, останется нажать «Отправить».</p>
     </section>
   </div>
 </div>
@@ -635,7 +631,7 @@ textarea.field { resize: vertical; min-height: 4.5rem; }
     if (now - lastDodge < 180) return;
     lastDodge = now;
     tries++;
-    $('tries').textContent = tries;
+    persistSoon();
     if (tries >= MAX) { giveUp(); return; }
     $('taunt').textContent = taunts[Math.min(tries - 1, taunts.length - 1)];
     yes.style.setProperty('--yes-size', Math.min(1.2 + tries * 0.12, 2.1) + 'rem');
@@ -717,6 +713,7 @@ textarea.field { resize: vertical; min-height: 4.5rem; }
   function agree(src) {
     if (done) return;
     done = true;
+    persistSoon();
     var c = center(src);
     fireConfetti(c.x, c.y);
     $('answerWrap').hidden = true;
@@ -850,16 +847,15 @@ textarea.field { resize: vertical; min-height: 4.5rem; }
   var summary = $('summary'), bubble = $('bubble'), note = $('note');
   var wasReady = false, lastMsg = '';
   function refresh() {
+    persistSoon();
     var p = currentPlace();
     var ready = !!(p && state.date && state.time);
     summary.hidden = !ready;
     if (!ready) { wasReady = false; return; }
     var n = note.value.trim();
-    lastMsg = 'Я согласна на прогулку!\nКуда: ' + p + '\nКогда: ' + longDate(state.date) + ', ' + state.time + (n ? '\nПожелание: ' + n : '');
-    bubble.textContent = lastMsg;
-    var enc = encodeURIComponent(lastMsg);
+    lastMsg = 'Я согласна на прогулку!\nКуда: ' + p + '\nКогда: ' + longDate(state.date) + ', ' + state.time + (n ? '\nПожелание: ' + n : '') + '\nПопыток сказать «нет»: ' + tries;
+    bubble.textContent = lastMsg.split('\nПопыток')[0];
     $('mail').href = 'mailto:' + MAIL_TO + '?subject=' + encodeURIComponent('Ноз выбрала время для прогулки') + '&body=' + encodeURIComponent(lastMsg.replace(/\n/g, '\r\n'));
-    $('tg').href = 'https://t.me/share/url?url=&text=' + enc;
     if (!wasReady) {
       wasReady = true;
       summary.classList.remove('pop');
@@ -877,23 +873,41 @@ textarea.field { resize: vertical; min-height: 4.5rem; }
     clearTimeout(toastT);
     toastT = setTimeout(function () { toastEl.classList.remove('show'); }, 2800);
   }
-  $('copy').addEventListener('click', function () {
-    var ok = function () { toast('Скопировано. Отправь это сообщение мне.'); };
-    var fail = function () {
-      var rg = document.createRange();
-      rg.selectNodeContents(bubble);
-      var sel = window.getSelection();
-      sel.removeAllRanges();
-      sel.addRange(rg);
-      toast('Текст выделен, скопируй его вручную.');
-    };
-    if (navigator.clipboard && navigator.clipboard.writeText) {
-      navigator.clipboard.writeText(lastMsg).then(ok, fail);
-    } else { fail(); }
-  });
-
   renderCal();
   renderTimes();
+
+  /* сохранение ответа: видно владельцу страницы */
+  var dbRef = null, saving = false, pendingSave = false, saveTimer = 0;
+  function isoDate(d) { return d ? d.getFullYear() + '-' + pad(d.getMonth() + 1) + '-' + pad(d.getDate()) : ''; }
+  function persistSoon() {
+    if (!dbRef) return;
+    clearTimeout(saveTimer);
+    saveTimer = setTimeout(persist, 700);
+  }
+  function persist() {
+    if (!dbRef) return;
+    if (saving) { pendingSave = true; return; }
+    saving = true;
+    var data = {
+      tries: tries, agreed: done, gaveUp: gaveUp,
+      place: currentPlace(), date: isoDate(state.date), time: state.time || '',
+      note: note.value.trim(), updatedAt: new Date().toISOString()
+    };
+    dbRef.set(data).then(function () {}, function () {}).then(function () {
+      saving = false;
+      if (pendingSave) { pendingSave = false; persist(); }
+    });
+  }
+  if (window.claude && window.claude.use) {
+    Promise.all([window.claude.use('db'), window.claude.use('user')]).then(function (r) {
+      var db = r[0], user = r[1];
+      if (!db || !user) return;
+      return user.id().then(function (id) {
+        if (!id) return;
+        dbRef = db.doc('responses/' + id);
+      });
+    }).catch(function () {});
+  }
 })();
 </script>
 
